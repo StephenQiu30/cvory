@@ -9,19 +9,20 @@
 3. 业务任务按这个顺序找依据：
    - 最新明确确认；
    - [原始需求](docs/requirement/00-需求导航.md)；
-   - [有效设计](docs/design/00-设计导航.md)。当前合同是[文档管理设计](docs/design/01-文档管理与Obsidian设计.md)。
+   - [有效设计](docs/design/00-设计导航.md)。[文档管理设计](docs/design/01-文档管理与Obsidian设计.md)是已确认合同，[产品设计 02](docs/design/02-CV制作管理与展示设计.md)是评审稿；按能力选择对应 PRD 与 Plan，不把建议当成已确认。
 
    已确认、建议和待定分开。原始需求只保留，不改写。建议不改成已确认。
 
 ## 文档规则
 
-- **目录分工**：原始需求放 `docs/requirement/`，技术设计放 `docs/design/`，人读需求与验收放 `docs/prd/`，实施计划放 `docs/plan/`，调研放 `docs/research/`，模板放 `docs/templates/`，附件放 `docs/assets/`。按 `design → prd → plan` 组织：一份 design 对应一份 PRD，一份 PRD 可拆成多份 Plan。PRD 链接唯一来源 design，Plan 链接唯一来源 PRD。技术合同回 design。任务状态和调度只在 `BACKLOG.md`。`docs` 是 Obsidian vault，不收录 README。
+- **目录分工**：原始需求放 `docs/requirement/`，技术设计放 `docs/design/`，人读需求与验收放 `docs/prd/`，执行步骤放 `docs/plan/`，调研结论放 `docs/research/`，模板放 `docs/templates/`，正式附件放 `docs/assets/`。一项完整需求对应一份 design；一份 design 可对应多份 PRD，每份 PRD 可对应多份 Plan。PRD 只链接一份来源 design，Plan 只链接一份来源 PRD。技术合同回 design，任务状态和调度只在 `BACKLOG.md`。`docs` 是 Obsidian vault，不收录 README。
+- **原子化**：按可独立交付、验证的用户结果拆 PRD 和 Plan；基础工程并入首个需要它的能力，不为每个按钮、技术层或测试步骤建文档。每份文档只写自己的目标、必要规则或验收，不复制背景、价值和通用检查清单。
 - **编号与导航**：docs 根入口为 `00-文档导航.md`。子目录以 `00` 导航为入口。现行文档按阅读与依赖顺序使用 `NN-中文名.md`，新增取下一编号。重编时同步路径、正文编号、导航和来源映射，不保留重复文档。原始需求的正文、文件名、原编号和业务 ID 按 [PROJECT §3.5](PROJECT.md#35-文档工作区) 保护，不按设计编号重排。
 - **当前执行依据**：先读最新明确确认，再沿 design → prd → plan 读取技术合同、范围验收和实施步骤。原始需求保留为来源证据。技术变更改对应 design，验收变更改对应 PRD 并同步 Plan，不覆盖来源正文。
 - **调度入口**：`BACKLOG.md` 是唯一调度入口，维护顺序、优先级、依赖、阻塞和状态。设计写完不等于实现完成。证据写在 `HANDOVER.md`。
 - **只写现状**：文档写当前事实和现行规则。旧方案由 Git 历史承载。`HANDOVER.md` 只保留最近一次阶段记录。
 - **写清楚**：不写“此前”“本轮”“某日已补”这类会过期的句子。不引用已删除的文件。同一条规则只在一处维护。
-- **临时内容**：临时调研和中间状态不单独留下。结论并入长期需求或设计。
+- **临时内容**：不在项目中写入过程确认单、中间稿、生成提示词、工具原始输出、临时截图或重复证据摘要。结论并入正式需求、设计或调研；只保留必要的最终附件。工作进度只写 BACKLOG，阶段交付证据只写 HANDOVER，不为每次对话新增来源文件。
 - **路径**：文档使用仓库相对路径。仓库外的本机路径不作为工作目录。
 - **修改规则的顺序**：先改 PROJECT 或对应设计，再改代码；同步受影响的 README 和说明。
 
@@ -31,12 +32,12 @@
 
 | 核对范围 | 唯一来源 |
 | --- | --- |
-| 项目标识、仓库现状、技术选型与待定项 | [PROJECT §1](PROJECT.md#1-项目标识)、[§2](PROJECT.md#2-仓库现状)、[§3](PROJECT.md#3-技术选型)、[§9](PROJECT.md#9-待定项) |
+| 项目标识、仓库现状、技术选型与待定项 | [PROJECT §1](PROJECT.md#1-项目标识)、[§2](PROJECT.md#2-仓库现状)、[§3](PROJECT.md#3-技术选型)、[§9](PROJECT.md#9-当前边界) |
 | 文档目录、编号与来源保护 | [PROJECT §3.5](PROJECT.md#35-文档工作区)、[设计 01](docs/design/01-文档管理与Obsidian设计.md) |
 | 任务状态与阶段证据 | [BACKLOG](BACKLOG.md)、[HANDOVER](HANDOVER.md) |
 | 文档检查 | [PROJECT §8](PROJECT.md#8-质量与验收) |
 
-视觉与交互规则统一在 [DESIGN](DESIGN.md)，已确认方向和建议基线分开。服务边界、编码规范、数据和接口仍未建立工程合同。
+视觉与交互规则统一在 [DESIGN](DESIGN.md)，已确认方向和建议基线分开。服务边界、数据与接口建议见产品设计 02，工程合同与编码基线尚未定稿；只交付文档的阶段不启动实现。
 
 ## 实施与验证
 

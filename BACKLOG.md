@@ -1,13 +1,16 @@
 # 项目待办与执行顺序
 
-本文件只维护当前任务状态；阶段结果见 [HANDOVER](HANDOVER.md)。
+本文件只维护任务调度。业务见需求，方案见 design，验收见对应 PRD，步骤见 Plan；当前只整理文档，未开始编码。
 
-- [x] **DOCS-INIT 知识库与根规范**｜文档管理规则、来源目录与模板存在，工程实现尚未建立。
-- [x] **REQ-MVP 单份需求与 MVP 交互调研**｜原始来源保留；重复草稿清理；制作、导入、版本、模板、导出及展示关系统一在[需求说明 04](docs/requirement/04-个人CV制作与管理需求说明.md)。来源：[MVP 补充 06](docs/requirement/06-MVP交互导入导出与技术方向补充.md)。技术只列建议，调研不代表产品验收通过。
+| 任务 | 依赖 | 状态 | 工作入口 |
+| --- | --- | --- | --- |
+| 文档与需求收敛 | — | 复核通过 | [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计](docs/design/02-CV制作管理与展示设计.md)、按能力拆分的 PRD/Plan；不表示实现完成 |
+| PLAN-CV-01 制作与保存 | 实施时明确运行/持久化方式 | 待执行 | [Plan 01](docs/plan/01-CV制作与保存.md) |
+| PLAN-CV-02 版本管理 | PLAN-CV-01 | 待执行 | [Plan 02](docs/plan/02-CV版本管理.md) |
+| PLAN-CV-03 模板与样式 | PLAN-CV-01 | 待执行 | [Plan 03](docs/plan/03-模板与样式管理.md) |
+| PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 待执行 | [Plan 04](docs/plan/04-简历导入.md) |
+| PLAN-CV-05 备份与 Markdown | PLAN-CV-03、04 | 待执行 | [Plan 05](docs/plan/05-简历备份与Markdown导出.md) |
+| PLAN-CV-06 PDF | PLAN-CV-03 | 待执行 | [Plan 06](docs/plan/06-PDF导出.md) |
+| PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 待执行 | [Plan 07](docs/plan/07-个人简历展示.md) |
 
-- [x] **BRAND-SELECT 产品命名与 Logo 选择**｜负责人选择简序 · CVory 和 B 图形，视觉使用黑白灰与 Geist；[来源 07](docs/requirement/07-简序命名视觉与技术选型补充.md)、[黑白 Logo 概念](docs/assets/branding/CVory-黑白Logo概念.png)。
-- [x] **DESIGN-BASE 前端规范与技术建议**｜[DESIGN](DESIGN.md)建立颜色、字体、组件、响应式与编辑状态建议基线；技术候选统一在[需求第 10 节](docs/requirement/04-个人CV制作与管理需求说明.md#10-技术选型建议)，文档完成不代表实现或验收。
-- [x] **GIT-INIT 公开仓库与首次推送**｜[StephenQiu30/cvory](https://github.com/StephenQiu30/cvory) 已建立，默认分支 `main`；需求、规范、研究证据及品牌素材首次入库并推送，原始来源基线登记在 PROJECT；个人 Obsidian 工作区配置不入库，CI 未配置。
-- [ ] **TECH-SELECT 技术建议评审**｜部署、存储、中文字体、导入与 PDF 运行路径待选择和验证，尚未建立工程合同。
-
-当前不安排产品 PRD、实施计划、编码或部署。待定细节只在统一说明第 9 节维护，不在本文件另写一套产品规则。
+版本、模板、导入和公开展示不必串成长链；只遵循实际数据依赖。需要确认的细节只影响相关能力，不另立全局审批阶段。既有公开仓库 main 保留，应用与 CI 尚未建立。
