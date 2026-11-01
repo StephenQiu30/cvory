@@ -2,17 +2,29 @@
 
 任务调度只在 [BACKLOG](BACKLOG.md)。
 
-## PLAN-CV-01 制作与保存 MVP 编码交付
+## Docker 编排、Swagger 文档与 OpenAPI 客户端交付
 
-日期：2026-11-01（Asia/Shanghai）。交付范围是遵循 PROJECT 建立 `frontend/` 与 `backend/` 工程，实现 PLAN-CV-01 核心制作与保存能力，保持 MVP 极简，不提前引入其他功能。
+日期：2026-11-01（Asia/Shanghai）。交付范围是支持 docker-compose 一键启动并复用宿主机环境、敏感信息 `.env` 隔离、提交规范 Conventional Commits、整理后端 Swagger 文档及使用 axios + @umijs/openapi 生成前端 API 客户端。
 
-### 1. 工程与选型落地
-- **后端 (`backend/`)**：Python 3.12 + FastAPI 0.162 + SQLAlchemy 2.1 + PyMySQL + Pydantic 2，采用 uv 管理依赖并锁定 `uv.lock`。数据持久化接入本地真实 MySQL（utf8mb4，数据库 `cvory`）。API 遵循 Google AIP 规范：`/api/v1/cvs` 资源导向，lowerCamelCase JSON 输出，RFC 3339 时间格式，AIP-193 统一错误模型与 AIP-154 ETag 并发控制。
-- **前端 (`frontend/`)**：Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS v4 + Tiptap 3.32 + Lucide，采用 pnpm 管理依赖并锁定 `pnpm-lock.yaml`。设计严格遵循 [DESIGN.md](DESIGN.md) 的黑白灰语义色值与 Geist 字体，提供列表空状态、新建弹窗、基本信息编辑、模块增删/排序/隐藏、富文本排版工具栏与实时纸张预览。
+### 1. 交付内容
+- **Docker 编排与宿主机复用**：
+  - 编写 `docker-compose.yml`、`backend/Dockerfile` 与 `frontend/Dockerfile`。
+  - 通过 `extra_hosts: ["host.docker.internal:host-gateway"]` 连通宿主机，容器内后端无缝连接宿主机已启动的 MySQL 服务（3306 端口）。
+  - 建立根目录 `.env.example` 模板与本地 `.env`（写入 `.gitignore`，严禁提交私密凭据）。
+- **代码提交规范**：
+  - 新建 [CONTRIBUTING.md](CONTRIBUTING.md)，确立 `type(scope): description` 规范（如 `feat(cv)`、`fix(api)`、`build(docker)`、`docs(swagger)` 等）。
+  - 同步更新 [PROJECT.md](PROJECT.md)、[AGENTS.md](AGENTS.md) 与 [README.md](README.md)。
+- **Swagger 接口文档与去除版本号**：
+  - 全局统一使用 `/api` 根路由，去除 `/api/v1` 等版本号前缀，目录结构保持扁平清晰（`backend/app/api/cvs.py`）。
+  - 在 `backend/app/main.py` 与 `backend/app/api/cvs.py` 完善 OpenAPI 元数据、分组标签（`cvs`、`system`）、接口详细说明及状态码模型（含 400/401/403/404/409 Google AIP 错误结构）。
+  - 文档交互地址为 `/api/docs`，元数据地址为 `/api/openapi.json`。
+- **前端 API 生成（axios + @umijs/openapi 规范接入）**：
+  - 遵循 `@umijs/openapi` 官方规范，配置标准 `frontend/openapi2ts.config.ts` 并在 `package.json` 提供 `openapi` / `openapi2ts` 命令。
+  - 引入 `axios` 封装 [`request.ts`](frontend/src/lib/api/request.ts)，无缝适配 `openapi2ts` 生成的代码，拦截并映射 Google AIP 标准错误。
+  - 生成类型和请求代码位于 [`src/lib/api/generated/`](frontend/src/lib/api/generated/)，接口路径直接对应 `/api/cvs`。
 
 ### 2. 验证证据
-- **后端自动化测试**：`cd backend && uv run pytest -v`，6 项单元与 API 测试（健康检查、空列表、创建/获取、ETag 并发冲突 409 ABORTED、字段校验 400 INVALID_ARGUMENT、删除 204）全部通过。
-- **MySQL 真实持久化**：通过实际 MySQL 9.7 实例创建表结构，执行写入、读回与删除链路验证通过。
-- **E2E 接口验证**：Uvicorn 启动后完整验证 POST 创建、GET 详情、PATCH 条件更新（成功产生新 ETag）、旧 ETag 拒绝（409 ABORTED）及 DELETE 清理。
-- **前端构建验证**：`cd frontend && pnpm build` 顺利通过，TypeScript 类型检查零错误，PostCSS 零告警，生成标准静态与动态路由。
-- **文档与工程规范**：[PROJECT.md](PROJECT.md) 登记实际启动与测试命令，[BACKLOG.md](BACKLOG.md) 标记 PLAN-CV-01 已完成，不增加无关功能。
+- **后端测试**：`cd backend && uv run pytest -v`，6 项测试全部通过（0 warnings）。
+- **前端生成与构建**：`cd frontend && pnpm run openapi && pnpm build`，OpenAPI service 代码生成成功，Next.js 生产构建与 TypeScript 检查 0 错误通过。
+- **Docker 编排配置校验**：`docker compose config` 解析与变量代换通过。
+- **Git 忽略与隐私核查**：`git status` 确认 `.env` 保持未跟踪/已忽略状态，`.env.example` 正常纳管。

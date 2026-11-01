@@ -1,0 +1,1686 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "\u7b80\u5e8f \u00b7 CVory \u4e1a\u52a1\u670d\u52a1 API",
+    "description": "\n## \u7b80\u5e8f \u00b7 CVory \u540e\u7aef RESTful \u63a5\u53e3\u6587\u6863\n\n\u9075\u5faa **[Google API Design Guide](https://docs.cloud.google.com/apis/design)** (AIP) \u89c4\u8303\u8bbe\u8ba1\uff1a\n\n* **\u8d44\u6e90\u5bfc\u5411**\uff1a\u5bf9\u5916\u63a5\u53e3\u4f7f\u7528\u6807\u51c6 REST/JSON\uff0c\u8d44\u6e90\u540d\u683c\u5f0f\u4e3a `cvs/{id}`\u3002\n* **\u53c2\u6570\u4e0e\u6a21\u578b\u547d\u540d**\uff1a\u670d\u52a1\u5185\u90e8\u4f7f\u7528 `snake_case`\uff0c\u5bf9\u5916 JSON \u4f7f\u7528 `lowerCamelCase`\u3002\n* **\u5e76\u53d1\u4e00\u81f4\u6027\u63a7\u5236**\uff1a`PATCH` \u66f4\u65b0\u652f\u6301 `If-Match` \u8bf7\u6c42\u5934\u6216\u6b63\u6587 `etag`\uff0c\u51b2\u7a81\u8fd4\u56de `409 ABORTED`\u3002\n* **\u7edf\u4e00\u9519\u8bef\u6a21\u578b**\uff1a\u5168\u7ad9\u9519\u8bef\u54cd\u5e94\u5747\u91c7\u7528 Google AIP-193 \u683c\u5f0f\uff0c\u8bf7\u6c42\u6821\u9a8c\u9519\u8bef\u7edf\u4e00\u5f52\u4e00\u5316\u4e3a `400 INVALID_ARGUMENT`\u3002\n* **\u65f6\u95f4\u8868\u793a**\uff1a\u7edf\u4e00\u4f7f\u7528 RFC 3339 UTC \u683c\u5f0f\u5b57\u7b26\u4e32\uff08\u4f8b\u5982 `2026-11-01T14:30:00Z`\uff09\u3002\n    ",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/cvs": {
+      "get": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u83b7\u53d6\u7b80\u5386\u5217\u8868",
+        "description": "\u4ee5\u5206\u9875\u5f62\u5f0f\u5217\u4e3e\u5f53\u524d\u6240\u6709\u8005\u540d\u4e0b\u7684\u5168\u90e8\u7b80\u5386\u6587\u6863\u3002\u9075\u5faa Google AIP-158 \u5206\u9875\u6807\u51c6\uff0c\u8fd4\u56de\u5f53\u524d\u9875\u9879\u76ee\u548c\u4e0b\u4e00\u9875\u6e38\u6807 nextPageToken\u3002",
+        "operationId": "listCvs",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "\u5355\u9875\u6700\u5927\u8fd4\u56de\u6570\u91cf\uff081-100\uff09",
+              "default": 50,
+              "title": "Pagesize"
+            },
+            "description": "\u5355\u9875\u6700\u5927\u8fd4\u56de\u6570\u91cf\uff081-100\uff09"
+          },
+          {
+            "name": "pageToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "\u5206\u9875\u6807\u8bb0\u6e38\u6807\uff0c\u4e0a\u4e00\u9875\u8fd4\u56de\u7684 nextPageToken",
+              "title": "Pagetoken"
+            },
+            "description": "\u5206\u9875\u6807\u8bb0\u6e38\u6807\uff0c\u4e0a\u4e00\u9875\u8fd4\u56de\u7684 nextPageToken"
+          },
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCVsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u65b0\u5efa\u4e00\u4efd\u4e2a\u4eba\u7b80\u5386",
+        "description": "\u521b\u5efa\u4e00\u4e2a\u72ec\u7acb\u53ef\u7f16\u8f91\u7684\u7b80\u5386\u8d44\u6e90\u3002\u670d\u52a1\u7aef\u4f1a\u81ea\u52a8\u751f\u6210\u552f\u4e00 UUID\u3001\u521d\u59cb\u5316\u57fa\u7840\u7ed3\u6784\uff0c\u5e76\u751f\u6210\u521d\u59cb ETag\u3002",
+        "operationId": "createCv",
+        "parameters": [
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCVRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CVResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cvs/{cv_id}": {
+      "get": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u83b7\u53d6\u5355\u4e2a\u7b80\u5386\u8be6\u60c5",
+        "description": "\u6839\u636e\u7b80\u5386 UUID \u83b7\u53d6\u5b8c\u6574\u7684\u5185\u5bb9\u3001\u6a21\u5757\u6570\u636e\u53ca\u5f53\u524d\u7248\u672c ETag\u3002",
+        "operationId": "getCv",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          },
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CVResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u6761\u4ef6\u5c40\u90e8\u66f4\u65b0\u7b80\u5386\u5185\u5bb9",
+        "description": "\u66f4\u65b0\u6307\u5b9a\u7b80\u5386\u7684\u5185\u5bb9\u3002\u9075\u5faa Google AIP-154 \u5e76\u53d1\u6821\u9a8c\u89c4\u5219\uff1a\n* \u5fc5\u987b\u5728\u8bf7\u6c42\u5934 `If-Match` \u6216\u8bf7\u6c42\u4f53\u5185 `etag` \u643a\u5e26\u4fee\u6539\u524d\u6301\u6709\u7684\u7248\u672c ETag\u3002\n* \u82e5\u8fdc\u7aef\u5df2\u66f4\u65b0\u5bfc\u81f4 ETag \u4e0d\u4e00\u81f4\uff0c\u670d\u52a1\u8fd4\u56de `409 ABORTED`\uff0c\u4fdd\u62a4\u7528\u6237\u6570\u636e\u4e0d\u88ab\u9759\u9ed8\u8986\u76d6\u3002\n* \u652f\u6301 `updateMask` \u5b57\u6bb5\u63a9\u7801\u6309\u9700\u66f4\u65b0\u7279\u5b9a\u5b57\u6bb5\uff08\u5982 `displayName,profile,sections`\uff09\u3002",
+        "operationId": "updateCv",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "\u4fee\u6539\u524d\u6301\u6709\u7684 ETag \u7279\u5f81\u503c\uff08\u652f\u6301\u53cc\u5f15\u53f7\u5305\u88f9\uff09",
+              "title": "If-Match"
+            },
+            "description": "\u4fee\u6539\u524d\u6301\u6709\u7684 ETag \u7279\u5f81\u503c\uff08\u652f\u6301\u53cc\u5f15\u53f7\u5305\u88f9\uff09"
+          },
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCVRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CVResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u5220\u9664\u6307\u5b9a\u7b80\u5386",
+        "description": "\u6c38\u4e45\u79fb\u9664\u6307\u5b9a\u7b80\u5386\u53ca\u5176\u5173\u8054\u7684\u79c1\u6709\u5934\u50cf\u8d44\u6e90\u3002\u652f\u6301\u53ef\u9009\u7684 `If-Match` \u8bf7\u6c42\u5934\u4fdd\u8bc1\u5e76\u53d1\u5220\u9664\u5b89\u5168\u3002",
+        "operationId": "deleteCv",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "\u6301\u6709\u7684 ETag \u7279\u5f81\u503c",
+              "title": "If-Match"
+            },
+            "description": "\u6301\u6709\u7684 ETag \u7279\u5f81\u503c"
+          },
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cvs/{cv_id}/avatar": {
+      "post": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u4e0a\u4f20\u5e76\u7ed1\u5b9a\u7b80\u5386\u5934\u50cf",
+        "description": "\u4e3a\u7b80\u5386\u4e0a\u4f20\u4e2a\u4eba\u7167\u7247\u3002\u56fe\u7247\u5c06\u8f6c\u5b58\u5230\u670d\u52a1\u6301\u4e45\u76ee\u5f55\uff0c\u66f4\u65b0\u7b80\u5386\u8d44\u6599\u4e2d\u7684 `avatarUrl` \u5e76\u5237\u65b0 ETag\u3002",
+        "operationId": "uploadCvAvatar",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          },
+          {
+            "name": "X-Owner-Token",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Owner-Token"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_uploadCvAvatar"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CVResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "cvs"
+        ],
+        "summary": "\u8bfb\u53d6\u7b80\u5386\u5934\u50cf\u56fe\u7247",
+        "description": "\u83b7\u53d6\u6307\u5b9a\u7b80\u5386\u4e0a\u4f20\u4fdd\u5b58\u7684\u5934\u50cf\u539f\u59cb\u56fe\u7247\u6587\u4ef6\u3002",
+        "operationId": "getCvAvatar",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "\u7cfb\u7edf\u5065\u5eb7\u68c0\u67e5\u63a2\u9488",
+        "description": "\u7528\u4e8e\u5bb9\u5668\u5b58\u6d3b\u4e0e\u5c31\u7eea\u63a2\u9488\u68c0\u67e5\u670d\u52a1\u72b6\u6001\u3002",
+        "operationId": "health_check_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_uploadCvAvatar": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "\u5934\u50cf\u56fe\u7247\u6587\u4ef6\uff08\u652f\u6301 PNG\u3001JPEG\u3001WEBP \u683c\u5f0f\uff09"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_uploadCvAvatar"
+      },
+      "CVResource": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "\u8d44\u6e90\u7a33\u5b9a\u552f\u4e00\u8d44\u6e90\u540d\u79f0\uff0c\u683c\u5f0f\uff1acvs/{id}",
+            "examples": [
+              "cvs/29059b42-f1bb-481e-8b8c-9aec4d288035"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "\u7b80\u5386\u552f\u4e00\u6807\u8bc6 UUID",
+            "examples": [
+              "29059b42-f1bb-481e-8b8c-9aec4d288035"
+            ]
+          },
+          "displayName": {
+            "type": "string",
+            "title": "Displayname",
+            "description": "\u7528\u6237\u8bbe\u5b9a\u7684\u7b80\u5386\u540d\u79f0",
+            "examples": [
+              "\u6211\u7684\u524d\u7aef\u5f00\u53d1\u7b80\u5386"
+            ]
+          },
+          "etag": {
+            "type": "string",
+            "title": "Etag",
+            "description": "\u5f53\u524d\u7248\u672c\u7684\u5185\u5bb9\u7279\u5f81\u54c8\u5e0c ETag\uff0c\u7528\u4e8e\u5e76\u53d1\u5b89\u5168\u4fee\u6539\u6821\u9a8c",
+            "examples": [
+              "2188972beb9238fc"
+            ]
+          },
+          "profile": {
+            "$ref": "#/components/schemas/ProfileSchema",
+            "description": "\u4e2a\u4eba\u57fa\u672c\u4fe1\u606f\u4e0e\u8054\u7cfb\u65b9\u5f0f"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/SectionSchema"
+            },
+            "type": "array",
+            "title": "Sections",
+            "description": "\u6709\u5e8f\u7684\u7b80\u5386\u5185\u5bb9\u6a21\u5757\u5217\u8868"
+          },
+          "styleSettings": {
+            "$ref": "#/components/schemas/StyleSettingsSchema",
+            "description": "\u7eb8\u5f20\u6392\u7248\u4e0e\u6587\u5b57\u6837\u5f0f\u9884\u8bbe"
+          },
+          "createTime": {
+            "type": "string",
+            "title": "Createtime",
+            "description": "\u521b\u5efa\u65f6\u95f4\uff08RFC 3339 UTC \u683c\u5f0f\uff09",
+            "examples": [
+              "2026-11-01T14:30:00Z"
+            ]
+          },
+          "updateTime": {
+            "type": "string",
+            "title": "Updatetime",
+            "description": "\u6700\u8fd1\u4e00\u6b21\u66f4\u65b0\u65f6\u95f4\uff08RFC 3339 UTC \u683c\u5f0f\uff09",
+            "examples": [
+              "2026-11-01T14:32:00Z"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "id",
+          "displayName",
+          "etag",
+          "profile",
+          "styleSettings",
+          "createTime",
+          "updateTime"
+        ],
+        "title": "CVResource",
+        "description": "Complete CV resource schema conforming to Google AIP-121."
+      },
+      "CreateCVRequest": {
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Displayname",
+            "description": "\u65b0\u7b80\u5386\u7684\u663e\u793a\u540d\u79f0",
+            "examples": [
+              "\u6211\u7684\u4e2a\u4eba\u7b80\u5386"
+            ]
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u521d\u59cb\u4e2a\u4eba\u57fa\u672c\u4fe1\u606f\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u63d0\u4f9b\u7a7a\u767d\u6846\u67b6\uff09"
+          },
+          "sections": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SectionSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sections",
+            "description": "\u521d\u59cb\u6a21\u5757\u5217\u8868\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u63d0\u4f9b\u5e38\u7528\u8d77\u6b65\u6a21\u5757\uff09"
+          },
+          "styleSettings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StyleSettingsSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u6392\u7248\u6837\u5f0f\u53c2\u6570\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u6807\u51c6\u6392\u7248\uff09"
+          }
+        },
+        "type": "object",
+        "required": [
+          "displayName"
+        ],
+        "title": "CreateCVRequest",
+        "description": "Request payload for creating a new CV."
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code",
+            "description": "HTTP \u72b6\u6001\u7801"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "description": "\u9762\u5411\u5f00\u53d1\u8005\u7684\u82f1\u6587\u9519\u8bef\u63cf\u8ff0"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Google RPC \u6807\u51c6\u72b6\u6001\u7801\uff0c\u5982 INVALID_ARGUMENT, ABORTED, NOT_FOUND"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": "array",
+            "title": "Details",
+            "description": "\u9519\u8bef\u6269\u5c55\u660e\u7ec6"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "status"
+        ],
+        "title": "ErrorBody",
+        "description": "Google AIP-193 standard error payload."
+      },
+      "ErrorDetail": {
+        "properties": {
+          "@type": {
+            "type": "string",
+            "title": "@Type",
+            "description": "\u9519\u8bef\u8be6\u60c5\u7c7b\u578b\u6807\u8bc6 URL"
+          },
+          "fieldViolations": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldViolation"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fieldviolations",
+            "description": "\u5b57\u6bb5\u6821\u9a8c\u8be6\u60c5\u5217\u8868"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason",
+            "description": "\u6807\u51c6\u9519\u8bef\u539f\u56e0\u4ee3\u7801"
+          },
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain",
+            "description": "\u53d1\u751f\u9519\u8bef\u7684\u4e1a\u52a1\u57df"
+          }
+        },
+        "type": "object",
+        "required": [
+          "@type"
+        ],
+        "title": "ErrorDetail",
+        "description": "Google AIP-193 generic error detail object."
+      },
+      "FieldViolation": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field",
+            "description": "\u53d1\u751f\u6821\u9a8c\u9519\u8bef\u7684\u5b57\u6bb5\u8def\u5f84"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "description": "\u5177\u4f53\u7684\u9519\u8bef\u539f\u56e0\u8bf4\u660e"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "description"
+        ],
+        "title": "FieldViolation",
+        "description": "Field-level validation error detail conforming to Google AIP-193."
+      },
+      "GoogleErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "title": "GoogleErrorResponse",
+        "description": "Standard error response wrapper schema for OpenAPI documentation."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ListCVsResponse": {
+        "properties": {
+          "cvs": {
+            "items": {
+              "$ref": "#/components/schemas/CVResource"
+            },
+            "type": "array",
+            "title": "Cvs",
+            "description": "\u7b80\u5386\u8d44\u6e90\u5217\u8868"
+          },
+          "nextPageToken": {
+            "type": "string",
+            "title": "Nextpagetoken",
+            "description": "\u4e0b\u4e00\u9875\u5206\u9875\u6e38\u6807 Token\uff1b\u82e5\u4e3a\u7a7a\u5219\u8bf4\u660e\u5df2\u662f\u6700\u540e\u4e00\u9875",
+            "default": ""
+          },
+          "totalSize": {
+            "type": "integer",
+            "title": "Totalsize",
+            "description": "\u5f53\u524d\u6240\u6709\u8005\u540d\u4e0b\u7684\u7b80\u5386\u603b\u6570\u91cf",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ListCVsResponse",
+        "description": "Response payload for listing CVs conforming to Google AIP-158."
+      },
+      "ProfileSchema": {
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "title": "Fullname",
+            "description": "\u59d3\u540d",
+            "default": "",
+            "examples": [
+              "\u5f20\u4e09"
+            ]
+          },
+          "headline": {
+            "type": "string",
+            "title": "Headline",
+            "description": "\u4e13\u4e1a\u5b9a\u4f4d\u6216\u4e00\u53e5\u8bdd\u5934\u8854",
+            "default": "",
+            "examples": [
+              "\u8d44\u6df1\u524d\u7aef\u5f00\u53d1\u5de5\u7a0b\u5e08"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "title": "Email",
+            "description": "\u8054\u7cfb\u7535\u5b50\u90ae\u7bb1",
+            "default": "",
+            "examples": [
+              "contact@example.com"
+            ]
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone",
+            "description": "\u8054\u7cfb\u7535\u8bdd",
+            "default": "",
+            "examples": [
+              "+86 138 0000 0000"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "\u5e38\u9a7b\u57ce\u5e02",
+            "default": "",
+            "examples": [
+              "\u5317\u4eac"
+            ]
+          },
+          "website": {
+            "type": "string",
+            "title": "Website",
+            "description": "\u4e2a\u4eba\u7f51\u7ad9\u6216 GitHub \u4e3b\u9875",
+            "default": "",
+            "examples": [
+              "https://github.com/example"
+            ]
+          },
+          "avatarUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatarurl",
+            "description": "\u4e2a\u4eba\u5934\u50cf\u8d44\u6e90\u8bbf\u95ee URL"
+          }
+        },
+        "type": "object",
+        "title": "ProfileSchema",
+        "description": "Personal contact and basic information."
+      },
+      "SectionItemSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "\u5b50\u9879\u7a33\u5b9a\u552f\u4e00\u6807\u8bc6 ID",
+            "examples": [
+              "item-exp-1"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "\u4e3b\u6807\u9898\uff08\u516c\u53f8\u3001\u5b66\u6821\u6216\u9879\u76ee\u540d\uff09",
+            "default": "",
+            "examples": [
+              "\u5b57\u8282\u8df3\u52a8"
+            ]
+          },
+          "subtitle": {
+            "type": "string",
+            "title": "Subtitle",
+            "description": "\u526f\u6807\u9898\uff08\u804c\u4f4d\u3001\u4e13\u4e1a\u6216\u89d2\u8272\uff09",
+            "default": "",
+            "examples": [
+              "\u9ad8\u7ea7\u524d\u7aef\u5de5\u7a0b\u5e08"
+            ]
+          },
+          "dateRange": {
+            "type": "string",
+            "title": "Daterange",
+            "description": "\u8d77\u6b62\u65f6\u95f4\u8de8\u5ea6",
+            "default": "",
+            "examples": [
+              "2022.06 - \u81f3\u4eca"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "title": "Location",
+            "description": "\u6240\u5728\u5730\u57ce\u5e02\u6216\u529e\u516c\u5730\u70b9",
+            "default": "",
+            "examples": [
+              "\u5317\u4eac"
+            ]
+          },
+          "description": {
+            "title": "Description",
+            "description": "\u8be6\u7ec6\u804c\u8d23\u4e0e\u4ea7\u51fa\u8bf4\u660e\uff0c\u652f\u6301 Tiptap JSON \u683c\u5f0f\u6216\u7eaf\u6587\u672c"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags",
+            "description": "\u6280\u672f\u6808\u6216\u9ad8\u4eae\u6807\u7b7e\u5217\u8868",
+            "examples": [
+              [
+                "React",
+                "TypeScript"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "SectionItemSchema",
+        "description": "An individual entry inside a repeatable experience section."
+      },
+      "SectionSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "\u6a21\u5757\u7a33\u5b9a\u552f\u4e00\u6807\u8bc6 ID",
+            "examples": [
+              "sec-experience"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "\u6a21\u5757\u7c7b\u578b\uff1asummary, experience, education, project, skill, custom",
+            "examples": [
+              "experience"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "description": "\u6a21\u5757\u5bf9\u5916\u5c55\u793a\u6807\u9898",
+            "examples": [
+              "\u5de5\u4f5c\u7ecf\u5386"
+            ]
+          },
+          "visible": {
+            "type": "boolean",
+            "title": "Visible",
+            "description": "\u6a21\u5757\u662f\u5426\u53ef\u89c1\uff08\u9690\u85cf\u4e0d\u4f1a\u5220\u9664\u6570\u636e\uff09",
+            "default": true
+          },
+          "content": {
+            "title": "Content",
+            "description": "\u76f4\u63a5\u5bcc\u6587\u672c\u6b63\u6587\uff08\u5e38\u7528\u4e8e summary \u7b80\u4ecb\u6a21\u5757\uff09"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SectionItemSchema"
+            },
+            "type": "array",
+            "title": "Items",
+            "description": "\u6a21\u5757\u5185\u7684\u91cd\u590d\u5b50\u9879\u5217\u8868"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "title"
+        ],
+        "title": "SectionSchema",
+        "description": "A CV section (e.g. summary, education, experience, skills, custom)."
+      },
+      "StyleSettingsSchema": {
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "title": "Templateid",
+            "description": "\u6392\u7248\u6a21\u677f\u6807\u8bc6\uff1astandard\uff08\u6807\u51c6\uff09\u6216 compact\uff08\u7d27\u51d1\uff09",
+            "default": "standard",
+            "examples": [
+              "standard"
+            ]
+          },
+          "fontSize": {
+            "type": "integer",
+            "maximum": 20.0,
+            "minimum": 12.0,
+            "title": "Fontsize",
+            "description": "\u6b63\u6587\u5b57\u53f7\u57fa\u7ebf\u5927\u5c0f\uff08\u50cf\u7d20 px\uff09",
+            "default": 15,
+            "examples": [
+              15
+            ]
+          },
+          "lineHeight": {
+            "type": "number",
+            "maximum": 2.0,
+            "minimum": 1.2,
+            "title": "Lineheight",
+            "description": "\u6b63\u6587\u6392\u7248\u884c\u9ad8\u6bd4\u4f8b",
+            "default": 1.5,
+            "examples": [
+              1.5
+            ]
+          },
+          "margin": {
+            "type": "integer",
+            "maximum": 48.0,
+            "minimum": 12.0,
+            "title": "Margin",
+            "description": "\u9875\u9762\u5916\u8fb9\u8ddd\u5c3a\u5bf8\uff08\u50cf\u7d20 px\uff09",
+            "default": 24,
+            "examples": [
+              24
+            ]
+          }
+        },
+        "type": "object",
+        "title": "StyleSettingsSchema",
+        "description": "Typography and layout style parameters."
+      },
+      "UpdateCVRequest": {
+        "properties": {
+          "displayName": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Displayname",
+            "description": "\u66f4\u65b0\u540e\u7684\u7b80\u5386\u540d\u79f0"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProfileSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u66f4\u65b0\u540e\u7684\u4e2a\u4eba\u4fe1\u606f"
+          },
+          "sections": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SectionSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sections",
+            "description": "\u66f4\u65b0\u540e\u7684\u5b8c\u6574\u6a21\u5757\u5217\u8868\uff08\u652f\u6301\u8c03\u6574\u6392\u5e8f\u4e0e\u53ef\u89c1\u6027\uff09"
+          },
+          "styleSettings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StyleSettingsSchema"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "\u66f4\u65b0\u540e\u7684\u6392\u7248\u6837\u5f0f\u53c2\u6570"
+          },
+          "etag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Etag",
+            "description": "\u5f53\u524d\u6301\u6709\u7684\u8d44\u6e90 ETag\u3002\u5fc5\u987b\u4e0e\u670d\u52a1\u7aef\u4e00\u81f4\uff0c\u5426\u5219\u62d2\u7edd\u5199\u5165\u5e76\u8fd4\u56de 409 ABORTED"
+          },
+          "updateMask": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatemask",
+            "description": "\u5b57\u6bb5\u63a9\u7801\u5217\u8868\uff0c\u9017\u53f7\u5206\u9694\uff0c\u4f8b\u5982\uff1adisplayName,profile,sections"
+          }
+        },
+        "type": "object",
+        "title": "UpdateCVRequest",
+        "description": "Request payload for updating an existing CV."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "cvs",
+      "description": "CV \u4e2a\u4eba\u7b80\u5386\u6838\u5fc3\u8d44\u6e90\u7ba1\u7406\u63a5\u53e3\uff08\u521b\u5efa\u3001\u5217\u8868\u3001\u8be6\u60c5\u3001\u6761\u4ef6\u5c40\u90e8\u66f4\u65b0\u3001\u5220\u9664\u3001\u5934\u50cf\u4e0a\u4f20\u7b49\uff09\u3002\u9075\u5faa Google AIP-121 \u4e0e AIP-154 \u89c4\u8303\u3002"
+    },
+    {
+      "name": "system",
+      "description": "\u7cfb\u7edf\u5065\u5eb7\u68c0\u67e5\u4e0e\u63a2\u9488\u63a5\u53e3\u3002"
+    }
+  ]
+}

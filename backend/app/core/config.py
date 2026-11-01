@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     """Application settings loaded from environment or defaults."""
 
     app_name: str = "CVory API"
-    api_v1_str: str = "/api/v1"
+    api_prefix: str = "/api"
     
     # Database
     database_url: str = "mysql+pymysql://root:123456@127.0.0.1:3306/cvory?charset=utf8mb4"

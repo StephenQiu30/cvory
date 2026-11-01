@@ -72,18 +72,9 @@ export interface ListCVsResponse {
   totalSize: number;
 }
 
-export interface GoogleApiError {
-  code: number;
-  message: string;
-  status: "INVALID_ARGUMENT" | "UNAUTHENTICATED" | "PERMISSION_DENIED" | "NOT_FOUND" | "ABORTED" | "INTERNAL";
-  details?: Array<{
-    "@type": string;
-    fieldViolations?: Array<{ field: string; description: string }>;
-    reason?: string;
-    domain?: string;
-    [key: string]: any;
-  }>;
-}
+import type { GoogleApiError } from "./request";
+
+export type { GoogleApiError };
 
 export interface ApiErrorResponse {
   error: GoogleApiError;

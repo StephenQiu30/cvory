@@ -22,12 +22,13 @@ router = APIRouter(prefix="/cvs", tags=["cvs"])
 @router.get(
     "",
     response_model=ListCVsResponse,
-    summary="List CVs",
+    summary="获取简历列表",
+    description="以分页形式列举当前所有者名下的全部简历文档。遵循 Google AIP-158 分页标准，返回当前页项目和下一页游标 nextPageToken。",
     operation_id="listCvs",
 )
 def list_cvs(
-    page_size: int = Query(50, alias="pageSize", ge=1, le=100),
-    page_token: Optional[str] = Query(None, alias="pageToken"),
+    page_size: int = Query(50, alias="pageSize", ge=1, le=100, description="单页最大返回数量（1-100）"),
+    page_token: Optional[str] = Query(None, alias="pageToken", description="分页标记游标，上一页返回的 nextPageToken"),
     db: Session = Depends(get_db),
     _owner: str = Depends(get_current_owner),
 ) -> ListCVsResponse:
@@ -48,7 +49,8 @@ def list_cvs(
     "",
     response_model=CVResource,
     status_code=status.HTTP_201_CREATED,
-    summary="Create a new CV",
+    summary="新建一份个人简历",
+    description="创建一个独立可编辑的简历资源。服务端会自动生成唯一 UUID、初始化基础结构，并生成初始 ETag。",
     operation_id="createCv",
 )
 def create_cv(
@@ -63,7 +65,8 @@ def create_cv(
 @router.get(
     "/{cv_id}",
     response_model=CVResource,
-    summary="Get a CV by ID",
+    summary="获取单个简历详情",
+    description="根据简历 UUID 获取完整的内容、模块数据及当前版本 ETag。",
     operation_id="getCv",
 )
 def get_cv(
@@ -78,13 +81,19 @@ def get_cv(
 @router.patch(
     "/{cv_id}",
     response_model=CVResource,
-    summary="Update a CV conditionally",
+    summary="条件局部更新简历内容",
+    description="""
+更新指定简历的内容。遵循 Google AIP-154 并发校验规则：
+* 必须在请求头 `If-Match` 或请求体内 `etag` 携带修改前持有的版本 ETag。
+* 若远端已更新导致 ETag 不一致，服务返回 `409 ABORTED`，保护用户数据不被静默覆盖。
+* 支持 `updateMask` 字段掩码按需更新特定字段（如 `displayName,profile,sections`）。
+""",
     operation_id="updateCv",
 )
 def update_cv(
     cv_id: str,
     req: UpdateCVRequest,
-    if_match: Optional[str] = Header(None, alias="If-Match"),
+    if_match: Optional[str] = Header(None, alias="If-Match", description="修改前持有的 ETag 特征值（支持双引号包裹）"),
     db: Session = Depends(get_db),
     _owner: str = Depends(get_current_owner),
 ) -> CVResource:
@@ -100,12 +109,13 @@ def update_cv(
 @router.delete(
     "/{cv_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete a CV",
+    summary="删除指定简历",
+    description="永久移除指定简历及其关联的私有头像资源。支持可选的 `If-Match` 请求头保证并发删除安全。",
     operation_id="deleteCv",
 )
 def delete_cv(
     cv_id: str,
-    if_match: Optional[str] = Header(None, alias="If-Match"),
+    if_match: Optional[str] = Header(None, alias="If-Match", description="持有的 ETag 特征值"),
     db: Session = Depends(get_db),
     _owner: str = Depends(get_current_owner),
 ) -> Response:
@@ -117,12 +127,13 @@ def delete_cv(
 @router.post(
     "/{cv_id}/avatar",
     response_model=CVResource,
-    summary="Upload an avatar for a CV",
+    summary="上传并绑定简历头像",
+    description="为简历上传个人照片。图片将转存到服务持久目录，更新简历资料中的 `avatarUrl` 并刷新 ETag。",
     operation_id="uploadCvAvatar",
 )
 def upload_avatar(
     cv_id: str,
-    file: UploadFile = File(...),
+    file: UploadFile = File(..., description="头像图片文件（支持 PNG、JPEG、WEBP 格式）"),
     db: Session = Depends(get_db),
     _owner: str = Depends(get_current_owner),
 ) -> CVResource:
@@ -132,7 +143,8 @@ def upload_avatar(
 
 @router.get(
     "/{cv_id}/avatar",
-    summary="Retrieve CV avatar image",
+    summary="读取简历头像图片",
+    description="获取指定简历上传保存的头像原始图片文件。",
     operation_id="getCvAvatar",
 )
 def get_avatar(

@@ -351,7 +351,7 @@ class CVService:
 
         # Update profile avatarUrl
         profile = dict(model.profile or {})
-        profile["avatar_url"] = f"{settings.api_v1_str}/cvs/{cv_id}/avatar"
+        profile["avatar_url"] = f"{settings.api_prefix}/cvs/{cv_id}/avatar"
         model.profile = profile
 
         now = datetime.now(timezone.utc)

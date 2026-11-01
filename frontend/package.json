@@ -6,13 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "openapi": "openapi2ts",
+    "openapi2ts": "openapi2ts"
   },
   "dependencies": {
     "@tiptap/extension-link": "^3.32.2",
     "@tiptap/pm": "^3.32.2",
     "@tiptap/react": "^3.32.2",
     "@tiptap/starter-kit": "^3.32.2",
+    "axios": "^1.21.0",
     "clsx": "^2.1.1",
     "lucide-react": "^1.66.0",
     "next": "16.4.3",
@@ -28,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@umijs/openapi": "^1.14.1",
     "eslint": "^9",
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",

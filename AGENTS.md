@@ -4,7 +4,7 @@
 
 ## 开始工作
 
-1. 阅读 [README](README.md)、[PROJECT](PROJECT.md)、[HANDOVER](HANDOVER.md) 和 [BACKLOG](BACKLOG.md)，涉及界面时阅读 [DESIGN](DESIGN.md)。`CONTRIBUTING.md` 尚未建立；建立后再纳入阅读。
+1. 阅读 [README](README.md)、[PROJECT](PROJECT.md)、[HANDOVER](HANDOVER.md)、[BACKLOG](BACKLOG.md) 与 [CONTRIBUTING](CONTRIBUTING.md)，涉及界面时阅读 [DESIGN](DESIGN.md)。
 2. 检查工作区状态，保留已有修改，不覆盖或回退无关内容。
 3. 业务任务按这个顺序找依据：
    - 最新明确确认；
@@ -50,6 +50,6 @@
 ## Git 与交付
 
 - **需要授权**：未被要求时，不提交、不推送、不发布，也不重写历史。
-- **提交标题**：`CONTRIBUTING.md` 建立前，不自定一套提交格式。
+- **提交标题**：遵循 [CONTRIBUTING](CONTRIBUTING.md) 的 `type(scope): description` 规范。
 - **远端检查**：仓库尚未接入远端 CI。接入之后，获授权推送必须核对这次提交的必需检查。本地检查通过不能代替远端成功。
 - **完成说明**：列出结果、验证情况和未完成事项。

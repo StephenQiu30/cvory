@@ -50,7 +50,7 @@ def test_health_check(client):
 
 
 def test_list_cvs_empty(client):
-    response = client.get("/api/v1/cvs")
+    response = client.get("/api/cvs")
     assert response.status_code == 200
     data = response.json()
     assert "cvs" in data
@@ -62,7 +62,7 @@ def test_create_and_get_cv(client):
     create_payload = {
         "displayName": "我的前端工程师简历",
     }
-    response = client.post("/api/v1/cvs", json=create_payload)
+    response = client.post("/api/cvs", json=create_payload)
     assert response.status_code == 201
     created = response.json()
 
@@ -75,7 +75,7 @@ def test_create_and_get_cv(client):
     assert len(created["sections"]) > 0
 
     cv_id = created["id"]
-    get_res = client.get(f"/api/v1/cvs/{cv_id}")
+    get_res = client.get(f"/api/cvs/{cv_id}")
     assert get_res.status_code == 200
     fetched = get_res.json()
     assert fetched["id"] == cv_id
@@ -84,7 +84,7 @@ def test_create_and_get_cv(client):
 
 def test_update_cv_with_etag_concurrency(client):
     # 1. Create CV
-    res = client.post("/api/v1/cvs", json={"displayName": "初版简历"})
+    res = client.post("/api/cvs", json={"displayName": "初版简历"})
     assert res.status_code == 201
     cv = res.json()
     cv_id = cv["id"]
@@ -92,7 +92,7 @@ def test_update_cv_with_etag_concurrency(client):
 
     # 2. Update without ETag -> should fail with 400 INVALID_ARGUMENT
     fail_no_etag = client.patch(
-        f"/api/v1/cvs/{cv_id}",
+        f"/api/cvs/{cv_id}",
         json={"displayName": "尝试无 ETag 修改"},
     )
     assert fail_no_etag.status_code == 400
@@ -101,7 +101,7 @@ def test_update_cv_with_etag_concurrency(client):
 
     # 3. Update with wrong ETag -> should fail with 409 ABORTED (concurrency conflict)
     fail_wrong_etag = client.patch(
-        f"/api/v1/cvs/{cv_id}",
+        f"/api/cvs/{cv_id}",
         json={"displayName": "尝试冲突修改", "etag": "wrong-hash-123"},
     )
     assert fail_wrong_etag.status_code == 409
@@ -110,7 +110,7 @@ def test_update_cv_with_etag_concurrency(client):
 
     # 4. Update with correct ETag -> should succeed and yield a new ETag
     update_res = client.patch(
-        f"/api/v1/cvs/{cv_id}",
+        f"/api/cvs/{cv_id}",
         json={
             "displayName": "更新后的简历",
             "etag": initial_etag,
@@ -132,7 +132,7 @@ def test_update_cv_with_etag_concurrency(client):
 
     # 5. Try updating again with the OLD initial_etag -> should fail with 409 ABORTED
     stale_update = client.patch(
-        f"/api/v1/cvs/{cv_id}",
+        f"/api/cvs/{cv_id}",
         json={"displayName": "旧标签再次修改", "etag": initial_etag},
     )
     assert stale_update.status_code == 409
@@ -140,7 +140,7 @@ def test_update_cv_with_etag_concurrency(client):
 
 def test_validation_error_shape(client):
     # Empty displayName should fail min_length=1 validation
-    res = client.post("/api/v1/cvs", json={"displayName": ""})
+    res = client.post("/api/cvs", json={"displayName": ""})
     assert res.status_code == 400
     err = res.json()
     assert err["error"]["status"] == "INVALID_ARGUMENT"
@@ -150,15 +150,15 @@ def test_validation_error_shape(client):
 
 
 def test_delete_cv(client):
-    res = client.post("/api/v1/cvs", json={"displayName": "待删除简历"})
+    res = client.post("/api/cvs", json={"displayName": "待删除简历"})
     cv = res.json()
     cv_id = cv["id"]
 
-    del_res = client.delete(f"/api/v1/cvs/{cv_id}")
+    del_res = client.delete(f"/api/cvs/{cv_id}")
     assert del_res.status_code == 204
 
     # Now get should return 404
-    get_res = client.get(f"/api/v1/cvs/{cv_id}")
+    get_res = client.get(f"/api/cvs/{cv_id}")
     assert get_res.status_code == 404
     err = get_res.json()
     assert err["error"]["status"] == "NOT_FOUND"

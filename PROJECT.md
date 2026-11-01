@@ -48,12 +48,12 @@ Python 代码遵循 [Google Python Style Guide](https://google.github.io/stylegu
 | 范围 | 本项目约定 |
 | --- | --- |
 | 资源与命名 | 以 CV、样式预设、当前公开结果为资源。稳定资源名如 name: cvs/{id}，用户标题用 displayName；Python 内部 snake_case，JSON 字段通过 Pydantic 别名使用 lowerCamelCase |
-| 路径与操作 | 对外前缀 /api/v1，资源用复数名词；读取 GET、创建 POST、局部更新 PATCH、删除 DELETE。标准方法无法表达的动作才用自定义方法，如 POST /api/v1/cvs/{id}:copy；保存不触发发布 |
+| 路径与操作 | 对外前缀 /api，资源用复数名词；读取 GET、创建 POST、局部更新 PATCH、删除 DELETE。标准方法无法表达的动作才用自定义方法，如 POST /api/cvs/{id}:copy；保存不触发发布 |
 | 更新与并发 | PATCH 使用 updateMask 指定更新字段，明确空值与清空语义；正文 JSON 可作为整体字段替换，不要求逐节点路径。已有 CV 的更新和删除携带服务端输出的 etag，条件写入不匹配返回 HTTP 409 / ABORTED，缺少必需 etag 返回 400 / INVALID_ARGUMENT；保持本地输入供处理 |
 | 列表与时间 | 列表从起点支持 pageSize/pageToken 和 nextPageToken，token 不承载授权；不因此增加复杂筛选 UI。createTime/updateTime 由服务端产生，RFC 3339/UTC 表达 |
 | 成功与错误 | 成功直接返回声明的资源/列表或文件，不套统一成功码。错误按 Google HTTP/JSON 形式返回 error 对象，含 code、message、status、details，HTTP 状态真实；请求校验统一为 400 / INVALID_ARGUMENT，不保留 FastAPI 默认 422 错误形状 |
 | 可处理错误 | 未登录 401 / UNAUTHENTICATED、无权限 403 / PERMISSION_DENIED、不存在 404 / NOT_FOUND；details 包含 ErrorInfo 提供稳定 reason/domain，字段校验使用 BadRequest.fieldViolations。message 面向开发者使用英文，中文界面按稳定原因给出操作提示，不解析英文文案，也不向客户端暴露堆栈或私有资料 |
-| 接口契约 | Pydantic 请求/响应模型和 FastAPI OpenAPI 是 API 唯一来源，声明稳定 operationId、状态码及错误模型。建议 openapi-typescript 从 OpenAPI 生成 TypeScript 类型，配合原生 fetch；不手写第二份接口类型或仅靠 Zod 断言响应可信 |
+| 接口契约 | Pydantic 请求/响应模型和 FastAPI OpenAPI 是 API 唯一来源，声明稳定 operationId、状态码及错误模型。前端基于 OpenAPI 与 axios + @umijs/openapi 生成 TypeScript 接口与类型定义；不手写第二份接口类型或仅靠 Zod 断言响应可信 |
 
 文件上传和二进制下载声明内容类型及失败响应；不把 PDF 或备份强制包装成 JSON。实现时验证成功、未登录、非法输入和并发冲突的实际响应；接口变更同步 OpenAPI、生成类型和调用方，不维护第二份手写 API 合同。采用 REST/JSON，不为套用指南增加 gRPC 或 Protobuf 服务。
 
@@ -117,13 +117,18 @@ CV/
   - 本地环境依赖：Python 3.12+、MySQL 8.4/9.x（数据库 `cvory`，utf8mb4）
 - **前端 (`frontend/`)**
   - 依赖安装：`cd frontend && pnpm install`
+  - OpenAPI 客户端生成：`cd frontend && pnpm run openapi`（基于后端 Swagger/OpenAPI 生成类型与服务）
   - 类型检查与生产构建：`cd frontend && pnpm build`
   - 启动开发服务：`cd frontend && pnpm dev`（默认端口 3000）
   - 代码规范检查：`cd frontend && pnpm lint`
+- **容器化编排 (`docker-compose.yml`)**
+  - 校验与启动：`docker compose up -d`（服务前后端，复用宿主机已运行的 MySQL）
+  - 查看日志与状态：`docker compose logs -f`、`docker compose ps`
+  - 停止服务：`docker compose down`
 - **文档检查**：相对链接、锚点、大小写、编号、来源关系、业务覆盖与事实；纯文档变更使用 `git diff --check`。
 
 ## 9. 当前边界
 
 PLAN-CV-01（CV 制作与保存）已编码并完成集成验证。后续能力（版本管理、模板样式、简历导入、备份导出、PDF 导出、公开展示）待后续依序实施，保持 MVP 边界清晰，不提前扩展其他未确认功能。
 
-未要求时不提交、推送或发布。仓库尚未接入 CI；后续获授权推送须单独核对远端必需检查，不以本地结果代替。CONTRIBUTING 尚未建立，不自定提交标题规范。
+未要求时不提交、推送或发布。仓库尚未接入 CI；后续获授权推送须单独核对远端必需检查，不以本地结果代替。代码提交标题严格遵循 [CONTRIBUTING](CONTRIBUTING.md) 的 `type(scope): description` 规范。
