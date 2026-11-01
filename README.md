@@ -1,5 +1,7 @@
 # 简序 · CVory
 
+[GitHub 公开仓库](https://github.com/StephenQiu30/cvory)，默认分支 `main`。
+
 文档入口：[docs/00-文档导航.md](docs/00-文档导航.md)。
 
 根规范：[PROJECT](PROJECT.md)、[AGENTS](AGENTS.md)、[DESIGN](DESIGN.md)、[BACKLOG](BACKLOG.md)、[HANDOVER](HANDOVER.md)。

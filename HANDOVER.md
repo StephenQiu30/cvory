@@ -2,20 +2,20 @@
 
 本文件只保留最近一次阶段记录。任务状态见 [BACKLOG](BACKLOG.md)。
 
-## 简序 · CVory 品牌与前端规范
+## GitHub 公开仓库与 main 首次入库
 
-日期：2026-11-01（Asia/Shanghai）。负责人选择「简序 · CVory」和 B 方案图形，要求黑白灰、Geist 及前端设计规范，并请求技术推荐。[来源 07](docs/requirement/07-简序命名视觉与技术选型补充.md)保留原文，来源 01～03、05～06 不改动。
+日期：2026-11-01（Asia/Shanghai）。负责人明确授权创建公开 GitHub 仓库，将项目提交到 main 并推送。
+
+仓库：[StephenQiu30/cvory](https://github.com/StephenQiu30/cvory)，公开，默认分支 main。首次入库提交：`d3e89cf216377d0a907358667bd5eac454afde8b`。该提交已经推送，并通过 git ls-remote 核对远端 main；当前文件与 PROJECT、README、BACKLOG 补充仓库和基线说明，交付提交以 git log 为准。
 
 交付：
 
-- [DESIGN](DESIGN.md)是视觉与交互的唯一入口：黑白灰语义颜色、Geist 与中文搭配、字号、空间、组件状态、键盘焦点、窄屏编辑、导入校对及保存反馈。具体色值、尺寸、中文字体为建议基线，未冒充负责人逐项确认。
-- 使用内置 image_gen 以已选 B 图形生成[黑白 Logo 概念](docs/assets/branding/CVory-黑白Logo概念.png)，[完整编辑提示词](docs/assets/branding/CVory-黑白Logo生成说明.json)可复核。原候选图保留，选择状态已登记；PNG 不等于 SVG，图中字形不证明已使用真实 Geist 文件。
-- [统一需求第 10 节](docs/requirement/04-个人CV制作与管理需求说明.md#10-技术选型建议)集中推荐 Next.js 单应用、Tailwind/shadcn、Tiptap、Drizzle 与 Chromium 打印；比较持久磁盘 SQLite 与 Vercel 远端数据库，部署尚未选定。
-- 富文本建议以 JSON 直接渲染预览、公开页与打印内容，Markdown 保留为同一内容的输入/交换语法，避免展示强制经历往返转换。DOCX/PDF 导入解析与人工校对分别处理。
-- README、PROJECT、AGENTS、文档管理设计及导航同步。目录名保持 CV，技术包名未选定。不建立产品 PRD、Plan 或应用代码。
+- 初始化本地 Git 与 main，配置 origin；首次入库 44 个文件，覆盖需求、根规范、研究证据、模板、通用 Obsidian 配置与 Logo 素材。没有新增应用代码或工程依赖。
+- 根目录 .gitignore 排除个人 .obsidian 配置、系统杂项及本地环境/凭据文件；保留 docs 中经过核对的通用 vault 配置。个人配置留在本机，未删除。
+- 来源 01～03、05～07 的首次提交基线登记在 [PROJECT](PROJECT.md#35-文档工作区)；6 份原始来源的 SHA-256 与操作前一致，原文、文件名和编号未改。
+- 发布内容扫描未发现匹配的密钥、邮箱或手机号；Git 提交作者使用本机已配置身份，未修改 Git 全局身份或配置许可证。
+- README、PROJECT 与 BACKLOG 同步仓库地址、main 和 CI 现状；品牌及需求内容不改写。
 
-证据：通过 Vercel 插件、Context7 与官方文档核对 Geist、Next.js、Tiptap 和 shadcn；参考 Geist 色彩与排版，并非逐项复制其变量。Vercel 插件对 SQLite 检索主要返回 Sandbox 内容，不用它证明 Functions 持久化；SQLite 约束由官方知识库搜索结果核对。该知识库页面直接读取失败，搜索摘要可用。来源集中在 DESIGN 及需求第 10 节。
+验证：首次提交前 26 份 Markdown、203 个仓库相对链接、28 个锚点及路径大小写检查通过；JSON 可解析，git diff --cached --check 通过。公开可见性与默认分支由 GitHub API 核对。GitHub Actions 运行列表为空，仓库没有工作流，不记为 CI 通过。元数据提交与最终本地/远端 SHA 一致性由交付时再次核对。
 
-验证：26 份 Markdown、203 个仓库相对链接及路径大小写、28 个锚点、14 份 JSON 检查通过；需求编号 00～07 与统一说明第 1～11 章连续。5 份既有原始来源 SHA-256 与修改前一致；其中原有 2 处仓库外技能路径按来源保护保留，不作为仓库相对链接。黑白 PNG 可读，尺寸 1536 × 1024。静态色值计算：正文黑/白 17.93:1，次要文字/浅灰 5.27:1，控件边界/近白 3.31:1；这些结果不代替真实页面验收。
-
-没有工程运行、真实页面或字体/PDF 验收。Logo 矢量精修、真实 Geist 字标、小尺寸图标及工程技术选择尚未完成。未初始化 Git，无提交、推送或部署；个人 Obsidian 布局未改动。
+边界：当前是文档与素材基线，没有可运行应用，未进行应用测试、构建或部署。Logo 矢量精修、技术选型及工程实现仍按 [BACKLOG](BACKLOG.md)维护。没有强制推送或历史改写。

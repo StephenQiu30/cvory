@@ -33,6 +33,7 @@
 | 项 | 值 |
 | --- | --- |
 | 仓库目录名 | `CV` |
+| GitHub 仓库 | [StephenQiu30/cvory](https://github.com/StephenQiu30/cvory)，公开仓库，默认分支 `main` |
 | 产品展示名 | 简序 · CVory；B 方案图形，见[来源 07](docs/requirement/07-简序命名视觉与技术选型补充.md) |
 | 技术标识、包名、模块名 | 待定 |
 
@@ -55,7 +56,7 @@
 - `docs` 不存放 README。服务运行说明将来留在各工程 README。根入口为 [docs/00-文档导航.md](docs/00-文档导航.md)。编号规则见 [AGENTS](AGENTS.md#文档规则)。
 - 文档按 `design → prd → plan` 分层。一份 design 对应一份 PRD，一份 PRD 可对应多份 Plan。各目录独立连续编号。父子关系以显式链接为准，不能只靠文件号推断。技术合同只在 design。调度状态只在 BACKLOG。
 - 当前需求整理阶段只维护[一份需求说明](docs/requirement/04-个人CV制作与管理需求说明.md)，放在 requirement 并标明“整理稿，可编辑”；来源 01～03、05～07 冻结。说明不等同于 PRD，技术章节只列建议；重复产品设计、PRD 及宽泛调研草稿清理，不并行维护。制作、导入导出、管理和展示均纳入需求，暂不进入 PRD 或 Plan。根目录 DESIGN 维护视觉规范，不代替功能说明。
-- `docs/requirement` 保留原始需求。正文、文件名、原编号和业务 ID 入库后不因整理或重编号改写。现有来源见[需求导航](docs/requirement/00-需求导航.md)；目录尚未初始化 Git，无法登记提交基线。临时内容摘要见 [HANDOVER](HANDOVER.md)，获得提交授权并首次入库后，在本节补记对应 Git 提交。
+- `docs/requirement` 保留原始需求。正文、文件名、原编号和业务 ID 入库后不因整理或重编号改写。现有来源见[需求导航](docs/requirement/00-需求导航.md)；来源 01～03、05～07 的首次入库基线为 Git 提交 `d3e89cf216377d0a907358667bd5eac454afde8b`。来源 04 为可编辑整理稿，不按冻结来源处理；后续新增原始来源在本节登记对应首次入库提交。阶段摘要见 [HANDOVER](HANDOVER.md)。
 - Obsidian 使用相对 Markdown 链接、核心搜索、反向链接、图谱、提纲、模板和 Workspaces，无社区插件。通用配置入 Git。个人布局、缓存和回收站不入 Git。自动链接更新关闭。
 - `docs` 只保留正文、模板、附件和 Obsidian 配置，不保留脚本、测试、依赖、锁文件或生成目录。维护规则见[文档管理设计](docs/design/01-文档管理与Obsidian设计.md)。
 
@@ -76,4 +77,4 @@ Obsidian 客户端里的打开、布局和图谱另作验收。配置文件可�
 | 编码规范基线 | 待定。不借用其他仓库的语言规范 |
 | 视觉标准 [DESIGN.md](DESIGN.md) | 品牌、黑白灰与 Geist 方向已确认；具体参数和中文字体为建议基线，未进行页面验收 |
 | 提交规范 `CONTRIBUTING.md` | 未建立 |
-| 远端仓库与 CI | 未接入 |
+| 远端仓库与 CI | GitHub 公开仓库 `StephenQiu30/cvory`，默认分支 `main`；CI 未接入 |

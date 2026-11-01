@@ -7,6 +7,7 @@
 
 - [x] **BRAND-SELECT 产品命名与 Logo 选择**｜负责人选择简序 · CVory 和 B 图形，视觉使用黑白灰与 Geist；[来源 07](docs/requirement/07-简序命名视觉与技术选型补充.md)、[黑白 Logo 概念](docs/assets/branding/CVory-黑白Logo概念.png)。
 - [x] **DESIGN-BASE 前端规范与技术建议**｜[DESIGN](DESIGN.md)建立颜色、字体、组件、响应式与编辑状态建议基线；技术候选统一在[需求第 10 节](docs/requirement/04-个人CV制作与管理需求说明.md#10-技术选型建议)，文档完成不代表实现或验收。
+- [x] **GIT-INIT 公开仓库与首次推送**｜[StephenQiu30/cvory](https://github.com/StephenQiu30/cvory) 已建立，默认分支 `main`；需求、规范、研究证据及品牌素材首次入库并推送，原始来源基线登记在 PROJECT；个人 Obsidian 工作区配置不入库，CI 未配置。
 - [ ] **TECH-SELECT 技术建议评审**｜部署、存储、中文字体、导入与 PDF 运行路径待选择和验证，尚未建立工程合同。
 
 当前不安排产品 PRD、实施计划、编码或部署。待定细节只在统一说明第 9 节维护，不在本文件另写一套产品规则。
