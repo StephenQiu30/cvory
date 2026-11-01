@@ -1,0 +1,948 @@
+{
+  "files": [
+    {
+      "file": "p__cvMaker.5d3c3daf.async.js",
+      "url": "https://www.laoyujianli.com/p__cvMaker.5d3c3daf.async.js",
+      "bytes": 390428,
+      "sha256": "cc8f71237f010abdc4825bffd8f7c796890bc5a84319916161c27fc0a5257740",
+      "acquisition": "ordinary HTTPS GET",
+      "executed": false
+    },
+    {
+      "file": "p__cvMdMaker.2f2bfd5b.async.js",
+      "url": "https://www.laoyujianli.com/p__cvMdMaker.2f2bfd5b.async.js",
+      "bytes": 109151,
+      "sha256": "7b893476d66bf1ee13893a6519b22853a94973fef956c47e56bee398f21ae338",
+      "acquisition": "ordinary HTTPS GET",
+      "executed": false
+    },
+    {
+      "file": "p__myResume.3824109a.async.js",
+      "url": "https://www.laoyujianli.com/p__myResume.3824109a.async.js",
+      "bytes": 33125,
+      "sha256": "6105106d160dc8969767b08b81ec2c87c45d2fec4c052c5f219200a490744be2",
+      "acquisition": "ordinary HTTPS GET",
+      "executed": false
+    },
+    {
+      "file": "p__styleMaker.ae3e38c6.async.js",
+      "url": "https://www.laoyujianli.com/p__styleMaker.ae3e38c6.async.js",
+      "bytes": 176219,
+      "sha256": "1220cc4e7c7407914e3371c5a19c964242240e49cf3cb0d4ed10d18fb7def312",
+      "acquisition": "ordinary HTTPS GET",
+      "executed": false
+    },
+    {
+      "file": "umi.eb7fa8cf.js",
+      "url": "https://www.laoyujianli.com/umi.eb7fa8cf.js",
+      "bytes": 1677374,
+      "sha256": "ad1bb741202e040ef730439df0f2b93e1d4804f9dde4d1d2ca8e2f5c83366d87",
+      "acquisition": "ordinary HTTPS GET",
+      "executed": false
+    }
+  ],
+  "sourceLocations": [
+    {
+      "file": "p__myResume.3824109a.async.js",
+      "sourceByteStart": 5640,
+      "sourceByteEndExclusive": 5785,
+      "excerpt": "a(96128),aa=a(94217),fe=a(50403),ta=a(12091),Fe=a(29731),Ma=a(935),Fa=a(42216),Ge=a(73171),Oa=a(33182),Ra=a(99165),na=a(90631),Ta=a(8212),Ba=a(24",
+      "decodedUnicodeForReading": "a(96128),aa=a(94217),fe=a(50403),ta=a(12091),Fe=a(29731),Ma=a(935),Fa=a(42216),Ge=a(73171),Oa=a(33182),Ra=a(99165),na=a(90631),Ta=a(8212),Ba=a(24",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "p__myResume.3824109a.async.js",
+      "sourceByteStart": 10752,
+      "sourceByteEndExclusive": 10952,
+      "excerpt": "n=(0,C.Z)(function*(){try{var s=yield(0,Fe.A4)({id:t.id});s.data&&(F.ZP.success(\"\\u65B0\\u5EFA\\u7B80\\u5386\\u6210\\u529F\"),yield G())}catch(v){(0,q.sP)(\"\\u590D\\u5236\\u5931\\u8D25\\uFF0C\",v)}});return funct",
+      "decodedUnicodeForReading": "n=(0,C.Z)(function*(){try{var s=yield(0,Fe.A4)({id:t.id});s.data&&(F.ZP.success(\"新建简历成功\"),yield G())}catch(v){(0,q.sP)(\"复制失败，\",v)}});return funct",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "umi.eb7fa8cf.js",
+      "sourceByteStart": 280887,
+      "sourceByteEndExclusive": 281017,
+      "excerpt": "{return f},F4:function(){return l},A4:function(){return v},jK:function(){return g},cf:function(){return w},aj:function(){return _}",
+      "decodedUnicodeForReading": "{return f},F4:function(){return l},A4:function(){return v},jK:function(){return g},cf:function(){return w},aj:function(){return _}",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "umi.eb7fa8cf.js",
+      "sourceByteStart": 282190,
+      "sourceByteEndExclusive": 282480,
+      "excerpt": "eturn h.apply(this,arguments)}function h(){return h=(0,t.Z)(function*(Y,q){return(0,a.WY)(\"/api/resume/copy\",(0,n.Z)({method:\"POST\",headers:{\"Content-Type\":\"application/json\"},data:Y},q||{}))}),h.apply(this,arguments)}function g(Y,q){return A.apply(this,arguments)}function A(){return A=(0,",
+      "decodedUnicodeForReading": "eturn h.apply(this,arguments)}function h(){return h=(0,t.Z)(function*(Y,q){return(0,a.WY)(\"/api/resume/copy\",(0,n.Z)({method:\"POST\",headers:{\"Content-Type\":\"application/json\"},data:Y},q||{}))}),h.apply(this,arguments)}function g(Y,q){return A.apply(this,arguments)}function A(){return A=(0,",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "umi.eb7fa8cf.js",
+      "sourceByteStart": 255305,
+      "sourceByteEndExclusive": 255635,
+      "excerpt": "=1;var Cr=V(zn,pn!=null?pn:Jt.current);We(Cr),Cr.length>0?Pe(\"invalid\"):zn!==Un?(Pe(\"pending\"),Xe(),Tt.current=setTimeout(()=>{Tt.current=null,It()},3e3)):Pe(\"saved\")}catch(Ar){if(Fn())return;(0,G.sP)(\"\\u83B7\\u53D6\\u5931\\u8D25\\uFF0C\",Ar),Ar.message===f.hk&&Ke(!0)}});return function(pn,Mn){return fn.apply(this,arguments)}}(),It=f",
+      "decodedUnicodeForReading": "=1;var Cr=V(zn,pn!=null?pn:Jt.current);We(Cr),Cr.length>0?Pe(\"invalid\"):zn!==Un?(Pe(\"pending\"),Xe(),Tt.current=setTimeout(()=>{Tt.current=null,It()},3e3)):Pe(\"saved\")}catch(Ar){if(Fn())return;(0,G.sP)(\"获取失败，\",Ar),Ar.message===f.hk&&Ke(!0)}});return function(pn,Mn){return fn.apply(this,arguments)}}(),It=f",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "umi.eb7fa8cf.js",
+      "sourceByteStart": 258300,
+      "sourceByteEndExclusive": 258690,
+      "excerpt": "}};return{resumeInfo:he,mdContent:ye,resumeCssConfig:ie,toolConfig:Ie,schema:nt,errors:qe,saveState:Le,contentVersion:vt,getMdResume:Lt,getSchema:pt,getResumeToolConfig:bt,updateMdContent:Xt,updateResumeCssConfig:un,doSave:It,saveNow:Dt,renameMdResume:Gt,patchResumeInfo:mn,flushOnUnmount:Dn}},Ue=ge},90754:function(x,E,e){\"use strict\";e.d(E,{aL:function(){return a},OT:function(){return f}",
+      "decodedUnicodeForReading": "}};return{resumeInfo:he,mdContent:ye,resumeCssConfig:ie,toolConfig:Ie,schema:nt,errors:qe,saveState:Le,contentVersion:vt,getMdResume:Lt,getSchema:pt,getResumeToolConfig:bt,updateMdContent:Xt,updateResumeCssConfig:un,doSave:It,saveNow:Dt,renameMdResume:Gt,patchResumeInfo:mn,flushOnUnmount:Dn}},Ue=ge},90754:function(x,E,e){\"use strict\";e.d(E,{aL:function(){return a},OT:function(){return f}",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "p__cvMdMaker.2f2bfd5b.async.js",
+      "sourceByteStart": 34982,
+      "sourceByteEndExclusive": 35282,
+      "excerpt": "qa={saved:\"\\u5DF2\\u4FDD\\u5B58\",pending:\"\\u4FDD\\u5B58\\u4E2D\\u2026\",saving:\"\\u4FDD\\u5B58\\u4E2D\\u2026\",invalid:\"\\u6709\\u8BED\\u6CD5\\u9519\\u8BEF\\uFF0C\\u672A\\u4FDD\\u5B58\",failed:\"\\u4FDD\\u5B58\\u5931\\u8D25\\uFF0C\\u70B9\\u51FB\\u91CD\\u8BD5\"},el=e=>{var r=e.onJumpToError,t=e.shareOpen,n=e.setShareOpen,i=(0,je.tT",
+      "decodedUnicodeForReading": "qa={saved:\"已保存\",pending:\"保存中…\",saving:\"保存中…\",invalid:\"有语法错误，未保存\",failed:\"保存失败，点击重试\"},el=e=>{var r=e.onJumpToError,t=e.shareOpen,n=e.setShareOpen,i=(0,je.tT",
+      "method": "bounded source inspection, not runtime observation"
+    },
+    {
+      "file": "p__cvMaker.5d3c3daf.async.js",
+      "sourceByteStart": 350122,
+      "sourceByteEndExclusive": 350302,
+      "excerpt": "all\",value:Zt,className:\"ti-select\",disabled:!!Re,onChange:Qo=>Et(\"fontFamily\",Qo),options:[{label:\"\\u601D\\u6E90\\u9ED1\\u4F53\",value:'\"Noto Sans SC\", sans-serif'},{label:\"\\u9ED1\\u4F",
+      "decodedUnicodeForReading": "all\",value:Zt,className:\"ti-select\",disabled:!!Re,onChange:Qo=>Et(\"fontFamily\",Qo),options:[{label:\"思源黑体\",value:'\"Noto Sans SC\", sans-serif'},{label:\"黑\\u4F",
+      "method": "bounded source inspection, not runtime observation"
+    }
+  ],
+  "derivedModules": [
+    {
+      "file": "extracted-resume-api-module.js",
+      "source": "umi.eb7fa8cf.js",
+      "sourceByteStart": 280808,
+      "sourceByteEndExclusive": 288566,
+      "prefix": "({",
+      "suffix": "});",
+      "sha256": "11c2c4a9aa15806e9f1cf414a169f4e07fb814fe0db99e0e97c39a7373a99364"
+    },
+    {
+      "file": "extracted-markdown-save-model.js",
+      "source": "umi.eb7fa8cf.js",
+      "sourceByteStart": 245668,
+      "sourceByteEndExclusive": 258600,
+      "prefix": "({",
+      "suffix": "});",
+      "sha256": "aa6496685a3150cead546ac48c4eb8ac10cb0e22c22c5ef97bd020d614412cef"
+    }
+  ],
+  "date": "2026-11-01",
+  "timezone": "Asia/Shanghai",
+  "scope": "个人CV制作管理；公开浏览器行为及公开脚本有限静态检查",
+  "browserObservations": [
+    {
+      "evidenceId": "ev_c8efea14df2a67a919ee58ca3e1c42248049164cb1dbbd1317a1a93289e61c6e",
+      "authority": "controlled-replay",
+      "confidence": "observed",
+      "provider": {
+        "id": "rea-playwright-browser-scenario",
+        "name": "REA Playwright browser scenario capture provider",
+        "version": "1"
+      },
+      "browser": {
+        "mode": "launch",
+        "process_ownership": "provider-owned",
+        "cleanup": "terminated-owned-process",
+        "product": "Chromium",
+        "version": "156.0.8078.79"
+      },
+      "parameters": {
+        "browser": {
+          "mode": "launch",
+          "executable_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+          "headless": true
+        },
+        "start_url": {
+          "url": "https://www.laoyujianli.com/template/1685547340318179330",
+          "query": []
+        },
+        "actions": [
+          {
+            "step_id": "detail-ready",
+            "action": "wait_for_timeout",
+            "duration_ms": 1200
+          }
+        ],
+        "environment": {
+          "viewport": {
+            "width": 1440,
+            "height": 1000,
+            "device_scale_factor": 1
+          },
+          "locale": "zh-CN",
+          "timezone": "UTC",
+          "color_scheme": "light",
+          "reduced_motion": "reduce",
+          "service_workers": "block"
+        },
+        "capture": {
+          "after_each_step": [],
+          "at_end": [
+            "accessibility",
+            "dom",
+            "url"
+          ],
+          "events": [
+            "page-errors",
+            "network"
+          ],
+          "network": {
+            "request_body": false,
+            "response_body": false,
+            "header_values": false
+          },
+          "limits": {
+            "max_events": 100,
+            "max_event_allocation_bytes": 4194304,
+            "max_total_event_allocation_bytes": 16777216,
+            "max_network_transactions": 80,
+            "max_network_body_bytes": 65536,
+            "max_network_body_allocation_bytes": 1048576,
+            "max_network_header_allocation_bytes": 1048576,
+            "max_network_metadata_allocation_bytes": 1048576
+          }
+        }
+      },
+      "completeness": {
+        "status": "incomplete",
+        "equality_eligible": false,
+        "missing_sections": [
+          "events"
+        ],
+        "truncated_sections": []
+      },
+      "steps": [
+        {
+          "id": "scenario_start",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330"
+        },
+        {
+          "id": "detail-ready",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330",
+          "accessibilitySha256": "f9ce6a3eabb15474afcba2494aedc087d8d8e0cedb727ca16c79d74858a23fea",
+          "selectedExcerpt": "url: /template/1831655666372919371\n      - img \"封面 - 老鱼简历\"\n      - heading \"通用简洁清晰简历模板\" [level=5]\n      - link \"通用\":\n        - /url: /tag/通用\n      - link \"校招\":\n        - /url: /tag/校招\n      - link \"实习\":\n        - /url: /tag/实习\n      - link \"社招\":\n        - /url: /tag/社招\n      - link \"大学生\":\n        - /url: /tag/大学生\n  - list:\n    - listitem:\n      - button \"wechat\":\n        - img \"wechat\"\n    - listitem:\n      - button \"read\":\n        - link \"read\":\n          - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/stoypd/kg7o26o5me8w7fac\n          - img \"read\"\n    - listitem:\n      - button \"customer-service\":\n        - link \"customer-service\":\n          - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/stoypd/azdkq2nogrr1i2af\n          - img \"customer-service\"\n  - link \"友情链接：\":\n    - /url: \"\"\n  - link \"鱼鸢网络\":\n    - /url: https://www.yuyuanweb.com/index.html\n  - link \"编程学习圈\":\n    - /url: https://yupi.icu\n  - link \"面试题库\":\n    - /url: https://www.mianshiya.com\n  - link \"起点课堂\":\n    - /url: https://www.qidianla.com\n  - link \"AI 模拟面试\":\n    - /url: https://ai.mianshiya.com/\n  - link \"鱼皮 AI 导航\":\n    - /url: https://ai.codefather.cn/\n  - img \"copyright\"\n  - text: 2026 laoyujianli.com 老鱼简历\n  - separator\n  - link \"file-protect 增值电信业务经营许可证\":\n    - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/peng0p/ug1kps2sfulwfyf0\n    - img \"file-protect\"\n    - text: 增值电信业务经营许可证\n  - separator\n  - link \"沪ICP备19026706号-11\":\n    - /url: https://beian.miit.gov.cn/\n  - separator\n  - link \"公安备案 沪公网安备31010602009596号\":\n    - /url: https://beian.mps.gov.cn/#/query/webSearch?code=31010602009596\n    - img \"公安备案\"\n    - text: 沪公网安备31010602009596号\n  - link \"关于我们\":\n    - /url: /about"
+        }
+      ],
+      "limitations": [
+        "Artifact identity is unavailable for this observation.",
+        "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+        "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+        "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+        "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+        "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+        "Storage values are hashed only after declared-secret redaction.",
+        "Browser event collection reached a selected resource budget; per-kind omissions and affected network transaction IDs are listed in events.omissions, and event coverage is incomplete.",
+        "Browser host platform and architecture were not observed."
+      ],
+      "recordType": "selected-runtime-summary-not-complete-evidence"
+    },
+    {
+      "evidenceId": "ev_59b5587f03f98a0e3751f031e4f4c589ec561a0eb63886cb9af8ec07c9785542",
+      "authority": "controlled-replay",
+      "confidence": "observed",
+      "provider": {
+        "id": "rea-playwright-browser-scenario",
+        "name": "REA Playwright browser scenario capture provider",
+        "version": "1"
+      },
+      "browser": {
+        "mode": "launch",
+        "process_ownership": "provider-owned",
+        "cleanup": "terminated-owned-process",
+        "product": "Chromium",
+        "version": "156.0.8078.79"
+      },
+      "parameters": {
+        "browser": {
+          "mode": "launch",
+          "executable_path": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+          "headless": true
+        },
+        "start_url": {
+          "url": "https://www.laoyujianli.com/template/1685547340318179330",
+          "query": []
+        },
+        "actions": [
+          {
+            "step_id": "template-button",
+            "timeout_ms": 10000,
+            "action": "wait_for",
+            "locator": {
+              "kind": "role",
+              "role": "button",
+              "name": "使用模板"
+            },
+            "state": "visible"
+          },
+          {
+            "step_id": "use-template",
+            "timeout_ms": 10000,
+            "action": "click",
+            "locator": {
+              "kind": "role",
+              "role": "button",
+              "name": "使用模板"
+            },
+            "button": "left",
+            "click_count": 1
+          },
+          {
+            "step_id": "after-use-template",
+            "action": "wait_for_timeout",
+            "duration_ms": 1500
+          }
+        ],
+        "environment": {
+          "viewport": {
+            "width": 1440,
+            "height": 1000,
+            "device_scale_factor": 1
+          },
+          "locale": "zh-CN",
+          "timezone": "UTC",
+          "color_scheme": "light",
+          "reduced_motion": "reduce",
+          "service_workers": "block"
+        },
+        "capture": {
+          "after_each_step": [
+            "url"
+          ],
+          "at_end": [
+            "accessibility",
+            "dom",
+            "url"
+          ],
+          "events": [
+            "page-errors"
+          ],
+          "network": {
+            "request_body": false,
+            "response_body": false,
+            "header_values": false
+          },
+          "limits": {
+            "max_events": 10000,
+            "max_event_allocation_bytes": 4194304,
+            "max_total_event_allocation_bytes": 16777216,
+            "max_network_transactions": 1024,
+            "max_network_body_bytes": 65536,
+            "max_network_body_allocation_bytes": 1048576,
+            "max_network_header_allocation_bytes": 1048576,
+            "max_network_metadata_allocation_bytes": 1048576
+          }
+        }
+      },
+      "completeness": {
+        "status": "complete",
+        "equality_eligible": true,
+        "missing_sections": [],
+        "truncated_sections": []
+      },
+      "steps": [
+        {
+          "id": "scenario_start",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330"
+        },
+        {
+          "id": "template-button",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330"
+        },
+        {
+          "id": "use-template",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330"
+        },
+        {
+          "id": "after-use-template",
+          "status": "completed",
+          "url": "https://www.laoyujianli.com/template/1685547340318179330",
+          "accessibilitySha256": "bd2867428fdb33cfee2461e89bbb45b29f0922df4e3def663280ba0e77224051",
+          "selectedExcerpt": "web.yuque.com/org-wiki-yuyuanweb-zvq1bg/stoypd/azdkq2nogrr1i2af\n          - img \"customer-service\"\n  - link \"友情链接：\":\n    - /url: \"\"\n  - link \"鱼鸢网络\":\n    - /url: https://www.yuyuanweb.com/index.html\n  - link \"编程学习圈\":\n    - /url: https://yupi.icu\n  - link \"面试题库\":\n    - /url: https://www.mianshiya.com\n  - link \"起点课堂\":\n    - /url: https://www.qidianla.com\n  - link \"AI 模拟面试\":\n    - /url: https://ai.mianshiya.com/\n  - link \"鱼皮 AI 导航\":\n    - /url: https://ai.codefather.cn/\n  - img \"copyright\"\n  - text: 2026 laoyujianli.com 老鱼简历\n  - separator\n  - link \"file-protect 增值电信业务经营许可证\":\n    - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/peng0p/ug1kps2sfulwfyf0\n    - img \"file-protect\"\n    - text: 增值电信业务经营许可证\n  - separator\n  - link \"沪ICP备19026706号-11\":\n    - /url: https://beian.miit.gov.cn/\n  - separator\n  - link \"公安备案 沪公网安备31010602009596号\":\n    - /url: https://beian.mps.gov.cn/#/query/webSearch?code=31010602009596\n    - img \"公安备案\"\n    - text: 沪公网安备31010602009596号\n  - link \"关于我们\":\n    - /url: /about\n  - dialog:\n    - button \"Close\":\n      - img \"close\"\n    - img \"老鱼简历\"\n    - text: 写简历 从未如此简单\n    - img \"check-circle\"\n    - text: 专业模板 一键应用\n    - img \"check-circle\"\n    - text: 云端存储 随时编辑\n    - img \"check-circle\"\n    - text: AI智能帮写 快捷高效\n    - img \"check-circle\"\n    - text: 在线编辑器 简历创作新体验\n    - img \"check-circle\"\n    - text: 各行业模板 打造高通过率简历 扫码登录即可创建简历 未注册的微信号将自动创建账号\n    - img \"扫码关注公众号『 老鱼简历 』登录\"\n    - img\n    - text: 微信扫码登录 注册登录即表示同意\n    - link \"用户协议\":\n      - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/stoypd/zgwf94oigv7vqmrk\n    - text: 和\n    - link \"隐私政策\":\n      - /url: https://yuyuanweb.yuque.com/org-wiki-yuyuanweb-zvq1bg/stoypd/hp6mvtygkexqoko5\n    - img \"托盘图标\""
+        }
+      ],
+      "limitations": [
+        "Artifact identity is unavailable for this observation.",
+        "Event sequence records provider receipt order; simultaneous browser causality is not inferred.",
+        "Network content is retained only when selected; Playwright response-body bytes are API results and are not guaranteed to match wire bytes.",
+        "Request bytes are limited to what Playwright exposes; not_exposed does not establish body absence or multipart file coverage.",
+        "Network content reads settle within 5 seconds each and the observer does not request bodies from unfinished responses.",
+        "Playwright scenario events do not expose request initiator stacks; receipt order does not prove causality.",
+        "Storage values are hashed only after declared-secret redaction.",
+        "Browser host platform and architecture were not observed."
+      ],
+      "recordType": "selected-runtime-summary-not-complete-evidence"
+    }
+  ],
+  "staticAnalyses": [
+    {
+      "evidenceId": "ev_e8c0d7ac8eb3c115658b4f48790fd88c4eb3c7af2f5be887a0e8e44fd5b8d1b7",
+      "parentEvidenceId": "ev_2c564e9562f2c41e0f76ea3907878af6a179a350223455e443292cd7889254f9",
+      "summary": {
+        "input_path": "/private/var/folders/r5/lm_1_1hd321dzlfq0lctjdnw0000gn/T/cv-laoyu-research-_37ot5rl",
+        "format": "directory",
+        "root_artifact_sha256": "3943d68bac3009036caac05dcca3f7ca7491195938cd22537eec2d76d64e74d2",
+        "source_selection": {
+          "requested_paths": [
+            "umi.eb7fa8cf.js"
+          ],
+          "unselected_files": 0
+        },
+        "statistics": {
+          "relevant_files": 1,
+          "nested_asar_containers": 0,
+          "text_bytes_read": 1677374,
+          "invalid_utf8_files": 0,
+          "parsed_javascript_files": 0,
+          "skipped_javascript_files": 1,
+          "visited_ast_nodes": 0,
+          "findings": 0,
+          "modules": 0,
+          "parse_failures": 0
+        },
+        "electron": {
+          "browser_windows": 0,
+          "explicit_web_preferences": 0,
+          "preload_entrypoints": 0,
+          "context_bridge_apis": 0,
+          "exposed_api_members": 0,
+          "ipc": {
+            "operations": 0,
+            "literal_channels": 0,
+            "dynamic_channel_operations": 0,
+            "renderer_transmissions": 0,
+            "renderer_listeners": 0,
+            "main_handlers": 0,
+            "paired_renderer_transmissions": 0,
+            "ambiguous_renderer_transmissions": 0,
+            "unpaired_literal_renderer_transmissions": 0
+          },
+          "sender_validation_observations": 0,
+          "utility_processes": 0,
+          "resolved_utility_entrypoints": 0,
+          "native_addon_bindings": 0,
+          "resolved_native_addon_bindings": 0
+        },
+        "coverage": {
+          "application": {
+            "status": "partial",
+            "truncated": false,
+            "omitted_count": null,
+            "limits": [
+              {
+                "name": "javascript_analysis_worker_heap_limit_bytes",
+                "value": 1098907648,
+                "unit": "bytes"
+              },
+              {
+                "name": "javascript_analysis_worker_timeout_ms",
+                "value": 60000,
+                "unit": "milliseconds"
+              }
+            ]
+          },
+          "semantic": {
+            "status": "partial",
+            "truncated": true,
+            "omitted_nodes": null,
+            "omitted_relations": null,
+            "limits": [
+              {
+                "name": "javascript_analysis_worker_heap_limit_bytes",
+                "value": 1098907648,
+                "unit": "bytes"
+              },
+              {
+                "name": "javascript_analysis_worker_timeout_ms",
+                "value": 60000,
+                "unit": "milliseconds"
+              }
+            ],
+            "families": [
+              {
+                "family": "boundary",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "call-flow",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "child-process",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "closure",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "configuration",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "data-flow",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "event",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "object-flow",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "promise-ownership",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "request",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "resource-lifecycle",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              },
+              {
+                "family": "timer",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 1
+              }
+            ]
+          },
+          "application_unknowns": 1,
+          "semantic_unknowns": 12
+        },
+        "limitation_count": 8
+      },
+      "limitations": [
+        "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+        "Caller-selected source analysis leaves 0 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+        "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+        "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+        "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+        "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+        "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+        "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+        "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+        "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+        "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+        "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+        "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+        "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+        "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+        "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+        "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+        "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code.",
+        "umi.eb7fa8cf.js: Resource constraint during analyze_javascript_application: Owned JavaScript worker exhausted its heap while analyzing umi.eb7fa8cf.js during static"
+      ]
+    },
+    {
+      "evidenceId": "ev_c5550dd82de75a95683ab4784692b0beb45dad966ca5dc32bd34505772fdb50d",
+      "parentEvidenceId": "ev_646463235168f996df175a57f755f4d2d4d1b626769e39b5d84fa41971859478",
+      "summary": {
+        "input_path": "/private/var/folders/r5/lm_1_1hd321dzlfq0lctjdnw0000gn/T/cv-laoyu-research-_37ot5rl",
+        "format": "directory",
+        "root_artifact_sha256": "003427e7729e66b12de5cd9560aede4478d1981ec6c724f7b75433f5d6eff091",
+        "source_selection": {
+          "requested_paths": [
+            "p__myResume.3824109a.async.js",
+            "p__cvMdMaker.2f2bfd5b.async.js"
+          ],
+          "unselected_files": 3
+        },
+        "statistics": {
+          "relevant_files": 5,
+          "nested_asar_containers": 0,
+          "text_bytes_read": 142276,
+          "invalid_utf8_files": 0,
+          "parsed_javascript_files": 2,
+          "skipped_javascript_files": 0,
+          "visited_ast_nodes": 44397,
+          "findings": 283,
+          "modules": 24,
+          "parse_failures": 0
+        },
+        "electron": {
+          "browser_windows": 0,
+          "explicit_web_preferences": 0,
+          "preload_entrypoints": 0,
+          "context_bridge_apis": 0,
+          "exposed_api_members": 0,
+          "ipc": {
+            "operations": 0,
+            "literal_channels": 0,
+            "dynamic_channel_operations": 0,
+            "renderer_transmissions": 0,
+            "renderer_listeners": 0,
+            "main_handlers": 0,
+            "paired_renderer_transmissions": 0,
+            "ambiguous_renderer_transmissions": 0,
+            "unpaired_literal_renderer_transmissions": 0
+          },
+          "sender_validation_observations": 0,
+          "utility_processes": 0,
+          "resolved_utility_entrypoints": 0,
+          "native_addon_bindings": 0,
+          "resolved_native_addon_bindings": 0
+        },
+        "coverage": {
+          "application": {
+            "status": "partial",
+            "truncated": false,
+            "omitted_count": null,
+            "limits": []
+          },
+          "semantic": {
+            "status": "partial",
+            "truncated": true,
+            "omitted_nodes": null,
+            "omitted_relations": null,
+            "limits": [
+              {
+                "name": "semantic_graph_file_node_ceiling",
+                "value": 3000,
+                "unit": "items"
+              },
+              {
+                "name": "semantic_graph_node_ceiling",
+                "value": 6000,
+                "unit": "items"
+              }
+            ],
+            "families": [
+              {
+                "family": "boundary",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "call-flow",
+                "status": "partial",
+                "retained_relations": 77,
+                "omitted_relations": null,
+                "unknown_count": 2604
+              },
+              {
+                "family": "child-process",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "closure",
+                "status": "partial",
+                "retained_relations": 3151,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "configuration",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "data-flow",
+                "status": "partial",
+                "retained_relations": 1810,
+                "omitted_relations": null,
+                "unknown_count": 2932
+              },
+              {
+                "family": "event",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "object-flow",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 4298
+              },
+              {
+                "family": "promise-ownership",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "request",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "resource-lifecycle",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 3
+              },
+              {
+                "family": "timer",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 4
+              }
+            ]
+          },
+          "application_unknowns": 3,
+          "semantic_unknowns": 9862
+        },
+        "limitation_count": 7
+      },
+      "limitations": [
+        "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+        "Caller-selected source analysis leaves 3 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+        "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+        "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+        "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+        "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+        "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+        "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+        "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+        "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+        "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+        "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+        "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+        "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+        "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+        "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+        "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+        "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+      ]
+    },
+    {
+      "evidenceId": "ev_03b102f75402f0edd30d9f256a662fba5ef4c30872bf7a7a284cbc46f50ad48e",
+      "parentEvidenceId": "ev_f4988c026ceda9686e4147f7c7bd18a6f81184a42c84497a738548e73ecc5491",
+      "summary": {
+        "input_path": "/private/var/folders/r5/lm_1_1hd321dzlfq0lctjdnw0000gn/T/cv-laoyu-research-_37ot5rl",
+        "format": "directory",
+        "root_artifact_sha256": "b642c0fc25adf6685469e5c1095971a6decd3c97d8211b08975c4030b3e432b2",
+        "source_selection": {
+          "requested_paths": [
+            "extracted-resume-api-module.js",
+            "extracted-markdown-save-model.js"
+          ],
+          "unselected_files": 5
+        },
+        "statistics": {
+          "relevant_files": 7,
+          "nested_asar_containers": 0,
+          "text_bytes_read": 20700,
+          "invalid_utf8_files": 0,
+          "parsed_javascript_files": 2,
+          "skipped_javascript_files": 0,
+          "visited_ast_nodes": 5953,
+          "findings": 3,
+          "modules": 0,
+          "parse_failures": 0
+        },
+        "electron": {
+          "browser_windows": 0,
+          "explicit_web_preferences": 0,
+          "preload_entrypoints": 0,
+          "context_bridge_apis": 0,
+          "exposed_api_members": 0,
+          "ipc": {
+            "operations": 0,
+            "literal_channels": 0,
+            "dynamic_channel_operations": 0,
+            "renderer_transmissions": 0,
+            "renderer_listeners": 0,
+            "main_handlers": 0,
+            "paired_renderer_transmissions": 0,
+            "ambiguous_renderer_transmissions": 0,
+            "unpaired_literal_renderer_transmissions": 0
+          },
+          "sender_validation_observations": 0,
+          "utility_processes": 0,
+          "resolved_utility_entrypoints": 0,
+          "native_addon_bindings": 0,
+          "resolved_native_addon_bindings": 0
+        },
+        "coverage": {
+          "application": {
+            "status": "partial",
+            "truncated": false,
+            "omitted_count": null,
+            "limits": []
+          },
+          "semantic": {
+            "status": "partial",
+            "truncated": false,
+            "omitted_nodes": null,
+            "omitted_relations": null,
+            "limits": [],
+            "families": [
+              {
+                "family": "boundary",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "call-flow",
+                "status": "partial",
+                "retained_relations": 334,
+                "omitted_relations": null,
+                "unknown_count": 399
+              },
+              {
+                "family": "child-process",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "closure",
+                "status": "partial",
+                "retained_relations": 503,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "configuration",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "data-flow",
+                "status": "partial",
+                "retained_relations": 3496,
+                "omitted_relations": null,
+                "unknown_count": 474
+              },
+              {
+                "family": "event",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "object-flow",
+                "status": "partial",
+                "retained_relations": 448,
+                "omitted_relations": null,
+                "unknown_count": 494
+              },
+              {
+                "family": "promise-ownership",
+                "status": "partial",
+                "retained_relations": 7,
+                "omitted_relations": null,
+                "unknown_count": 8
+              },
+              {
+                "family": "request",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "resource-lifecycle",
+                "status": "partial",
+                "retained_relations": 0,
+                "omitted_relations": null,
+                "unknown_count": 5
+              },
+              {
+                "family": "timer",
+                "status": "partial",
+                "retained_relations": 3,
+                "omitted_relations": null,
+                "unknown_count": 7
+              }
+            ]
+          },
+          "application_unknowns": 5,
+          "semantic_unknowns": 1417
+        },
+        "limitation_count": 7
+      },
+      "limitations": [
+        "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+        "Caller-selected source analysis leaves 5 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+        "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+        "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+        "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+        "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+        "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+        "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+        "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+        "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+        "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+        "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+        "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+        "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+        "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+        "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+        "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation.",
+        "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+      ]
+    }
+  ],
+  "limitations": [
+    "本附件是摘要，非完整Evidence或源代码归档；公开URL可能变化。",
+    "未注册登录、未执行业务API、未绕过身份校验；未验证真实保存、复制及PDF产物。",
+    "源代码静态存在不代表线上服务成功。",
+    "完整主包分析遇到堆限制；聚焦分析仍有未解析依赖及语义缺口。"
+  ]
+}
