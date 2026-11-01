@@ -5,7 +5,9 @@
 | 任务 | 依赖 | 状态 | 工作入口 |
 | --- | --- | --- | --- |
 | 文档与需求收敛 | — | 复核通过 | [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计](docs/design/02-CV制作管理与展示设计.md)、按能力拆分的 PRD/Plan；不表示实现完成 |
-| PLAN-CV-01 制作与保存 | 实施时明确运行/持久化方式 | 待执行 | [Plan 01](docs/plan/01-CV制作与保存.md) |
+| 前端技术基线 | — | 已固定，未安装验证 | [设计 4.1](docs/design/02-CV制作管理与展示设计.md#41-已固定的前端基线) |
+| 后端与 API 基线 | 简单维护及 Google API 约束 | FastAPI/MySQL 已确定，未安装验证 | [服务设计](docs/design/02-CV制作管理与展示设计.md#42-已确定的服务与数据边界)、[API 规范](PROJECT.md#33-api-规范) |
+| PLAN-CV-01 制作与保存 | 具体运行环境、所有者登录及持久化配置明确 | 待执行 | [Plan 01](docs/plan/01-CV制作与保存.md) |
 | PLAN-CV-02 版本管理 | PLAN-CV-01 | 待执行 | [Plan 02](docs/plan/02-CV版本管理.md) |
 | PLAN-CV-03 模板与样式 | PLAN-CV-01 | 待执行 | [Plan 03](docs/plan/03-模板与样式管理.md) |
 | PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 待执行 | [Plan 04](docs/plan/04-简历导入.md) |
