@@ -14,13 +14,11 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "mysql+pymysql://root:123456@127.0.0.1:3306/cvory?charset=utf8mb4"
     
-    # Security & Owner auth
-    owner_token: str = "cvory-default-owner-secret"
-    dev_mode: bool = True
-    
     # Data directory for avatars and private storage
     data_dir: Path = Path(__file__).resolve().parent.parent.parent / "data"
     
+    frontend_internal_url: str = "http://127.0.0.1:3000"
+
     # CORS
     cors_origins: List[str] = [
         "http://localhost:3000",

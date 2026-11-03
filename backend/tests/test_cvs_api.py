@@ -40,7 +40,10 @@ def setup_database():
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    client = TestClient(app)
+    response = client.post("/api/account:register", json={"email":"owner@example.com", "password":"test-password-2026"})
+    assert response.status_code == 201
+    return client
 
 
 def test_health_check(client):
@@ -154,7 +157,7 @@ def test_delete_cv(client):
     cv = res.json()
     cv_id = cv["id"]
 
-    del_res = client.delete(f"/api/cvs/{cv_id}")
+    del_res = client.delete(f"/api/cvs/{cv_id}", headers={"If-Match": cv["etag"]})
     assert del_res.status_code == 204
 
     # Now get should return 404

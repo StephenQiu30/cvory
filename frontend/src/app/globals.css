@@ -1,38 +1,24 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
 :root {
-  --background: #FFFFFF;
-  --foreground: #171717;
-  --surface-subtle: #FAFAFA;
-  --muted: #F5F5F5;
-  --muted-foreground: #666666;
-  --border: #E5E5E5;
-  --input-border: #8A8A8A;
-  --primary: #171717;
-  --primary-foreground: #FFFFFF;
-  --ring: #171717;
-}
-
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface-subtle: var(--surface-subtle);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-input-border: var(--input-border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-ring: var(--ring);
-  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans SC", sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
-}
-
+ --font-geist-sans:"Geist Variable"; --font-geist-mono:"Geist Mono Variable"; --font-noto-sans-sc:"Noto Sans SC Variable"; --background:#FAFAFA; --foreground:#171717; --surface-subtle:#F5F5F5; --muted:#EBEBEB; --muted-foreground:#737373; --secondary-foreground:#4D4D4D; --border:#EBEBEB; --input-border:#8A8A8A; --primary:#171717; --primary-foreground:#FFFFFF; --ring:#0070F3; --link:#0066D6; --popover:#FAFAFA; --popover-foreground:#171717; --accent:#F5F5F5; --accent-foreground:#171717; --destructive:#B42318; --radius:6px; }
+.dark { --background:#0A0A0A; --foreground:#EDEDED; --surface-subtle:#111111; --muted:#222222; --muted-foreground:#A1A1A1; --secondary-foreground:#A1A1A1; --border:#2E2E2E; --input-border:#666666; --primary:#EDEDED; --primary-foreground:#0A0A0A; --link:#3291FF; --popover:#111111; --popover-foreground:#EDEDED; --accent:#222222; --accent-foreground:#EDEDED; --destructive:#FF8880; }
+@theme inline { --color-background:var(--background); --color-foreground:var(--foreground); --color-surface-subtle:var(--surface-subtle); --color-muted:var(--muted); --color-muted-foreground:var(--muted-foreground); --color-secondary-foreground:var(--secondary-foreground); --color-border:var(--border); --color-input-border:var(--input-border); --color-primary:var(--primary); --color-primary-foreground:var(--primary-foreground); --color-ring:var(--ring); --color-link:var(--link); --color-popover:var(--popover); --color-popover-foreground:var(--popover-foreground); --color-accent:var(--accent); --color-accent-foreground:var(--accent-foreground); --color-destructive:var(--destructive); --font-sans:var(--font-geist-sans),var(--font-noto-sans-sc),sans-serif; --font-mono:var(--font-geist-mono),monospace; }
+* { box-sizing:border-box; }
+:focus-visible { outline:2px solid var(--ring); outline-offset:3px; }
+button, a, input, select, textarea { -webkit-tap-highlight-color:transparent; }
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+.app-shell-container {
+  width: min(100%, 1208px);
+  margin-inline: auto;
+  padding-inline: 24px;
 }
 
 /* Custom styling for Tiptap editor in CV context */
@@ -79,3 +65,17 @@ body {
   text-underline-offset: 2px;
   color: var(--foreground);
 }
+
+@media (max-width:640px) { .app-shell-container {padding-inline:20px;} button:not([role=switch]), [role=tab], [role=menuitem], [data-slot=select-trigger] {min-height:44px;} }
+@media (prefers-reduced-motion:reduce) { *, *::before, *::after {animation-duration:.01ms!important; transition-duration:.01ms!important;} }
+.resume-document { color:#171717; background:#fff; --resume-accent:#171717; font-family:var(--font-sans); overflow-wrap:anywhere; }
+.resume-document a {color:var(--resume-accent); text-decoration:underline; text-underline-offset:2px;}
+.resume-document p {margin:0 0 .35em;}
+.resume-document ul {list-style:disc;padding-left:1.2em;}
+.resume-document ol {list-style:decimal;padding-left:1.2em;}
+.resume-document li>p {margin:0;}
+.resume-document section h2 {break-after:avoid;}
+.resume-entry {break-inside:auto;}
+.resume-entry header {break-after:avoid;}
+@page {size:A4; margin:0;}
+@media print {html,body{background:#fff!important;} .no-print{display:none!important;} .resume-document {box-shadow:none!important;border:0!important; width:210mm!important; min-height:297mm;} }

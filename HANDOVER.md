@@ -2,29 +2,33 @@
 
 任务调度只在 [BACKLOG](BACKLOG.md)。
 
-## Docker 编排、Swagger 文档与 OpenAPI 客户端交付
+## Figma 设计稿实现与运行验收
 
-日期：2026-11-01（Asia/Shanghai）。交付范围是支持 docker-compose 一键启动并复用宿主机环境、敏感信息 `.env` 隔离、提交规范 Conventional Commits、整理后端 Swagger 文档及使用 axios + @umijs/openapi 生成前端 API 客户端。
+日期：2026-11-04（Asia/Shanghai）。负责人已授权实现设计稿，并明确使用邮箱＋密码注册登录。代码、工程合同与使用说明已同步，本地验证已完成；真实网站尚未部署。本组交付包含设计、实现、配套文档与测试。
 
-### 1. 交付内容
-- **Docker 编排与宿主机复用**：
-  - 编写 `docker-compose.yml`、`backend/Dockerfile` 与 `frontend/Dockerfile`。
-  - 通过 `extra_hosts: ["host.docker.internal:host-gateway"]` 连通宿主机，容器内后端无缝连接宿主机已启动的 MySQL 服务（3306 端口）。
-  - 建立根目录 `.env.example` 模板与本地 `.env`（写入 `.gitignore`，严禁提交私密凭据）。
-- **代码提交规范**：
-  - 新建 [CONTRIBUTING.md](CONTRIBUTING.md)，确立 `type(scope): description` 规范（如 `feat(cv)`、`fix(api)`、`build(docker)`、`docs(swagger)` 等）。
-  - 同步更新 [PROJECT.md](PROJECT.md)、[AGENTS.md](AGENTS.md) 与 [README.md](README.md)。
-- **Swagger 接口文档与去除版本号**：
-  - 全局统一使用 `/api` 根路由，去除 `/api/v1` 等版本号前缀，目录结构保持扁平清晰（`backend/app/api/cvs.py`）。
-  - 在 `backend/app/main.py` 与 `backend/app/api/cvs.py` 完善 OpenAPI 元数据、分组标签（`cvs`、`system`）、接口详细说明及状态码模型（含 400/401/403/404/409 Google AIP 错误结构）。
-  - 文档交互地址为 `/api/docs`，元数据地址为 `/api/openapi.json`。
-- **前端 API 生成（axios + @umijs/openapi 规范接入）**：
-  - 遵循 `@umijs/openapi` 官方规范，配置标准 `frontend/openapi2ts.config.ts` 并在 `package.json` 提供 `openapi` / `openapi2ts` 命令。
-  - 引入 `axios` 封装 [`request.ts`](frontend/src/lib/api/request.ts)，无缝适配 `openapi2ts` 生成的代码，拦截并映射 Google AIP 标准错误。
-  - 生成类型和请求代码位于 [`src/lib/api/generated/`](frontend/src/lib/api/generated/)，接口路径直接对应 `/api/cvs`。
+### 实现
 
-### 2. 验证证据
-- **后端测试**：`cd backend && uv run pytest -v`，6 项测试全部通过（0 warnings）。
-- **前端生成与构建**：`cd frontend && pnpm run openapi && pnpm build`，OpenAPI service 代码生成成功，Next.js 生产构建与 TypeScript 检查 0 错误通过。
-- **Docker 编排配置校验**：`docker compose config` 解析与变量代换通过。
-- **Git 忽略与隐私核查**：`git status` 确认 `.env` 保持未跟踪/已忽略状态，`.env.example` 正常纳管。
+- `frontend/src/components/layout/` 提供 BasicLayout、Header、Navbar、Content、Footer、SettingsLayout、独立 EditorLayout；路由壳采用 Server Components，菜单、账户和编辑表单使用必要的客户端边界。Geist／Noto Sans SC 由锁定的本地字体包提供，无在线字体构建依赖；语义色、无边框控件与 Lucide 图标统一。
+- 简历库使用统一尺寸封面、相同操作基线和独立副本。`ResumeDocument` 复用到封面、A4 分页预览、公开阅读及打印；`useCvDocument` 维护唯一草稿与已保存快照，条件保存不覆盖请求期间继续输入的内容。冲突提供继续编辑、另存副本或明确加载服务端版本。
+- 教育、工作、项目、技能采用独立条目草稿、结构化字段、月份校验、至今／在读、富文本、排序、移除确认；模块显隐不删除数据，空模块不输出。证件照使用 3:4、裁切／缩放、位置、显隐和确认应用，与账户头像分离；规范化 JPEG 重复保存与备份恢复保持资源字节稳定。
+- 三套模板、三种强调色、排版参数与个人样式预设支持预览／应用／取消、命名、改名和删除；修改预设不追改 CV。导入支持 10 MB 内的 JSON v1 与 Markdown，先校对再另存；JSON 包含照片，Markdown 不承诺精确模板。导出先保存，PDF 使用固定 etag、短期打印上下文与真实 Chromium，支持取消生成与错误重试。
+- FastAPI 提供邮箱密码账户、scrypt 哈希、数据库会话、写入来源检查和登录尝试限制；CV、预设、公开结果按账户隔离。公开内容先由服务端筛选为固定候选，确认发布或失败重试只使用该候选；匿名页只读发布结果，撤回后不返回旧数据。来源名称仅所有者可见。
+- 手机采用单列表单、44 px 关键操作与编辑／预览切换；保存反馈可见，账户导航全部可达。网页公开正文自然重排，A4 预览保留纸张边缘、页间距和缩放。
+
+### 验证
+
+- 前端 `pnpm install --frozen-lockfile`、`pnpm exec tsc --noEmit`、`pnpm lint`、`pnpm build` 通过。lint 保留 `postcss.config.mjs` 的既有匿名默认导出警告，未新增应用代码警告。
+- 后端 18 项 pytest 通过，使用隔离 SQLite：账户／会话、跨账户拒绝、字段筛选、固定预览、过期保护、照片独立与重复保存稳定性、日期、幂等创建、个人预设隔离、兼容照片上传读取和 ETag。工具链有一项 Starlette/httpx 弃用警告。
+- 8 项 Playwright 检查通过，其中 5 项使用真实本地前后端的浏览器流程：注册→新建→四模块→保存重开→模板→匿名发布撤回，保存请求期间继续输入，390 px 手机上下文，JSON 下载恢复与真实 PDF，账户头像与证件照独立及取消裁切；另外 3 项验证文件合同、受支持 Markdown 与隐藏字段／链接规则。浏览器服务使用隔离 SQLite，不将其视为 MySQL 全量验收。
+- 独立 MySQL 8.4 临时数据库完成迁移、真实账户／结构化字段保存与 ETag 冲突检查，随后删除测试数据库并停止测试容器。旧表迁移另用隔离 SQLite 连续执行两次，验证旧行保留为 legacy、索引存在且操作幂等。
+- 100 条长正文生成 3 页 A4 预览和 3 页实际 PDF；归一化提取空白后，100 条文字全部可提取。检查桌面照片及手机编辑／预览、资料和公开设置；390 px 未发现页面横向溢出。没有承诺任意内容的分页、所有浏览器或 ATS 验收。
+- `git diff --check`、Docker Compose 配置和文档链接核对通过。未执行容器镜像完整构建、远端 CI 或真实互联网发布。
+
+### 运行边界
+
+- 验收预览为 `http://127.0.0.1:3100`，后端 `http://127.0.0.1:8100`，使用合成账户和隔离 SQLite；不是用户现有数据库。现有 3000 端口容器未被替换。
+- 存量数据库必须先执行 `backend/migrations/001_account_ownership.py`。旧 CV 不自动分配，注册后可由管理者通过 `--assign-legacy-to <目标邮箱>` 明确接管；未对现有数据库执行迁移或归属变更。
+- PDF 需要 Chromium、字体和正确的前后端内网地址；当前打印上下文采用单后端进程内的短期缓存，多后端进程部署需改为共享受控存储。容器配置已包含 Chromium 安装，但完整镜像尚未构建验证。
+- 邮箱验证、邮件发送、密码找回与真实公开网站部署尚未提供。Figma 的旧 OAuth 示意不代表实现；邮箱密码为最新执行依据。
+
+工程规则见 [PROJECT](PROJECT.md)，字段与交互见 [DESIGN](DESIGN.md)，实施合同见 [产品设计 02](docs/design/02-CV制作管理与展示设计.md#实施确认)。

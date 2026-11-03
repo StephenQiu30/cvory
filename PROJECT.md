@@ -10,7 +10,7 @@
 | 视觉方向 | 黑白灰、Geist；具体参数见 [DESIGN](DESIGN.md) |
 | 本地目录 | CV，保持不变 |
 | 公开仓库 | [StephenQiu30/cvory](https://github.com/StephenQiu30/cvory)，默认分支 main |
-| 技术包名 | 未建立工程，尚未定义 |
+| 技术包名 | frontend / cvory-backend（当前工程包名） |
 
 ## 2. 仓库现状
 
@@ -20,7 +20,7 @@
 
 前端采用 Next.js、shadcn/ui + Radix UI、Tiptap 与 Geist，后端和数据库采用负责人指定的 FastAPI、MySQL。固定前端基线、服务边界及配套工具建议只在[产品设计 02 第 4 节](docs/design/02-CV制作管理与展示设计.md#4-技术选型)维护。目录、编码和 API 通用规范由本文件维护，不在产品设计或业务需求中复制。
 
-依赖版本线与升级取舍按产品设计执行，清单和锁文件位置见 §3.4。当前尚未安装验证；选型不等于集成通过。
+依赖版本线与升级取舍按产品设计执行，清单和锁文件位置见 §3.4。精确版本由 pnpm-lock.yaml 与 uv.lock 固定；实际验证范围见 HANDOVER。
 
 ### 3.1 Python 代码规范
 
@@ -59,7 +59,7 @@ Python 代码遵循 [Google Python Style Guide](https://google.github.io/stylegu
 
 ### 3.4 工程目录与依赖边界
 
-`frontend/` 和 `backend/` 是固定目录，不再作为候选。以下是编码时采用的最小结构；当前没有应用工程，仅创建实施中实际需要的文件，不用占位文件提前铺满目录。
+`frontend/` 和 `backend/` 是固定目录，不再作为候选。以下是编码时采用的最小结构；按已建立工程持续维护，只创建实际需要的文件，不用占位文件提前铺满目录。
 
 ```text
 CV/
@@ -67,6 +67,7 @@ CV/
 │   ├── src/
 │   │   ├── app/                 # 页面、布局和路由专用组件
 │   │   ├── components/
+│   │   │   ├── layout/          # 共享 BasicLayout、Header、Footer
 │   │   │   └── ui/              # shadcn/ui + Radix UI 基础组件
 │   │   └── lib/
 │   │       └── api/             # API 请求封装与生成类型
@@ -121,6 +122,7 @@ CV/
   - 类型检查与生产构建：`cd frontend && pnpm build`
   - 启动开发服务：`cd frontend && pnpm dev`（默认端口 3000）
   - 代码规范检查：`cd frontend && pnpm lint`
+  - 浏览器与文件合同检查：`cd frontend && pnpm exec playwright test`（需隔离后端与前端运行环境，配置见 frontend/README）
 - **容器化编排 (`docker-compose.yml`)**
   - 校验与启动：`docker compose up -d`（服务前后端，复用宿主机已运行的 MySQL）
   - 查看日志与状态：`docker compose logs -f`、`docker compose ps`
@@ -129,6 +131,6 @@ CV/
 
 ## 9. 当前边界
 
-PLAN-CV-01（CV 制作与保存）已编码并完成集成验证。后续能力（版本管理、模板样式、简历导入、备份导出、PDF 导出、公开展示）待后续依序实施，保持 MVP 边界清晰，不提前扩展其他未确认功能。
+应用已实现简历制作与条件保存、独立副本、三套模板及个人预设、JSON／Markdown 交换、PDF 生成和按字段公开展示，并提供邮箱密码注册登录。实现范围和测试边界以 BACKLOG 与 HANDOVER 为准。数据库存量迁移须显式执行，旧 CV 不自动分配给首个注册者；邮件验证、密码找回与真实互联网部署尚未提供。
 
 未要求时不提交、推送或发布。仓库尚未接入 CI；后续获授权推送须单独核对远端必需检查，不以本地结果代替。代码提交标题严格遵循 [CONTRIBUTING](CONTRIBUTING.md) 的 `type(scope): description` 规范。

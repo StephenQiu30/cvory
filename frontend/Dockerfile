@@ -1,10 +1,13 @@
-FROM node:22-alpine
+FROM node:24-alpine
 
 WORKDIR /app
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
+
+# Default backend URL for Docker container network
+ENV BACKEND_INTERNAL_URL=http://backend:8000
 
 # Install locked dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./

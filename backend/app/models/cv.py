@@ -11,6 +11,7 @@ class CVModel(Base):
     __tablename__ = "cvs"
 
     id = Column(String(36), primary_key=True, index=True)
+    owner_id = Column(String(36), nullable=False, index=True, default="legacy")
     display_name = Column(String(255), nullable=False)
     etag = Column(String(64), nullable=False)
     

@@ -1,7 +1,6 @@
 "use client";
-
-import * as React from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEffect, useState } from "react";
+import { useEditor, EditorContent, type JSONContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import {
@@ -15,273 +14,202 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "./button";
-
-export interface TiptapEditorProps {
-  value: any; // Tiptap JSON doc or string
-  onChange: (value: any) => void;
-  placeholder?: string;
-  className?: string;
+import { Dialog } from "./dialog";
+import { FormField } from "./form-field";
+import { safeLink } from "@/lib/resume/model";
+import { cn } from "@/lib/utils";
+function normalize(value: unknown): JSONContent {
+  if (typeof value === "string")
+    return {
+      type: "doc",
+      content: value.split("\n").map((text) => ({
+        type: "paragraph",
+        content: text ? [{ type: "text", text }] : [],
+      })),
+    };
+  if (value && typeof value === "object") return value as JSONContent;
+  return { type: "doc", content: [{ type: "paragraph" }] };
 }
-
 export function TiptapEditor({
   value,
   onChange,
-  placeholder,
   className,
-}: TiptapEditorProps) {
-  const isComposingRef = React.useRef(false);
-
-  // Normalize initial content
-  const initialContent = React.useMemo(() => {
-    if (!value) {
-      return {
-        type: "doc",
-        content: [{ type: "paragraph" }],
-      };
-    }
-    if (typeof value === "string") {
-      return {
-        type: "doc",
-        content: [
-          {
-            type: "paragraph",
-            content: [{ type: "text", text: value }],
-          },
-        ],
-      };
-    }
-    return value;
-  }, [value]);
-
+}: {
+  value: unknown;
+  onChange: (value: unknown) => void;
+  className?: string;
+}) {
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [url, setUrl] = useState("");
+  const [linkError, setLinkError] = useState("");
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false, // In resume descriptions, headings are structured by sections
+        heading: false,
+        strike: false,
+        underline: false,
+        blockquote: false,
+        horizontalRule: false,
         codeBlock: false,
+        link: false,
       }),
       Link.configure({
         openOnClick: false,
-        HTMLAttributes: {
-          class: "underline text-primary hover:opacity-80",
-          rel: "noopener noreferrer",
-          target: "_blank",
-        },
+        protocols: ["http", "https", "mailto"],
+        HTMLAttributes: { rel: "noopener noreferrer", target: "_blank" },
       }),
     ],
-    content: initialContent,
+    content: normalize(value),
     immediatelyRender: false,
+    shouldRerenderOnTransaction: true,
     editorProps: {
       attributes: {
+        role: "textbox",
+        "aria-label": "经历正文",
+        "aria-multiline": "true",
         class: cn(
-          "prose prose-sm max-w-none focus:outline-none min-h-[90px] px-3 py-2 text-sm text-foreground",
-          className
+          "min-h-[120px] p-3 text-sm leading-6 outline-none",
+          className,
         ),
       },
-      handleDOMEvents: {
-        compositionstart: () => {
-          isComposingRef.current = true;
-          return false;
-        },
-        compositionend: () => {
-          isComposingRef.current = false;
-          if (editor) {
-            onChange(editor.getJSON());
-          }
-          return false;
-        },
+    },
+    onUpdate: ({ editor }) => onChange(editor.getJSON()),
+  });
+  useEffect(() => {
+    if (!editor || editor.isFocused) return;
+    const next = normalize(value);
+    if (JSON.stringify(editor.getJSON()) !== JSON.stringify(next))
+      editor.commands.setContent(next, { emitUpdate: false });
+  }, [editor, value]);
+  if (!editor)
+    return (
+      <div
+        role="status"
+        className="h-36 animate-pulse rounded-md bg-surface-subtle"
+        aria-label="加载正文编辑器"
+      />
+    );
+  const actions = [
+    {
+      label: "加粗",
+      Icon: Bold,
+      active: editor.isActive("bold"),
+      run: () => editor.chain().focus().toggleBold().run(),
+    },
+    {
+      label: "斜体",
+      Icon: Italic,
+      active: editor.isActive("italic"),
+      run: () => editor.chain().focus().toggleItalic().run(),
+    },
+    {
+      label: "无序列表",
+      Icon: List,
+      active: editor.isActive("bulletList"),
+      run: () => editor.chain().focus().toggleBulletList().run(),
+    },
+    {
+      label: "有序列表",
+      Icon: ListOrdered,
+      active: editor.isActive("orderedList"),
+      run: () => editor.chain().focus().toggleOrderedList().run(),
+    },
+    {
+      label: "行内代码",
+      Icon: Code,
+      active: editor.isActive("code"),
+      run: () => editor.chain().focus().toggleCode().run(),
+    },
+    {
+      label: "链接",
+      Icon: LinkIcon,
+      active: editor.isActive("link"),
+      run: () => {
+        setUrl(editor.getAttributes("link").href ?? "");
+        setLinkError("");
+        setLinkOpen(true);
       },
     },
-    onUpdate: ({ editor }) => {
-      if (!isComposingRef.current) {
-        onChange(editor.getJSON());
-      }
+    {
+      label: "清除格式",
+      Icon: RemoveFormatting,
+      run: () => editor.chain().focus().unsetAllMarks().clearNodes().run(),
     },
-  });
-
-  // Keep editor content in sync when value changes externally
-  React.useEffect(() => {
-    if (!editor || !value) return;
-    const currentJson = JSON.stringify(editor.getJSON());
-    const nextJson = JSON.stringify(
-      typeof value === "string"
-        ? {
-            type: "doc",
-            content: [{ type: "paragraph", content: [{ type: "text", text: value }] }],
-          }
-        : value
-    );
-    if (currentJson !== nextJson && !editor.isFocused) {
-      editor.commands.setContent(value);
-    }
-  }, [value, editor]);
-
-  if (!editor) {
-    return (
-      <div className="h-28 w-full rounded-md border border-border bg-surface-subtle animate-pulse" />
-    );
-  }
-
-  const setLink = () => {
-    const previousUrl = editor.getAttributes("link").href;
-    const url = window.prompt("请输入链接地址 (URL):", previousUrl);
-
-    if (url === null) return;
-    if (url === "") {
-      editor.chain().focus().extendMarkRange("link").unsetLink().run();
-      return;
-    }
-
-    // Basic sanitation
-    if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("mailto:")) {
-      editor.chain().focus().extendMarkRange("link").setLink({ href: `https://${url}` }).run();
-    } else {
-      editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-    }
-  };
-
+    {
+      label: "撤销",
+      Icon: Undo2,
+      disabled: !editor.can().undo(),
+      run: () => editor.chain().focus().undo().run(),
+    },
+    {
+      label: "重做",
+      Icon: Redo2,
+      disabled: !editor.can().redo(),
+      run: () => editor.chain().focus().redo().run(),
+    },
+  ];
   return (
-    <div className="rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-ring transition-all overflow-hidden">
-      {/* Formatting Toolbar */}
-      <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-surface-subtle px-1.5 py-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("bold") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="加粗 (Ctrl+B)"
-          aria-label="加粗"
-        >
-          <Bold className="h-3.5 w-3.5" />
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("italic") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="斜体 (Ctrl+I)"
-          aria-label="斜体"
-        >
-          <Italic className="h-3.5 w-3.5" />
-        </Button>
-
-        <div className="h-4 w-px bg-border mx-1" />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("bulletList") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="无序列表"
-          aria-label="无序列表"
-        >
-          <List className="h-3.5 w-3.5" />
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("orderedList") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="有序列表"
-          aria-label="有序列表"
-        >
-          <ListOrdered className="h-3.5 w-3.5" />
-        </Button>
-
-        <div className="h-4 w-px bg-border mx-1" />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("code") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="行内代码"
-          aria-label="行内代码"
-        >
-          <Code className="h-3.5 w-3.5" />
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={setLink}
-          className={cn(
-            "h-7 w-7",
-            editor.isActive("link") ? "bg-muted text-primary font-bold" : "text-muted-foreground"
-          )}
-          title="添加/编辑链接"
-          aria-label="链接"
-        >
-          <LinkIcon className="h-3.5 w-3.5" />
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
-          className="h-7 w-7 text-muted-foreground hover:text-foreground"
-          title="清除格式"
-          aria-label="清除格式"
-        >
-          <RemoveFormatting className="h-3.5 w-3.5" />
-        </Button>
-
-        <div className="h-4 w-px bg-border mx-1" />
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
-          title="撤销 (Ctrl+Z)"
-          aria-label="撤销"
-        >
-          <Undo2 className="h-3.5 w-3.5" />
-        </Button>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          className="h-7 w-7 text-muted-foreground hover:text-foreground disabled:opacity-30"
-          title="重做 (Ctrl+Y)"
-          aria-label="重做"
-        >
-          <Redo2 className="h-3.5 w-3.5" />
-        </Button>
+    <div className="rounded-md bg-surface-subtle focus-within:ring-2 focus-within:ring-ring">
+      <div
+        role="toolbar"
+        aria-label="正文格式"
+        className="flex flex-wrap gap-1 px-2 pt-2"
+      >
+        {actions.map(({ label, Icon, run, active, disabled }) => (
+          <Button
+            key={label}
+            variant="ghost"
+            size="icon"
+            aria-label={label}
+            title={label}
+            aria-pressed={active}
+            disabled={disabled}
+            onClick={run}
+            className={active ? "bg-muted" : ""}
+          >
+            <Icon aria-hidden className="size-4" />
+          </Button>
+        ))}
       </div>
-
-      {/* Editor Content Area */}
       <EditorContent editor={editor} />
+      <Dialog
+        open={linkOpen}
+        onOpenChange={setLinkOpen}
+        title="编辑文字链接"
+        description="输入有效网址，留空可移除链接。"
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (url && !safeLink(url)) {
+              setLinkError("请输入有效网址，如 https://example.com");
+              return;
+            }
+            if (url)
+              editor
+                .chain()
+                .focus()
+                .extendMarkRange("link")
+                .setLink({ href: safeLink(url)! })
+                .run();
+            else
+              editor.chain().focus().extendMarkRange("link").unsetLink().run();
+            setLinkOpen(false);
+          }}
+        >
+          <FormField
+            id="rich-link"
+            label="链接地址"
+            value={url}
+            onChange={setUrl}
+            error={linkError}
+          />
+          <Button type="submit" className="mt-5">
+            应用链接
+          </Button>
+        </form>
+      </Dialog>
     </div>
   );
 }

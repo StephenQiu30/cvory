@@ -1,5 +1,6 @@
 """CV resource API endpoints following Google API Design Guide (AIP-121)."""
 
+import base64
 from typing import Optional
 from fastapi import APIRouter, Depends, Header, Query, UploadFile, File, Response, status
 from fastapi.responses import FileResponse
@@ -37,6 +38,7 @@ def list_cvs(
         db=db,
         page_size=page_size,
         page_token=page_token,
+        owner_id=_owner,
     )
     return ListCVsResponse(
         cvs=resources,
@@ -59,7 +61,7 @@ def create_cv(
     _owner: str = Depends(get_current_owner),
 ) -> CVResource:
     """Create a new CV with initial profile and default module sections."""
-    return CVService.create_cv(db=db, req=req)
+    return CVService.create_cv(db=db, req=req, owner_id=_owner)
 
 
 @router.get(
@@ -75,7 +77,7 @@ def get_cv(
     _owner: str = Depends(get_current_owner),
 ) -> CVResource:
     """Get the full content and state of a single CV."""
-    return CVService.get_cv(db=db, cv_id=cv_id)
+    return CVService.get_cv(db=db, cv_id=cv_id, owner_id=_owner)
 
 
 @router.patch(
@@ -103,6 +105,7 @@ def update_cv(
         cv_id=cv_id,
         req=req,
         if_match=if_match,
+        owner_id=_owner,
     )
 
 
@@ -120,7 +123,7 @@ def delete_cv(
     _owner: str = Depends(get_current_owner),
 ) -> Response:
     """Delete an existing CV resource."""
-    CVService.delete_cv(db=db, cv_id=cv_id, if_match=if_match)
+    CVService.delete_cv(db=db, cv_id=cv_id, if_match=if_match, owner_id=_owner)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -138,7 +141,7 @@ def upload_avatar(
     _owner: str = Depends(get_current_owner),
 ) -> CVResource:
     """Upload and attach a personal avatar image to the CV."""
-    return CVService.save_avatar(db=db, cv_id=cv_id, file=file)
+    return CVService.save_avatar(db=db, cv_id=cv_id, file=file, owner_id=_owner)
 
 
 @router.get(
@@ -149,8 +152,14 @@ def upload_avatar(
 )
 def get_avatar(
     cv_id: str,
-) -> FileResponse:
-    """Download the current avatar image for the CV."""
+    db: Session = Depends(get_db),
+    _owner: str = Depends(get_current_owner),
+) -> Response:
+    """Download the owned resume photo, including embedded normalized content."""
+    cv = CVService.get_cv(db, cv_id, _owner)
+    if cv.profile.avatar_url and cv.profile.avatar_url.startswith("data:image/"):
+        header, encoded = cv.profile.avatar_url.split(",", 1)
+        return Response(base64.b64decode(encoded), media_type=header[5:].split(";")[0])
     path = CVService.get_avatar_path(cv_id)
     if not path:
         raise NotFoundError(f"Avatar for CV '{cv_id}' not found.")

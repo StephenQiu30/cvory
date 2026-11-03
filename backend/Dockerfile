@@ -11,8 +11,11 @@ COPY pyproject.toml uv.lock ./
 # Install locked dependencies into .venv
 RUN uv sync --frozen --no-dev --no-install-project
 
+RUN uv run playwright install --with-deps chromium
+
 # Copy application source code
 COPY app ./app
+COPY migrations ./migrations
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1

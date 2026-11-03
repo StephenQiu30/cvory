@@ -118,3 +118,11 @@ app.include_router(api_router, prefix=settings.api_prefix)
 def health_check():
     """Simple healthcheck endpoint."""
     return {"status": "ok", "app": settings.app_name}
+
+
+@app.middleware("http")
+async def no_store_responses(request, call_next):
+    response = await call_next(request)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response

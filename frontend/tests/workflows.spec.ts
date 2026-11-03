@@ -1,0 +1,265 @@
+import { readFile } from "node:fs/promises";
+import { test, expect, type Page } from "@playwright/test";
+const PASSWORD = "workflow-test-password-2026";
+async function signup(page: Page) {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "还没有账户？注册" }).click();
+  await page.getByLabel("显示名称").fill("流程验收");
+  const email = `workflow-${crypto.randomUUID()}@example.com`;
+  await page.getByLabel("邮箱", { exact: false }).fill(email);
+  await page.getByLabel("密码", { exact: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "注册并开始" }).click();
+  await page.waitForURL("/");
+  return email;
+}
+async function create(page: Page) {
+  await page.getByRole("button", { name: "新建简历", exact: true }).click();
+  await page.getByLabel("简历名称").fill("PRIVATE_SOURCE_SENTINEL");
+  await page.getByRole("button", { name: "创建并编辑" }).click();
+  await page.waitForURL("**/cvs/**");
+  return page.url().split("/").pop()!;
+}
+async function entry(
+  page: Page,
+  module: string,
+  title: string,
+  subtitle?: string,
+) {
+  await page.getByRole("button", { name: module, exact: true }).click();
+  await page
+    .getByRole("button", { name: `添加${module}`, exact: true })
+    .click();
+  const dialog = page.getByRole("dialog");
+  await dialog.locator("#entry-title").fill(title);
+  if (subtitle) await dialog.locator("#entry-subtitle").fill(subtitle);
+  if (module !== "专业技能") {
+    await dialog.getByLabel("开始月份").fill("2022-09");
+    await dialog.getByLabel("结束月份").fill("2026-06");
+  }
+  if (module === "教育经历")
+    await dialog.getByLabel("学历", { exact: true }).fill("本科");
+  await dialog
+    .getByRole("textbox", { name: "经历正文" })
+    .fill(`${title}：内容与成果，保留真实填写值。`);
+  await dialog.getByRole("button", { name: "添加到简历" }).click();
+  await expect(dialog).toHaveCount(0);
+}
+async function save(page: Page) {
+  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await expect(
+    page.getByRole("status").filter({ hasText: "已保存" }),
+  ).toBeVisible();
+}
+
+test("register → blank CV → four modules → save/reopen → templates → frozen public result", async ({
+  page,
+  context,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await signup(page);
+  const id = await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("陈予安");
+  await page.getByLabel("求职职位", { exact: true }).fill("前端工程师");
+  await page
+    .getByLabel("邮箱", { exact: true })
+    .fill("PRIVATE_EMAIL@example.com");
+  await page.getByLabel("电话", { exact: true }).fill("PRIVATE_PHONE");
+  await entry(page, "教育经历", "华东理工大学", "软件工程");
+  await entry(page, "工作经历", "序言科技", "全栈工程师");
+  await entry(page, "项目经历", "简历制作工具", "核心开发");
+  await entry(page, "专业技能", "前端开发");
+  await save(page);
+  let saved = await (await page.request.get(`/api/cvs/${id}`)).json();
+  expect(
+    saved.sections.find((s: { type: string }) => s.type === "education")
+      .items[0].degree,
+  ).toBe("本科");
+  await page.reload();
+  await expect(page.getByLabel("姓名", { exact: true })).toHaveValue("陈予安");
+  await page.getByRole("button", { name: "调整样式" }).click();
+  await page.getByRole("button", { name: /时间索引/ }).click();
+  await page.getByRole("button", { name: "深蓝", exact: true }).click();
+  await page.getByRole("button", { name: "应用样式", exact: true }).click();
+  await save(page);
+  saved = await (await page.request.get(`/api/cvs/${id}`)).json();
+  expect(saved.styleSettings.templateId).toBe("timeline");
+  expect(saved.styleSettings.accent).toBe("blue");
+  await page.goto("/settings/publication");
+  await page.getByRole("switch", { name: "电子邮箱" }).uncheck();
+  await page.getByRole("button", { name: "预览公开内容" }).click();
+  await expect(page.getByText("本次公开预览", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("PRIVATE_EMAIL@example.com", { exact: true }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "确认发布", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "确认发布", exact: true })
+    .click();
+  await expect(page.getByText("公开内容已更新")).toBeVisible();
+  const me = await (await page.request.get("/api/account")).json();
+  const anonymous = await context.browser()!.newContext();
+  const visitor = await anonymous.newPage();
+  await visitor.goto(`/u/${me.publicId}`);
+  await expect(
+    visitor.getByRole("heading", { name: "陈予安", exact: true }),
+  ).toBeVisible();
+  const html = await visitor.content();
+  expect(html).not.toContain("PRIVATE_EMAIL");
+  expect(html).not.toContain("PRIVATE_PHONE");
+  expect(html).not.toContain("PRIVATE_SOURCE_SENTINEL");
+  await page.getByRole("button", { name: "撤回公开内容" }).click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "确认撤回" })
+    .click();
+  await expect(page.getByText("公开内容已撤回")).toBeVisible();
+  await visitor.reload();
+  await expect(
+    visitor.getByRole("heading", { name: "这份简历暂未公开" }),
+  ).toBeVisible();
+  await anonymous.close();
+  expect(errors).toEqual([]);
+});
+
+test("save response preserves edits made during the request", async ({
+  page,
+}) => {
+  await signup(page);
+  const id = await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("第一次输入");
+  let release: () => void = () => {};
+  let intercepted: () => void = () => {};
+  const arrived = new Promise<void>((r) => (intercepted = r));
+  const gate = new Promise<void>((r) => (release = r));
+  await page.route(`**/api/cvs/${id}`, async (route) => {
+    if (route.request().method() === "PATCH") {
+      intercepted();
+      await gate;
+    }
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await arrived;
+  await page.getByLabel("姓名", { exact: true }).fill("保存期间继续输入");
+  release();
+  await expect(
+    page.getByRole("status").filter({ hasText: "未保存" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("姓名", { exact: true })).toHaveValue(
+    "保存期间继续输入",
+  );
+  await page.unroute(`**/api/cvs/${id}`);
+  await save(page);
+  expect(
+    (await (await page.request.get(`/api/cvs/${id}`)).json()).profile.fullName,
+  ).toBe("保存期间继续输入");
+});
+
+test("mobile preserves module context and has no horizontal page overflow", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await signup(page);
+  await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("移动端用户");
+  await entry(page, "教育经历", "移动端大学", "软件工程");
+  await page.getByRole("button", { name: "预览简历", exact: true }).click();
+  await expect(page.locator("[data-resume-document]").first()).toContainText(
+    "移动端大学",
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.getByRole("button", { name: "填写信息", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "添加教育经历", exact: true }),
+  ).toBeVisible();
+  await save(page);
+});
+
+test("JSON export/import restores source data and PDF is an actual file", async ({
+  page,
+}) => {
+  await signup(page);
+  const id = await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("文件验收");
+  await entry(page, "工作经历", "文件公司", "工程师");
+  await save(page);
+  await page.getByRole("button", { name: "导出简历" }).click();
+  await page.getByRole("radio", { name: /JSON/ }).check();
+  const waiting = page.waitForEvent("download");
+  await page.getByRole("button", { name: "生成并下载" }).click();
+  const backup = await waiting;
+  const file = await backup.path();
+  expect(file).toBeTruthy();
+  await page.getByRole("button", { name: "返回编辑" }).click();
+  await page.goto("/");
+  await page.getByRole("button", { name: "导入", exact: true }).click();
+  await page.getByLabel("选择简历文件").setInputFiles({
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer: await readFile(file!),
+  });
+  await page.getByRole("button", { name: "确认并新建" }).click();
+  await page.waitForURL("**/cvs/**");
+  expect(page.url()).not.toContain(id);
+  await page.getByRole("button", { name: "导出简历" }).click();
+  const pdfWaiting = page.waitForEvent("download", { timeout: 120000 });
+  await page.getByRole("button", { name: "生成并下载" }).click();
+  const pdf = await pdfWaiting;
+  expect(pdf.suggestedFilename()).toMatch(/\.pdf$/);
+  const fs = await import("node:fs/promises");
+  expect(
+    (await fs.readFile((await pdf.path())!)).subarray(0, 4).toString(),
+  ).toBe("%PDF");
+});
+
+test("portrait and account avatar remain independent; cancel keeps crop", async ({
+  page,
+}) => {
+  await signup(page);
+  const id = await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("照片用户");
+  await page.getByRole("button", { name: "选择照片", exact: true }).click();
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==",
+    "base64",
+  );
+  await page
+    .getByLabel("选择图片文件")
+    .setInputFiles({
+      name: "portrait.png",
+      mimeType: "image/png",
+      buffer: png,
+    });
+  await expect(page.getByAltText("待应用的照片预览")).toBeVisible();
+  await page.getByRole("button", { name: "应用照片" }).click();
+  await save(page);
+  const before = await (await page.request.get(`/api/cvs/${id}`)).json();
+  expect(before.profile.avatarUrl).toMatch(/^data:image\/jpeg/);
+  await page.getByRole("button", { name: "更换／调整照片" }).click();
+  await page.locator("#photo-x").fill("75");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "取消", exact: true })
+    .click();
+  await save(page);
+  expect(
+    (await (await page.request.get(`/api/cvs/${id}`)).json()).profile.photoX,
+  ).toBe(before.profile.photoX);
+  await page.goto("/settings/profile");
+  await page.getByRole("button", { name: "选择照片", exact: true }).click();
+  await page
+    .getByLabel("选择图片文件")
+    .setInputFiles({ name: "account.png", mimeType: "image/png", buffer: png });
+  await page.getByRole("button", { name: "应用照片" }).click();
+  await page.getByRole("button", { name: "保存资料" }).click();
+  await expect(page.getByText("资料已保存", { exact: true })).toBeVisible();
+  expect(
+    (await (await page.request.get(`/api/cvs/${id}`)).json()).profile.avatarUrl,
+  ).toBe(before.profile.avatarUrl);
+});

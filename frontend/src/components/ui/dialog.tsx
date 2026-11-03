@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
 export interface DialogProps {
@@ -11,6 +11,7 @@ export interface DialogProps {
   title: string;
   description?: string;
   children?: React.ReactNode;
+  returnFocusRef?: React.RefObject<HTMLElement | null>;
 }
 
 export function Dialog({
@@ -19,53 +20,49 @@ export function Dialog({
   title,
   description,
   children,
+  returnFocusRef,
 }: DialogProps) {
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && open) {
-        onOpenChange(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange]);
-
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
-        onClick={() => onOpenChange(false)}
-      />
-
-      {/* Dialog Content */}
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="relative z-50 w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-xl animate-in fade-in zoom-in-95 duration-150"
-      >
-        <div className="flex items-start justify-between pb-4">
-          <div>
-            <h2 className="text-base font-semibold text-foreground">{title}</h2>
-            {description && (
-              <p className="mt-1 text-xs text-muted-foreground">{description}</p>
-            )}
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          aria-describedby={description ? undefined : undefined}
+          onCloseAutoFocus={(event) => {
+            const trigger = returnFocusRef?.current;
+            if (trigger?.isConnected) {
+              event.preventDefault();
+              trigger.focus();
+            }
+          }}
+          className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-xl max-h-[90dvh] overflow-y-auto -translate-x-1/2 -translate-y-1/2 rounded-xl bg-background p-6 text-foreground shadow-xl outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
+        >
+          <div className="flex items-start justify-between gap-4 pb-4">
+            <div>
+              <DialogPrimitive.Title className="text-base font-semibold tracking-tight">
+                {title}
+              </DialogPrimitive.Title>
+              {description ? (
+                <DialogPrimitive.Description className="mt-1 text-sm leading-6 text-muted-foreground">
+                  {description}
+                </DialogPrimitive.Description>
+              ) : null}
+            </div>
+            <DialogPrimitive.Close asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                aria-label="关闭对话框"
+                className="-mr-2 -mt-2 shrink-0 text-muted-foreground hover:text-foreground"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </Button>
+            </DialogPrimitive.Close>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            aria-label="关闭"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <div className="py-2">{children}</div>
-      </div>
-    </div>
+          <div className="pt-1">{children}</div>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }

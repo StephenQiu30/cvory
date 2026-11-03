@@ -1,44 +1,33 @@
-"""Security and owner authentication."""
-
-from typing import Optional
-from fastapi import Header, Request
+"""Database-backed, HttpOnly account sessions with write-origin protection."""
+import hashlib
+from datetime import datetime, timezone
+from fastapi import Depends, Request
+from sqlalchemy.orm import Session
+from app.core.database import get_db
+from app.core.errors import UnauthenticatedError, PermissionDeniedError
 from app.core.config import settings
-from app.core.errors import UnauthenticatedError
+from app.models.account import SessionModel
 
 
-def get_current_owner(
-    request: Request,
-    x_owner_token: Optional[str] = Header(None, alias="X-Owner-Token"),
-    authorization: Optional[str] = Header(None, alias="Authorization"),
-) -> str:
-    """Verify owner credentials.
+def session_hash(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
-    Args:
-        request: The incoming HTTP request.
-        x_owner_token: Token from X-Owner-Token header.
-        authorization: Bearer token from Authorization header.
 
-    Returns:
-        The authenticated owner identifier string.
+def verify_origin(request: Request) -> None:
+    if request.method in ("GET", "HEAD", "OPTIONS"):
+        return
+    origin = request.headers.get("origin")
+    # SameSite cookies alone are insufficient for same-site cross-origin requests.
+    if origin and origin.rstrip("/") not in settings.cors_origins:
+        raise PermissionDeniedError("Untrusted request origin.")
+    if request.headers.get("sec-fetch-site") == "cross-site":
+        raise PermissionDeniedError("Cross-site write rejected.")
 
-    Raises:
-        UnauthenticatedError: If verification fails.
-    """
-    token: Optional[str] = None
-    if x_owner_token:
-        token = x_owner_token
-    elif authorization and authorization.startswith("Bearer "):
-        token = authorization[7:].strip()
 
-    # In dev_mode, allow requests with no token or default token
-    if settings.dev_mode:
-        if token is None or token == settings.owner_token:
-            return "owner"
-        # If token was supplied but is wrong
-        raise UnauthenticatedError("Invalid authentication token.")
-
-    # In production mode, require valid owner token
-    if not token or token != settings.owner_token:
-        raise UnauthenticatedError("Valid owner authentication token is required.")
-
-    return "owner"
+def get_current_owner(request: Request, db: Session = Depends(get_db)) -> str:
+    verify_origin(request)
+    token = request.cookies.get("cvory_session", "")
+    session = db.get(SessionModel, session_hash(token)) if token else None
+    if not session or session.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
+        raise UnauthenticatedError()
+    return session.owner_id

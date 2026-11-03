@@ -1,5 +1,7 @@
 """Business logic for CV creation, updating, versioning, and avatar handling."""
 
+import base64
+import logging
 import hashlib
 import json
 import os
@@ -11,8 +13,10 @@ from typing import List, Optional, Tuple
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from app.core.config import settings
+from app.services.image_service import normalize_image
 from app.core.errors import AbortedError, InvalidArgumentError, NotFoundError
 from app.models.cv import CVModel
 from app.schemas.common import to_rfc3339
@@ -36,12 +40,19 @@ def _compute_etag(cv_id: str, display_name: str, updated_at: datetime, payload_d
 
 def _model_to_resource(model: CVModel) -> CVResource:
     """Transform an internal SQLAlchemy CVModel to a public Google AIP-121 CVResource."""
+    profile = dict(model.profile or {})
+    url = profile.get("avatar_url")
+    if url and url.startswith(f"{settings.api_prefix}/cvs/{model.id}/avatar"):
+        path = CVService.get_avatar_path(model.id)
+        if path and path.stat().st_size <= 2_097_152:
+            suffix = "jpeg" if path.suffix.lower() in {".jpg", ".jpeg"} else path.suffix.lstrip(".")
+            profile["avatar_url"] = normalize_image(f"data:image/{suffix};base64," + base64.b64encode(path.read_bytes()).decode())
     return CVResource(
         name=f"cvs/{model.id}",
         id=model.id,
         display_name=model.display_name,
         etag=model.etag,
-        profile=ProfileSchema(**(model.profile or {})),
+        profile=ProfileSchema(**profile),
         sections=[SectionSchema(**sec) for sec in (model.sections or [])],
         style_settings=StyleSettingsSchema(**(model.style_settings or {})),
         create_time=to_rfc3339(model.create_time),
@@ -51,118 +62,9 @@ def _model_to_resource(model: CVModel) -> CVResource:
 
 def _default_sections() -> List[dict]:
     """Default module sections for a newly created CV."""
-    return [
-        {
-            "id": "sec-summary",
-            "type": "summary",
-            "title": "个人简介",
-            "visible": True,
-            "content": {
-                "type": "doc",
-                "content": [
-                    {
-                        "type": "paragraph",
-                        "content": [
-                            {"type": "text", "text": "热爱技术的前端工程师，拥有扎实的系统设计与工程化经验。"}
-                        ],
-                    }
-                ],
-            },
-            "items": [],
-        },
-        {
-            "id": "sec-experience",
-            "type": "experience",
-            "title": "工作经历",
-            "visible": True,
-            "content": None,
-            "items": [
-                {
-                    "id": "item-exp-1",
-                    "title": "科技创新有限公司",
-                    "subtitle": "高级前端开发工程师",
-                    "dateRange": "2022.06 - 至今",
-                    "location": "北京",
-                    "description": {
-                        "type": "doc",
-                        "content": [
-                            {
-                                "type": "paragraph",
-                                "content": [
-                                    {"type": "text", "text": "负责核心工作流系统重构，提升页面渲染与操作响应性能 40%。"}
-                                ],
-                            }
-                        ],
-                    },
-                    "tags": ["React", "Next.js", "TypeScript"],
-                }
-            ],
-        },
-        {
-            "id": "sec-education",
-            "type": "education",
-            "title": "教育背景",
-            "visible": True,
-            "content": None,
-            "items": [
-                {
-                    "id": "item-edu-1",
-                    "title": "清华大学",
-                    "subtitle": "计算机科学与技术 · 本科",
-                    "dateRange": "2018.09 - 2022.06",
-                    "location": "北京",
-                    "description": None,
-                    "tags": [],
-                }
-            ],
-        },
-        {
-            "id": "sec-projects",
-            "type": "project",
-            "title": "项目经历",
-            "visible": True,
-            "content": None,
-            "items": [
-                {
-                    "id": "item-proj-1",
-                    "title": "高性能富文本协同平台",
-                    "subtitle": "核心开发者",
-                    "dateRange": "2023.03 - 2023.12",
-                    "location": "",
-                    "description": {
-                        "type": "doc",
-                        "content": [
-                            {
-                                "type": "paragraph",
-                                "content": [
-                                    {"type": "text", "text": "基于 Tiptap 与 CRDT 实现多端低延迟状态同步与版本冲突回滚机制。"}
-                                ],
-                            }
-                        ],
-                    },
-                    "tags": ["Tiptap", "WebSockets"],
-                }
-            ],
-        },
-        {
-            "id": "sec-skills",
-            "type": "skill",
-            "title": "专业技能",
-            "visible": True,
-            "content": None,
-            "items": [
-                {
-                    "id": "item-skill-1",
-                    "title": "前端开发",
-                    "subtitle": "精通 TypeScript, React, Next.js, Tailwind CSS, Tiptap",
-                    "dateRange": "",
-                    "location": "",
-                    "description": None,
-                    "tags": ["React", "TypeScript", "Next.js"],
-                }
-            ],
-        },
-    ]
+    return [dict(id=f"sec-{kind}", type=kind, title=title, visible=True, content=None, items=[])
+            for kind, title in [("summary", "个人简介"), ("experience", "工作经历"),
+                                ("project", "项目经历"), ("education", "教育经历"), ("skill", "专业技能")]]
 
 
 class CVService:
@@ -173,9 +75,10 @@ class CVService:
         db: Session,
         page_size: int = 50,
         page_token: Optional[str] = None,
+        owner_id: str = "legacy",
     ) -> Tuple[List[CVResource], str, int]:
         """List CVs with simple pagination."""
-        query = db.query(CVModel).order_by(CVModel.update_time.desc())
+        query = db.query(CVModel).filter(CVModel.owner_id == owner_id).order_by(CVModel.update_time.desc())
         total_size = query.count()
 
         offset = 0
@@ -193,28 +96,28 @@ class CVService:
         return resources, next_page_token, total_size
 
     @staticmethod
-    def get_cv(db: Session, cv_id: str) -> CVResource:
+    def get_cv(db: Session, cv_id: str, owner_id: str = "legacy") -> CVResource:
         """Fetch a single CV by ID or raise NotFoundError."""
-        model = db.query(CVModel).filter(CVModel.id == cv_id).first()
+        model = db.query(CVModel).filter(CVModel.id == cv_id, CVModel.owner_id == owner_id).first()
         if not model:
             raise NotFoundError(f"CV with ID '{cv_id}' was not found.")
         return _model_to_resource(model)
 
     @staticmethod
-    def create_cv(db: Session, req: CreateCVRequest) -> CVResource:
+    def create_cv(db: Session, req: CreateCVRequest, owner_id: str = "legacy") -> CVResource:
         """Create a new independent CV."""
-        cv_id = str(uuid.uuid4())
+        cv_id = str(uuid.uuid5(uuid.NAMESPACE_URL, f"{owner_id}:{req.request_id}")) if req.request_id else str(uuid.uuid4())
+        existing = db.query(CVModel).filter_by(id=cv_id, owner_id=owner_id).first()
+        if existing:
+            return _model_to_resource(existing)
         now = datetime.now(timezone.utc)
 
-        profile_data = req.profile.model_dump(by_alias=False) if req.profile else {
-            "full_name": "我的姓名",
-            "headline": "专业工程师",
-            "email": "contact@example.com",
-            "phone": "+86 138 0000 0000",
-            "location": "北京",
-            "website": "https://github.com",
-            "avatar_url": None,
-        }
+        profile_data = (req.profile or ProfileSchema()).model_dump(by_alias=False)
+
+        if profile_data.get("avatar_url", "") and profile_data["avatar_url"].startswith("data:"):
+            profile_data["avatar_url"] = normalize_image(profile_data["avatar_url"])
+        elif profile_data.get("avatar_url"):
+            raise InvalidArgumentError("Backups must contain embedded photo data.")
 
         sections_data = (
             [sec.model_dump(by_alias=False) for sec in req.sections]
@@ -241,6 +144,7 @@ class CVService:
 
         model = CVModel(
             id=cv_id,
+            owner_id=owner_id,
             display_name=req.display_name,
             etag=initial_etag,
             profile=profile_data,
@@ -251,7 +155,13 @@ class CVService:
         )
 
         db.add(model)
-        db.commit()
+        try:
+            db.commit()
+        except IntegrityError:
+            db.rollback()
+            if not req.request_id:
+                raise
+            return CVService.get_cv(db, cv_id, owner_id)
         db.refresh(model)
         return _model_to_resource(model)
 
@@ -261,9 +171,10 @@ class CVService:
         cv_id: str,
         req: UpdateCVRequest,
         if_match: Optional[str] = None,
+        owner_id: str = "legacy",
     ) -> CVResource:
         """Update a CV conditionally with ETag / updateMask validation."""
-        model = db.query(CVModel).filter(CVModel.id == cv_id).first()
+        model = db.query(CVModel).filter(CVModel.id == cv_id, CVModel.owner_id == owner_id).first()
         if not model:
             raise NotFoundError(f"CV with ID '{cv_id}' was not found.")
 
@@ -277,94 +188,77 @@ class CVService:
                 "Resource state conflict. The CV has been modified elsewhere (ETag mismatch)."
             )
 
-        # Apply updates
-        now = datetime.now(timezone.utc)
-        mask = [m.strip() for m in req.update_mask.split(",")] if req.update_mask else None
-
-        def should_update(field_name: str) -> bool:
-            return mask is None or field_name in mask
-
-        if req.display_name is not None and should_update("displayName"):
-            model.display_name = req.display_name
-
-        if req.profile is not None and should_update("profile"):
-            model.profile = req.profile.model_dump(by_alias=False)
-
-        if req.sections is not None and should_update("sections"):
-            model.sections = [sec.model_dump(by_alias=False) for sec in req.sections]
-
-        if req.style_settings is not None and should_update("styleSettings"):
-            model.style_settings = req.style_settings.model_dump(by_alias=False)
-
-        model.update_time = now
-        model.etag = _compute_etag(model.id, model.display_name, now, {
-            "profile": model.profile,
-            "sections": model.sections,
-            "style_settings": model.style_settings,
-        })
-
+        allowed = {"displayName": "display_name", "profile": "profile", "sections": "sections", "styleSettings": "style_settings"}
+        mask = [m.strip() for m in req.update_mask.split(",")] if req.update_mask else list(allowed)
+        if any(m not in allowed for m in mask):
+            raise InvalidArgumentError("Unsupported update mask.")
+        values = {}
+        for external, internal in allowed.items():
+            value = getattr(req, internal)
+            if external in mask and value is not None:
+                values[internal] = [v.model_dump() for v in value] if isinstance(value, list) else value.model_dump() if hasattr(value, "model_dump") else value
+        if "profile" in values:
+            url = values["profile"].get("avatar_url")
+            if url and url.startswith("data:"):
+                values["profile"]["avatar_url"] = normalize_image(url)
+            elif url and not url.startswith(f"{settings.api_prefix}/cvs/{cv_id}/avatar"):
+                raise InvalidArgumentError("Only uploaded resume photos are allowed.")
+        values["update_time"] = datetime.now(timezone.utc)
+        values["etag"] = uuid.uuid4().hex[:16]
+        changed = db.query(CVModel).filter(CVModel.id == cv_id, CVModel.owner_id == owner_id, CVModel.etag == provided_etag).update(values, synchronize_session=False)
+        if changed != 1:
+            db.rollback()
+            raise AbortedError()
         db.commit()
-        db.refresh(model)
-        return _model_to_resource(model)
+        db.expire_all()
+        return CVService.get_cv(db, cv_id, owner_id)
 
     @staticmethod
-    def delete_cv(db: Session, cv_id: str, if_match: Optional[str] = None) -> None:
+    def delete_cv(db: Session, cv_id: str, if_match: Optional[str] = None, owner_id: str = "legacy") -> None:
         """Delete an existing CV."""
-        model = db.query(CVModel).filter(CVModel.id == cv_id).first()
+        model = db.query(CVModel).filter(CVModel.id == cv_id, CVModel.owner_id == owner_id).first()
         if not model:
             raise NotFoundError(f"CV with ID '{cv_id}' was not found.")
 
-        if if_match:
-            clean_if_match = if_match.strip('"')
-            if clean_if_match != model.etag:
-                raise AbortedError("Resource state conflict while deleting CV (ETag mismatch).")
+        if not if_match:
+            raise InvalidArgumentError("ETag is required for deletion.")
+        if model.etag != if_match.strip('"'):
+            raise AbortedError()
+        changed = db.query(CVModel).filter_by(id=cv_id, owner_id=owner_id, etag=if_match.strip('"')).delete(synchronize_session=False)
+        if changed != 1:
+            db.rollback()
+            raise AbortedError()
 
-        # Clean avatar if exists
+        db.commit()
+        # Clean legacy files only after the conditional database delete succeeds.
         avatar_dir = settings.data_dir / "avatars"
         if avatar_dir.exists():
             for f in avatar_dir.glob(f"{cv_id}.*"):
                 try:
                     f.unlink()
                 except OSError:
-                    pass
-
-        db.delete(model)
-        db.commit()
+                    logging.getLogger(__name__).warning("Unable to remove a legacy photo after CV deletion.")
 
     @staticmethod
-    def save_avatar(db: Session, cv_id: str, file: UploadFile) -> CVResource:
+    def save_avatar(db: Session, cv_id: str, file: UploadFile, owner_id: str = "legacy") -> CVResource:
         """Save avatar file and update profile.avatar_url."""
-        model = db.query(CVModel).filter(CVModel.id == cv_id).first()
+        model = db.query(CVModel).filter(CVModel.id == cv_id, CVModel.owner_id == owner_id).first()
         if not model:
             raise NotFoundError(f"CV with ID '{cv_id}' was not found.")
 
-        ext = Path(file.filename or "").suffix.lower()
-        if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
-            ext = ".png"
-
-        avatar_dir = settings.data_dir / "avatars"
-        avatar_dir.mkdir(parents=True, exist_ok=True)
-
-        target_file = avatar_dir / f"{cv_id}{ext}"
-        with target_file.open("wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        import base64
+        raw = file.file.read(2_097_153)
+        if len(raw) > 2_097_152:
+            raise InvalidArgumentError("Photo exceeds 2 MB.")
+        mime = file.content_type or "image/png"
+        image = normalize_image(f"data:{mime};base64," + base64.b64encode(raw).decode())
 
         # Update profile avatarUrl
         profile = dict(model.profile or {})
-        profile["avatar_url"] = f"{settings.api_prefix}/cvs/{cv_id}/avatar"
-        model.profile = profile
-
-        now = datetime.now(timezone.utc)
-        model.update_time = now
-        model.etag = _compute_etag(model.id, model.display_name, now, {
-            "profile": model.profile,
-            "sections": model.sections,
-            "style_settings": model.style_settings,
-        })
-
-        db.commit()
-        db.refresh(model)
-        return _model_to_resource(model)
+        profile["avatar_url"] = image
+        return CVService.update_cv(
+            db, cv_id, UpdateCVRequest(profile=ProfileSchema(**profile), etag=model.etag, update_mask="profile"), owner_id=owner_id
+        )
 
     @staticmethod
     def get_avatar_path(cv_id: str) -> Optional[Path]:

@@ -1,10 +1,32 @@
 declare namespace API {
+  type AccountResource = {
+    /** Id */
+    id: string;
+    /** Email */
+    email: string;
+    /** Displayname */
+    displayName: string;
+    /** Avatar */
+    avatar?: string | null;
+    /** Publicid */
+    publicId: string;
+  };
+
+  type AccountUpdate = {
+    /** Displayname */
+    displayName: string;
+    /** Avatar */
+    avatar?: string | null;
+  };
+
   type BodyUploadCvAvatar = {
     /** File 头像图片文件（支持 PNG、JPEG、WEBP 格式） */
     file: string;
   };
 
   type CreateCVRequest = {
+    /** Requestid */
+    requestId?: string | null;
     /** Displayname 新简历的显示名称 */
     displayName: string;
     /** 初始个人基本信息（可选，默认提供空白框架） */
@@ -13,6 +35,15 @@ declare namespace API {
     sections?: SectionSchema[] | null;
     /** 排版样式参数（可选，默认标准排版） */
     styleSettings?: StyleSettingsSchema | null;
+  };
+
+  type Credentials = {
+    /** Email */
+    email: string;
+    /** Password */
+    password: string;
+    /** Displayname */
+    displayName?: string;
   };
 
   type CVResource = {
@@ -27,7 +58,7 @@ declare namespace API {
     /** 个人基本信息与联系方式 */
     profile: ProfileSchema;
     /** Sections 有序的简历内容模块列表 */
-    sections?: SectionSchema[];
+    sections: SectionSchema[];
     /** 纸张排版与文字样式预设 */
     styleSettings: StyleSettingsSchema;
     /** Createtime 创建时间（RFC 3339 UTC 格式） */
@@ -38,6 +69,10 @@ declare namespace API {
 
   type deleteCvParams = {
     cv_id: string;
+  };
+
+  type deletePresetParams = {
+    preset_id: string;
   };
 
   type ErrorBody = {
@@ -62,6 +97,11 @@ declare namespace API {
     domain?: string | null;
   };
 
+  type exportCvPdfParams = {
+    cv_id: string;
+    etag: string;
+  };
+
   type FieldViolation = {
     /** Field 发生校验错误的字段路径 */
     field: string;
@@ -75,6 +115,14 @@ declare namespace API {
 
   type getCvParams = {
     cv_id: string;
+  };
+
+  type getPrintContextParams = {
+    ticket: string;
+  };
+
+  type getPublicResumeParams = {
+    public_id: string;
   };
 
   type GoogleErrorResponse = {
@@ -115,8 +163,74 @@ declare namespace API {
     location?: string;
     /** Website 个人网站或 GitHub 主页 */
     website?: string;
+    /** Github */
+    github?: string;
+    /** Wechat */
+    wechat?: string;
+    /** Jobstatus */
+    jobStatus?: string;
+    /** Expectedlocation */
+    expectedLocation?: string;
+    /** Experienceyears */
+    experienceYears?: string;
+    /** Expectedsalary */
+    expectedSalary?: string;
+    /** Hiddenfields */
+    hiddenFields?: string[];
+    /** Photohidden */
+    photoHidden?: boolean;
+    /** Photoposition */
+    photoPosition?: "left" | "right";
+    /** Photox */
+    photoX?: number;
+    /** Photoy */
+    photoY?: number;
+    /** Photoscale */
+    photoScale?: number;
     /** Avatarurl 个人头像资源访问 URL */
     avatarUrl?: string | null;
+  };
+
+  type PublicationReview = {
+    /** Id */
+    id: string;
+    /** Sourcename */
+    sourceName: string;
+    document: ResumeDocument;
+  };
+
+  type PublicationStatus = {
+    /** Published */
+    published: boolean;
+    /** Sourcename */
+    sourceName?: string;
+    /** Updatetime */
+    updateTime?: string;
+    /** Publicid */
+    publicId: string;
+  };
+
+  type PublicSelection = {
+    /** Sourceid */
+    sourceId: string;
+    /** Etag */
+    etag: string;
+    /** Fields */
+    fields: string[];
+    /** Sectionids */
+    sectionIds: string[];
+  };
+
+  type PublishRequest = {
+    /** Reviewid */
+    reviewId: string;
+  };
+
+  type ResumeDocument = {
+    profile: ProfileSchema;
+    /** Sections */
+    sections: SectionSchema[];
+    styleSettings: StyleSettingsSchema;
   };
 
   type SectionItemSchema = {
@@ -132,6 +246,20 @@ declare namespace API {
     location?: string;
     /** Description 详细职责与产出说明，支持 Tiptap JSON 格式或纯文本 */
     description?: any;
+    /** Startdate */
+    startDate?: string;
+    /** Enddate */
+    endDate?: string;
+    /** Current */
+    current?: boolean;
+    /** Degree */
+    degree?: string;
+    /** Educationtype */
+    educationType?: string;
+    /** Department */
+    department?: string;
+    /** Link */
+    link?: string;
     /** Tags 技术栈或高亮标签列表 */
     tags?: string[];
   };
@@ -140,7 +268,13 @@ declare namespace API {
     /** Id 模块稳定唯一标识 ID */
     id: string;
     /** Type 模块类型：summary, experience, education, project, skill, custom */
-    type: string;
+    type:
+      | "summary"
+      | "experience"
+      | "education"
+      | "project"
+      | "skill"
+      | "custom";
     /** Title 模块对外展示标题 */
     title: string;
     /** Visible 模块是否可见（隐藏不会删除数据） */
@@ -151,9 +285,19 @@ declare namespace API {
     items?: SectionItemSchema[];
   };
 
+  type StylePreset = {
+    /** Id */
+    id: string;
+    /** Displayname */
+    displayName: string;
+    settings: StyleSettingsSchema;
+  };
+
   type StyleSettingsSchema = {
+    /** Accent */
+    accent?: "ink" | "blue" | "graphite";
     /** Templateid 排版模板标识：standard（标准）或 compact（紧凑） */
-    templateId?: string;
+    templateId?: "standard" | "compact" | "timeline";
     /** Fontsize 正文字号基线大小（像素 px） */
     fontSize?: number;
     /** Lineheight 正文排版行高比例 */

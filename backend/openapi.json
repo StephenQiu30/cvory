@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "\u7b80\u5e8f \u00b7 CVory \u4e1a\u52a1\u670d\u52a1 API",
-    "description": "\n## \u7b80\u5e8f \u00b7 CVory \u540e\u7aef RESTful \u63a5\u53e3\u6587\u6863\n\n\u9075\u5faa **[Google API Design Guide](https://docs.cloud.google.com/apis/design)** (AIP) \u89c4\u8303\u8bbe\u8ba1\uff1a\n\n* **\u8d44\u6e90\u5bfc\u5411**\uff1a\u5bf9\u5916\u63a5\u53e3\u4f7f\u7528\u6807\u51c6 REST/JSON\uff0c\u8d44\u6e90\u540d\u683c\u5f0f\u4e3a `cvs/{id}`\u3002\n* **\u53c2\u6570\u4e0e\u6a21\u578b\u547d\u540d**\uff1a\u670d\u52a1\u5185\u90e8\u4f7f\u7528 `snake_case`\uff0c\u5bf9\u5916 JSON \u4f7f\u7528 `lowerCamelCase`\u3002\n* **\u5e76\u53d1\u4e00\u81f4\u6027\u63a7\u5236**\uff1a`PATCH` \u66f4\u65b0\u652f\u6301 `If-Match` \u8bf7\u6c42\u5934\u6216\u6b63\u6587 `etag`\uff0c\u51b2\u7a81\u8fd4\u56de `409 ABORTED`\u3002\n* **\u7edf\u4e00\u9519\u8bef\u6a21\u578b**\uff1a\u5168\u7ad9\u9519\u8bef\u54cd\u5e94\u5747\u91c7\u7528 Google AIP-193 \u683c\u5f0f\uff0c\u8bf7\u6c42\u6821\u9a8c\u9519\u8bef\u7edf\u4e00\u5f52\u4e00\u5316\u4e3a `400 INVALID_ARGUMENT`\u3002\n* **\u65f6\u95f4\u8868\u793a**\uff1a\u7edf\u4e00\u4f7f\u7528 RFC 3339 UTC \u683c\u5f0f\u5b57\u7b26\u4e32\uff08\u4f8b\u5982 `2026-11-01T14:30:00Z`\uff09\u3002\n    ",
+    "title": "简序 · CVory 业务服务 API",
+    "description": "\n## 简序 · CVory 后端 RESTful 接口文档\n\n遵循 **[Google API Design Guide](https://docs.cloud.google.com/apis/design)** (AIP) 规范设计：\n\n* **资源导向**：对外接口使用标准 REST/JSON，资源名格式为 `cvs/{id}`。\n* **参数与模型命名**：服务内部使用 `snake_case`，对外 JSON 使用 `lowerCamelCase`。\n* **并发一致性控制**：`PATCH` 更新支持 `If-Match` 请求头或正文 `etag`，冲突返回 `409 ABORTED`。\n* **统一错误模型**：全站错误响应均采用 Google AIP-193 格式，请求校验错误统一归一化为 `400 INVALID_ARGUMENT`。\n* **时间表示**：统一使用 RFC 3339 UTC 格式字符串（例如 `2026-11-01T14:30:00Z`）。\n    ",
     "version": "1.0.0"
   },
   "paths": {
@@ -11,8 +11,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u83b7\u53d6\u7b80\u5386\u5217\u8868",
-        "description": "\u4ee5\u5206\u9875\u5f62\u5f0f\u5217\u4e3e\u5f53\u524d\u6240\u6709\u8005\u540d\u4e0b\u7684\u5168\u90e8\u7b80\u5386\u6587\u6863\u3002\u9075\u5faa Google AIP-158 \u5206\u9875\u6807\u51c6\uff0c\u8fd4\u56de\u5f53\u524d\u9875\u9879\u76ee\u548c\u4e0b\u4e00\u9875\u6e38\u6807 nextPageToken\u3002",
+        "summary": "获取简历列表",
+        "description": "以分页形式列举当前所有者名下的全部简历文档。遵循 Google AIP-158 分页标准，返回当前页项目和下一页游标 nextPageToken。",
         "operationId": "listCvs",
         "parameters": [
           {
@@ -23,11 +23,11 @@
               "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "description": "\u5355\u9875\u6700\u5927\u8fd4\u56de\u6570\u91cf\uff081-100\uff09",
+              "description": "单页最大返回数量（1-100）",
               "default": 50,
               "title": "Pagesize"
             },
-            "description": "\u5355\u9875\u6700\u5927\u8fd4\u56de\u6570\u91cf\uff081-100\uff09"
+            "description": "单页最大返回数量（1-100）"
           },
           {
             "name": "pageToken",
@@ -42,42 +42,10 @@
                   "type": "null"
                 }
               ],
-              "description": "\u5206\u9875\u6807\u8bb0\u6e38\u6807\uff0c\u4e0a\u4e00\u9875\u8fd4\u56de\u7684 nextPageToken",
+              "description": "分页标记游标，上一页返回的 nextPageToken",
               "title": "Pagetoken"
             },
-            "description": "\u5206\u9875\u6807\u8bb0\u6e38\u6807\uff0c\u4e0a\u4e00\u9875\u8fd4\u56de\u7684 nextPageToken"
-          },
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
+            "description": "分页标记游标，上一页返回的 nextPageToken"
           }
         ],
         "responses": {
@@ -92,7 +60,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -102,7 +70,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -112,7 +80,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -122,7 +90,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -132,7 +100,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -157,43 +125,9 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u65b0\u5efa\u4e00\u4efd\u4e2a\u4eba\u7b80\u5386",
-        "description": "\u521b\u5efa\u4e00\u4e2a\u72ec\u7acb\u53ef\u7f16\u8f91\u7684\u7b80\u5386\u8d44\u6e90\u3002\u670d\u52a1\u7aef\u4f1a\u81ea\u52a8\u751f\u6210\u552f\u4e00 UUID\u3001\u521d\u59cb\u5316\u57fa\u7840\u7ed3\u6784\uff0c\u5e76\u751f\u6210\u521d\u59cb ETag\u3002",
+        "summary": "新建一份个人简历",
+        "description": "创建一个独立可编辑的简历资源。服务端会自动生成唯一 UUID、初始化基础结构，并生成初始 ETag。",
         "operationId": "createCv",
-        "parameters": [
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -216,7 +150,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -226,7 +160,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -236,7 +170,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -246,7 +180,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -256,7 +190,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -283,8 +217,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u83b7\u53d6\u5355\u4e2a\u7b80\u5386\u8be6\u60c5",
-        "description": "\u6839\u636e\u7b80\u5386 UUID \u83b7\u53d6\u5b8c\u6574\u7684\u5185\u5bb9\u3001\u6a21\u5757\u6570\u636e\u53ca\u5f53\u524d\u7248\u672c ETag\u3002",
+        "summary": "获取单个简历详情",
+        "description": "根据简历 UUID 获取完整的内容、模块数据及当前版本 ETag。",
         "operationId": "getCv",
         "parameters": [
           {
@@ -294,38 +228,6 @@
             "schema": {
               "type": "string",
               "title": "Cv Id"
-            }
-          },
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -341,7 +243,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -351,7 +253,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -361,7 +263,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -371,7 +273,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -381,7 +283,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -406,8 +308,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u6761\u4ef6\u5c40\u90e8\u66f4\u65b0\u7b80\u5386\u5185\u5bb9",
-        "description": "\u66f4\u65b0\u6307\u5b9a\u7b80\u5386\u7684\u5185\u5bb9\u3002\u9075\u5faa Google AIP-154 \u5e76\u53d1\u6821\u9a8c\u89c4\u5219\uff1a\n* \u5fc5\u987b\u5728\u8bf7\u6c42\u5934 `If-Match` \u6216\u8bf7\u6c42\u4f53\u5185 `etag` \u643a\u5e26\u4fee\u6539\u524d\u6301\u6709\u7684\u7248\u672c ETag\u3002\n* \u82e5\u8fdc\u7aef\u5df2\u66f4\u65b0\u5bfc\u81f4 ETag \u4e0d\u4e00\u81f4\uff0c\u670d\u52a1\u8fd4\u56de `409 ABORTED`\uff0c\u4fdd\u62a4\u7528\u6237\u6570\u636e\u4e0d\u88ab\u9759\u9ed8\u8986\u76d6\u3002\n* \u652f\u6301 `updateMask` \u5b57\u6bb5\u63a9\u7801\u6309\u9700\u66f4\u65b0\u7279\u5b9a\u5b57\u6bb5\uff08\u5982 `displayName,profile,sections`\uff09\u3002",
+        "summary": "条件局部更新简历内容",
+        "description": "更新指定简历的内容。遵循 Google AIP-154 并发校验规则：\n* 必须在请求头 `If-Match` 或请求体内 `etag` 携带修改前持有的版本 ETag。\n* 若远端已更新导致 ETag 不一致，服务返回 `409 ABORTED`，保护用户数据不被静默覆盖。\n* 支持 `updateMask` 字段掩码按需更新特定字段（如 `displayName,profile,sections`）。",
         "operationId": "updateCv",
         "parameters": [
           {
@@ -432,42 +334,10 @@
                   "type": "null"
                 }
               ],
-              "description": "\u4fee\u6539\u524d\u6301\u6709\u7684 ETag \u7279\u5f81\u503c\uff08\u652f\u6301\u53cc\u5f15\u53f7\u5305\u88f9\uff09",
+              "description": "修改前持有的 ETag 特征值（支持双引号包裹）",
               "title": "If-Match"
             },
-            "description": "\u4fee\u6539\u524d\u6301\u6709\u7684 ETag \u7279\u5f81\u503c\uff08\u652f\u6301\u53cc\u5f15\u53f7\u5305\u88f9\uff09"
-          },
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
+            "description": "修改前持有的 ETag 特征值（支持双引号包裹）"
           }
         ],
         "requestBody": {
@@ -492,7 +362,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -502,7 +372,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -512,7 +382,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -522,7 +392,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -532,7 +402,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -557,8 +427,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u5220\u9664\u6307\u5b9a\u7b80\u5386",
-        "description": "\u6c38\u4e45\u79fb\u9664\u6307\u5b9a\u7b80\u5386\u53ca\u5176\u5173\u8054\u7684\u79c1\u6709\u5934\u50cf\u8d44\u6e90\u3002\u652f\u6301\u53ef\u9009\u7684 `If-Match` \u8bf7\u6c42\u5934\u4fdd\u8bc1\u5e76\u53d1\u5220\u9664\u5b89\u5168\u3002",
+        "summary": "删除指定简历",
+        "description": "永久移除指定简历及其关联的私有头像资源。支持可选的 `If-Match` 请求头保证并发删除安全。",
         "operationId": "deleteCv",
         "parameters": [
           {
@@ -583,42 +453,10 @@
                   "type": "null"
                 }
               ],
-              "description": "\u6301\u6709\u7684 ETag \u7279\u5f81\u503c",
+              "description": "持有的 ETag 特征值",
               "title": "If-Match"
             },
-            "description": "\u6301\u6709\u7684 ETag \u7279\u5f81\u503c"
-          },
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
+            "description": "持有的 ETag 特征值"
           }
         ],
         "responses": {
@@ -626,7 +464,7 @@
             "description": "Successful Response"
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -636,7 +474,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -646,7 +484,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -656,7 +494,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -666,7 +504,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -693,8 +531,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u4e0a\u4f20\u5e76\u7ed1\u5b9a\u7b80\u5386\u5934\u50cf",
-        "description": "\u4e3a\u7b80\u5386\u4e0a\u4f20\u4e2a\u4eba\u7167\u7247\u3002\u56fe\u7247\u5c06\u8f6c\u5b58\u5230\u670d\u52a1\u6301\u4e45\u76ee\u5f55\uff0c\u66f4\u65b0\u7b80\u5386\u8d44\u6599\u4e2d\u7684 `avatarUrl` \u5e76\u5237\u65b0 ETag\u3002",
+        "summary": "上传并绑定简历头像",
+        "description": "为简历上传个人照片。图片将转存到服务持久目录，更新简历资料中的 `avatarUrl` 并刷新 ETag。",
         "operationId": "uploadCvAvatar",
         "parameters": [
           {
@@ -704,38 +542,6 @@
             "schema": {
               "type": "string",
               "title": "Cv Id"
-            }
-          },
-          {
-            "name": "X-Owner-Token",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Owner-Token"
-            }
-          },
-          {
-            "name": "Authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -761,7 +567,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -771,7 +577,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -781,7 +587,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -791,7 +597,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -801,7 +607,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -826,8 +632,8 @@
         "tags": [
           "cvs"
         ],
-        "summary": "\u8bfb\u53d6\u7b80\u5386\u5934\u50cf\u56fe\u7247",
-        "description": "\u83b7\u53d6\u6307\u5b9a\u7b80\u5386\u4e0a\u4f20\u4fdd\u5b58\u7684\u5934\u50cf\u539f\u59cb\u56fe\u7247\u6587\u4ef6\u3002",
+        "summary": "读取简历头像图片",
+        "description": "获取指定简历上传保存的头像原始图片文件。",
         "operationId": "getCvAvatar",
         "parameters": [
           {
@@ -850,7 +656,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -860,7 +666,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -870,7 +676,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -880,7 +686,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -890,7 +696,1261 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:register": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Register",
+        "operationId": "registerAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:login": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Login",
+        "operationId": "loginAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account": {
+      "get": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Get Account",
+        "operationId": "getAccount",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Update Account",
+        "operationId": "updateAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:logout": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Logout",
+        "operationId": "logoutAccount",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publication": {
+      "get": {
+        "tags": [
+          "publication"
+        ],
+        "summary": "Status",
+        "operationId": "getPublication",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "publication"
+        ],
+        "summary": "Withdraw",
+        "operationId": "withdrawPublication",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publication:preview": {
+      "post": {
+        "tags": [
+          "publication"
+        ],
+        "summary": "Preview",
+        "operationId": "previewPublication",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicSelection"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/publication:publish": {
+      "post": {
+        "tags": [
+          "publication"
+        ],
+        "summary": "Publish",
+        "operationId": "publishPublication",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicationStatus"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/public/{public_id}": {
+      "get": {
+        "tags": [
+          "publication"
+        ],
+        "summary": "Public Resume",
+        "operationId": "getPublicResume",
+        "parameters": [
+          {
+            "name": "public_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Public Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeDocument"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/presets": {
+      "get": {
+        "tags": [
+          "presets"
+        ],
+        "summary": "List Presets",
+        "operationId": "listPresets",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/StylePreset"
+                  },
+                  "type": "array",
+                  "title": "Response Listpresets"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "presets"
+        ],
+        "summary": "Save Preset",
+        "operationId": "savePreset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StylePreset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StylePreset"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/presets/{preset_id}": {
+      "delete": {
+        "tags": [
+          "presets"
+        ],
+        "summary": "Delete Preset",
+        "operationId": "deletePreset",
+        "parameters": [
+          {
+            "name": "preset_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Preset Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/print/{ticket}": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Print Context",
+        "operationId": "getPrintContext",
+        "parameters": [
+          {
+            "name": "ticket",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ticket"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeDocument"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cvs/{cv_id}/pdf": {
+      "get": {
+        "tags": [
+          "files"
+        ],
+        "summary": "Pdf",
+        "operationId": "exportCvPdf",
+        "parameters": [
+          {
+            "name": "cv_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cv Id"
+            }
+          },
+          {
+            "name": "etag",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Etag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {}
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -917,8 +1977,8 @@
         "tags": [
           "system"
         ],
-        "summary": "\u7cfb\u7edf\u5065\u5eb7\u68c0\u67e5\u63a2\u9488",
-        "description": "\u7528\u4e8e\u5bb9\u5668\u5b58\u6d3b\u4e0e\u5c31\u7eea\u63a2\u9488\u68c0\u67e5\u670d\u52a1\u72b6\u6001\u3002",
+        "summary": "系统健康检查探针",
+        "description": "用于容器存活与就绪探针检查服务状态。",
         "operationId": "health_check_healthz_get",
         "responses": {
           "200": {
@@ -930,7 +1990,7 @@
             }
           },
           "400": {
-            "description": "\u8bf7\u6c42\u53c2\u6570\u4e0d\u5408\u6cd5 (INVALID_ARGUMENT)\uff0c\u643a\u5e26 fieldViolations \u5b57\u6bb5\u660e\u7ec6",
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
             "content": {
               "application/json": {
                 "schema": {
@@ -940,7 +2000,7 @@
             }
           },
           "401": {
-            "description": "\u672a\u7ecf\u6388\u6743\u6216\u6240\u6709\u8005\u51ed\u8bc1\u7f3a\u5931 (UNAUTHENTICATED)",
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -950,7 +2010,7 @@
             }
           },
           "403": {
-            "description": "\u62d2\u7edd\u8bbf\u95ee (PERMISSION_DENIED)",
+            "description": "拒绝访问 (PERMISSION_DENIED)",
             "content": {
               "application/json": {
                 "schema": {
@@ -960,7 +2020,7 @@
             }
           },
           "404": {
-            "description": "\u8bf7\u6c42\u7684\u8d44\u6e90\u672a\u627e\u5230 (NOT_FOUND)",
+            "description": "请求的资源未找到 (NOT_FOUND)",
             "content": {
               "application/json": {
                 "schema": {
@@ -970,7 +2030,7 @@
             }
           },
           "409": {
-            "description": "\u5e76\u53d1\u7248\u672c\u51b2\u7a81 (ABORTED)\uff0c\u8d44\u6e90\u5df2\u88ab\u5176\u4ed6\u4fee\u6539\uff0cETag \u4e0d\u5339\u914d",
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
             "content": {
               "application/json": {
                 "schema": {
@@ -985,13 +2045,78 @@
   },
   "components": {
     "schemas": {
+      "AccountResource": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "displayName": {
+            "type": "string",
+            "title": "Displayname"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          },
+          "publicId": {
+            "type": "string",
+            "title": "Publicid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "displayName",
+          "publicId"
+        ],
+        "title": "AccountResource"
+      },
+      "AccountUpdate": {
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Displayname"
+          },
+          "avatar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avatar"
+          }
+        },
+        "type": "object",
+        "required": [
+          "displayName"
+        ],
+        "title": "AccountUpdate"
+      },
       "Body_uploadCvAvatar": {
         "properties": {
           "file": {
             "type": "string",
             "contentMediaType": "application/octet-stream",
             "title": "File",
-            "description": "\u5934\u50cf\u56fe\u7247\u6587\u4ef6\uff08\u652f\u6301 PNG\u3001JPEG\u3001WEBP \u683c\u5f0f\uff09"
+            "description": "头像图片文件（支持 PNG、JPEG、WEBP 格式）"
           }
         },
         "type": "object",
@@ -1005,7 +2130,7 @@
           "name": {
             "type": "string",
             "title": "Name",
-            "description": "\u8d44\u6e90\u7a33\u5b9a\u552f\u4e00\u8d44\u6e90\u540d\u79f0\uff0c\u683c\u5f0f\uff1acvs/{id}",
+            "description": "资源稳定唯一资源名称，格式：cvs/{id}",
             "examples": [
               "cvs/29059b42-f1bb-481e-8b8c-9aec4d288035"
             ]
@@ -1013,7 +2138,7 @@
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "\u7b80\u5386\u552f\u4e00\u6807\u8bc6 UUID",
+            "description": "简历唯一标识 UUID",
             "examples": [
               "29059b42-f1bb-481e-8b8c-9aec4d288035"
             ]
@@ -1021,22 +2146,22 @@
           "displayName": {
             "type": "string",
             "title": "Displayname",
-            "description": "\u7528\u6237\u8bbe\u5b9a\u7684\u7b80\u5386\u540d\u79f0",
+            "description": "用户设定的简历名称",
             "examples": [
-              "\u6211\u7684\u524d\u7aef\u5f00\u53d1\u7b80\u5386"
+              "我的前端开发简历"
             ]
           },
           "etag": {
             "type": "string",
             "title": "Etag",
-            "description": "\u5f53\u524d\u7248\u672c\u7684\u5185\u5bb9\u7279\u5f81\u54c8\u5e0c ETag\uff0c\u7528\u4e8e\u5e76\u53d1\u5b89\u5168\u4fee\u6539\u6821\u9a8c",
+            "description": "当前版本的内容特征哈希 ETag，用于并发安全修改校验",
             "examples": [
               "2188972beb9238fc"
             ]
           },
           "profile": {
             "$ref": "#/components/schemas/ProfileSchema",
-            "description": "\u4e2a\u4eba\u57fa\u672c\u4fe1\u606f\u4e0e\u8054\u7cfb\u65b9\u5f0f"
+            "description": "个人基本信息与联系方式"
           },
           "sections": {
             "items": {
@@ -1044,16 +2169,16 @@
             },
             "type": "array",
             "title": "Sections",
-            "description": "\u6709\u5e8f\u7684\u7b80\u5386\u5185\u5bb9\u6a21\u5757\u5217\u8868"
+            "description": "有序的简历内容模块列表"
           },
           "styleSettings": {
             "$ref": "#/components/schemas/StyleSettingsSchema",
-            "description": "\u7eb8\u5f20\u6392\u7248\u4e0e\u6587\u5b57\u6837\u5f0f\u9884\u8bbe"
+            "description": "纸张排版与文字样式预设"
           },
           "createTime": {
             "type": "string",
             "title": "Createtime",
-            "description": "\u521b\u5efa\u65f6\u95f4\uff08RFC 3339 UTC \u683c\u5f0f\uff09",
+            "description": "创建时间（RFC 3339 UTC 格式）",
             "examples": [
               "2026-11-01T14:30:00Z"
             ]
@@ -1061,7 +2186,7 @@
           "updateTime": {
             "type": "string",
             "title": "Updatetime",
-            "description": "\u6700\u8fd1\u4e00\u6b21\u66f4\u65b0\u65f6\u95f4\uff08RFC 3339 UTC \u683c\u5f0f\uff09",
+            "description": "最近一次更新时间（RFC 3339 UTC 格式）",
             "examples": [
               "2026-11-01T14:32:00Z"
             ]
@@ -1074,6 +2199,7 @@
           "displayName",
           "etag",
           "profile",
+          "sections",
           "styleSettings",
           "createTime",
           "updateTime"
@@ -1083,14 +2209,26 @@
       },
       "CreateCVRequest": {
         "properties": {
+          "requestId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 64
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requestid"
+          },
           "displayName": {
             "type": "string",
             "maxLength": 255,
             "minLength": 1,
             "title": "Displayname",
-            "description": "\u65b0\u7b80\u5386\u7684\u663e\u793a\u540d\u79f0",
+            "description": "新简历的显示名称",
             "examples": [
-              "\u6211\u7684\u4e2a\u4eba\u7b80\u5386"
+              "我的个人简历"
             ]
           },
           "profile": {
@@ -1102,7 +2240,7 @@
                 "type": "null"
               }
             ],
-            "description": "\u521d\u59cb\u4e2a\u4eba\u57fa\u672c\u4fe1\u606f\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u63d0\u4f9b\u7a7a\u767d\u6846\u67b6\uff09"
+            "description": "初始个人基本信息（可选，默认提供空白框架）"
           },
           "sections": {
             "anyOf": [
@@ -1117,7 +2255,7 @@
               }
             ],
             "title": "Sections",
-            "description": "\u521d\u59cb\u6a21\u5757\u5217\u8868\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u63d0\u4f9b\u5e38\u7528\u8d77\u6b65\u6a21\u5757\uff09"
+            "description": "初始模块列表（可选，默认提供常用起步模块）"
           },
           "styleSettings": {
             "anyOf": [
@@ -1128,7 +2266,7 @@
                 "type": "null"
               }
             ],
-            "description": "\u6392\u7248\u6837\u5f0f\u53c2\u6570\uff08\u53ef\u9009\uff0c\u9ed8\u8ba4\u6807\u51c6\u6392\u7248\uff09"
+            "description": "排版样式参数（可选，默认标准排版）"
           }
         },
         "type": "object",
@@ -1138,22 +2276,49 @@
         "title": "CreateCVRequest",
         "description": "Request payload for creating a new CV."
       },
+      "Credentials": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 10,
+            "title": "Password"
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Displayname",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "Credentials"
+      },
       "ErrorBody": {
         "properties": {
           "code": {
             "type": "integer",
             "title": "Code",
-            "description": "HTTP \u72b6\u6001\u7801"
+            "description": "HTTP 状态码"
           },
           "message": {
             "type": "string",
             "title": "Message",
-            "description": "\u9762\u5411\u5f00\u53d1\u8005\u7684\u82f1\u6587\u9519\u8bef\u63cf\u8ff0"
+            "description": "面向开发者的英文错误描述"
           },
           "status": {
             "type": "string",
             "title": "Status",
-            "description": "Google RPC \u6807\u51c6\u72b6\u6001\u7801\uff0c\u5982 INVALID_ARGUMENT, ABORTED, NOT_FOUND"
+            "description": "Google RPC 标准状态码，如 INVALID_ARGUMENT, ABORTED, NOT_FOUND"
           },
           "details": {
             "items": {
@@ -1161,7 +2326,7 @@
             },
             "type": "array",
             "title": "Details",
-            "description": "\u9519\u8bef\u6269\u5c55\u660e\u7ec6"
+            "description": "错误扩展明细"
           }
         },
         "type": "object",
@@ -1178,7 +2343,7 @@
           "@type": {
             "type": "string",
             "title": "@Type",
-            "description": "\u9519\u8bef\u8be6\u60c5\u7c7b\u578b\u6807\u8bc6 URL"
+            "description": "错误详情类型标识 URL"
           },
           "fieldViolations": {
             "anyOf": [
@@ -1193,7 +2358,7 @@
               }
             ],
             "title": "Fieldviolations",
-            "description": "\u5b57\u6bb5\u6821\u9a8c\u8be6\u60c5\u5217\u8868"
+            "description": "字段校验详情列表"
           },
           "reason": {
             "anyOf": [
@@ -1205,7 +2370,7 @@
               }
             ],
             "title": "Reason",
-            "description": "\u6807\u51c6\u9519\u8bef\u539f\u56e0\u4ee3\u7801"
+            "description": "标准错误原因代码"
           },
           "domain": {
             "anyOf": [
@@ -1217,7 +2382,7 @@
               }
             ],
             "title": "Domain",
-            "description": "\u53d1\u751f\u9519\u8bef\u7684\u4e1a\u52a1\u57df"
+            "description": "发生错误的业务域"
           }
         },
         "type": "object",
@@ -1232,12 +2397,12 @@
           "field": {
             "type": "string",
             "title": "Field",
-            "description": "\u53d1\u751f\u6821\u9a8c\u9519\u8bef\u7684\u5b57\u6bb5\u8def\u5f84"
+            "description": "发生校验错误的字段路径"
           },
           "description": {
             "type": "string",
             "title": "Description",
-            "description": "\u5177\u4f53\u7684\u9519\u8bef\u539f\u56e0\u8bf4\u660e"
+            "description": "具体的错误原因说明"
           }
         },
         "type": "object",
@@ -1282,18 +2447,18 @@
             },
             "type": "array",
             "title": "Cvs",
-            "description": "\u7b80\u5386\u8d44\u6e90\u5217\u8868"
+            "description": "简历资源列表"
           },
           "nextPageToken": {
             "type": "string",
             "title": "Nextpagetoken",
-            "description": "\u4e0b\u4e00\u9875\u5206\u9875\u6e38\u6807 Token\uff1b\u82e5\u4e3a\u7a7a\u5219\u8bf4\u660e\u5df2\u662f\u6700\u540e\u4e00\u9875",
+            "description": "下一页分页游标 Token；若为空则说明已是最后一页",
             "default": ""
           },
           "totalSize": {
             "type": "integer",
             "title": "Totalsize",
-            "description": "\u5f53\u524d\u6240\u6709\u8005\u540d\u4e0b\u7684\u7b80\u5386\u603b\u6570\u91cf",
+            "description": "当前所有者名下的简历总数量",
             "default": 0
           }
         },
@@ -1306,25 +2471,25 @@
           "fullName": {
             "type": "string",
             "title": "Fullname",
-            "description": "\u59d3\u540d",
+            "description": "姓名",
             "default": "",
             "examples": [
-              "\u5f20\u4e09"
+              "张三"
             ]
           },
           "headline": {
             "type": "string",
             "title": "Headline",
-            "description": "\u4e13\u4e1a\u5b9a\u4f4d\u6216\u4e00\u53e5\u8bdd\u5934\u8854",
+            "description": "专业定位或一句话头衔",
             "default": "",
             "examples": [
-              "\u8d44\u6df1\u524d\u7aef\u5f00\u53d1\u5de5\u7a0b\u5e08"
+              "资深前端开发工程师"
             ]
           },
           "email": {
             "type": "string",
             "title": "Email",
-            "description": "\u8054\u7cfb\u7535\u5b50\u90ae\u7bb1",
+            "description": "联系电子邮箱",
             "default": "",
             "examples": [
               "contact@example.com"
@@ -1333,7 +2498,7 @@
           "phone": {
             "type": "string",
             "title": "Phone",
-            "description": "\u8054\u7cfb\u7535\u8bdd",
+            "description": "联系电话",
             "default": "",
             "examples": [
               "+86 138 0000 0000"
@@ -1342,20 +2507,92 @@
           "location": {
             "type": "string",
             "title": "Location",
-            "description": "\u5e38\u9a7b\u57ce\u5e02",
+            "description": "常驻城市",
             "default": "",
             "examples": [
-              "\u5317\u4eac"
+              "北京"
             ]
           },
           "website": {
             "type": "string",
             "title": "Website",
-            "description": "\u4e2a\u4eba\u7f51\u7ad9\u6216 GitHub \u4e3b\u9875",
+            "description": "个人网站或 GitHub 主页",
             "default": "",
             "examples": [
               "https://github.com/example"
             ]
+          },
+          "github": {
+            "type": "string",
+            "title": "Github",
+            "default": ""
+          },
+          "wechat": {
+            "type": "string",
+            "title": "Wechat",
+            "default": ""
+          },
+          "jobStatus": {
+            "type": "string",
+            "title": "Jobstatus",
+            "default": ""
+          },
+          "expectedLocation": {
+            "type": "string",
+            "title": "Expectedlocation",
+            "default": ""
+          },
+          "experienceYears": {
+            "type": "string",
+            "title": "Experienceyears",
+            "default": ""
+          },
+          "expectedSalary": {
+            "type": "string",
+            "title": "Expectedsalary",
+            "default": ""
+          },
+          "hiddenFields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hiddenfields"
+          },
+          "photoHidden": {
+            "type": "boolean",
+            "title": "Photohidden",
+            "default": false
+          },
+          "photoPosition": {
+            "type": "string",
+            "enum": [
+              "left",
+              "right"
+            ],
+            "title": "Photoposition",
+            "default": "right"
+          },
+          "photoX": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Photox",
+            "default": 50
+          },
+          "photoY": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Photoy",
+            "default": 50
+          },
+          "photoScale": {
+            "type": "number",
+            "maximum": 3.0,
+            "minimum": 1.0,
+            "title": "Photoscale",
+            "default": 1
           },
           "avatarUrl": {
             "anyOf": [
@@ -1367,19 +2604,140 @@
               }
             ],
             "title": "Avatarurl",
-            "description": "\u4e2a\u4eba\u5934\u50cf\u8d44\u6e90\u8bbf\u95ee URL"
+            "description": "个人头像资源访问 URL"
           }
         },
         "type": "object",
         "title": "ProfileSchema",
         "description": "Personal contact and basic information."
       },
+      "PublicSelection": {
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "title": "Sourceid"
+          },
+          "etag": {
+            "type": "string",
+            "title": "Etag"
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Fields"
+          },
+          "sectionIds": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sectionids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sourceId",
+          "etag",
+          "fields",
+          "sectionIds"
+        ],
+        "title": "PublicSelection"
+      },
+      "PublicationReview": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sourceName": {
+            "type": "string",
+            "title": "Sourcename"
+          },
+          "document": {
+            "$ref": "#/components/schemas/ResumeDocument"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sourceName",
+          "document"
+        ],
+        "title": "PublicationReview"
+      },
+      "PublicationStatus": {
+        "properties": {
+          "published": {
+            "type": "boolean",
+            "title": "Published"
+          },
+          "sourceName": {
+            "type": "string",
+            "title": "Sourcename",
+            "default": ""
+          },
+          "updateTime": {
+            "type": "string",
+            "title": "Updatetime",
+            "default": ""
+          },
+          "publicId": {
+            "type": "string",
+            "title": "Publicid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "published",
+          "publicId"
+        ],
+        "title": "PublicationStatus"
+      },
+      "PublishRequest": {
+        "properties": {
+          "reviewId": {
+            "type": "string",
+            "title": "Reviewid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewId"
+        ],
+        "title": "PublishRequest"
+      },
+      "ResumeDocument": {
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/ProfileSchema"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/SectionSchema"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "styleSettings": {
+            "$ref": "#/components/schemas/StyleSettingsSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile",
+          "sections",
+          "styleSettings"
+        ],
+        "title": "ResumeDocument"
+      },
       "SectionItemSchema": {
         "properties": {
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "\u5b50\u9879\u7a33\u5b9a\u552f\u4e00\u6807\u8bc6 ID",
+            "description": "子项稳定唯一标识 ID",
             "examples": [
               "item-exp-1"
             ]
@@ -1387,42 +2745,79 @@
           "title": {
             "type": "string",
             "title": "Title",
-            "description": "\u4e3b\u6807\u9898\uff08\u516c\u53f8\u3001\u5b66\u6821\u6216\u9879\u76ee\u540d\uff09",
+            "description": "主标题（公司、学校或项目名）",
             "default": "",
             "examples": [
-              "\u5b57\u8282\u8df3\u52a8"
+              "字节跳动"
             ]
           },
           "subtitle": {
             "type": "string",
             "title": "Subtitle",
-            "description": "\u526f\u6807\u9898\uff08\u804c\u4f4d\u3001\u4e13\u4e1a\u6216\u89d2\u8272\uff09",
+            "description": "副标题（职位、专业或角色）",
             "default": "",
             "examples": [
-              "\u9ad8\u7ea7\u524d\u7aef\u5de5\u7a0b\u5e08"
+              "高级前端工程师"
             ]
           },
           "dateRange": {
             "type": "string",
             "title": "Daterange",
-            "description": "\u8d77\u6b62\u65f6\u95f4\u8de8\u5ea6",
+            "description": "起止时间跨度",
             "default": "",
             "examples": [
-              "2022.06 - \u81f3\u4eca"
+              "2022.06 - 至今"
             ]
           },
           "location": {
             "type": "string",
             "title": "Location",
-            "description": "\u6240\u5728\u5730\u57ce\u5e02\u6216\u529e\u516c\u5730\u70b9",
+            "description": "所在地城市或办公地点",
             "default": "",
             "examples": [
-              "\u5317\u4eac"
+              "北京"
             ]
           },
           "description": {
             "title": "Description",
-            "description": "\u8be6\u7ec6\u804c\u8d23\u4e0e\u4ea7\u51fa\u8bf4\u660e\uff0c\u652f\u6301 Tiptap JSON \u683c\u5f0f\u6216\u7eaf\u6587\u672c"
+            "description": "详细职责与产出说明，支持 Tiptap JSON 格式或纯文本"
+          },
+          "startDate": {
+            "type": "string",
+            "pattern": "^(|\\d{4}-(0[1-9]|1[0-2]))$",
+            "title": "Startdate",
+            "default": ""
+          },
+          "endDate": {
+            "type": "string",
+            "pattern": "^(|\\d{4}-(0[1-9]|1[0-2]))$",
+            "title": "Enddate",
+            "default": ""
+          },
+          "current": {
+            "type": "boolean",
+            "title": "Current",
+            "default": false
+          },
+          "degree": {
+            "type": "string",
+            "title": "Degree",
+            "default": ""
+          },
+          "educationType": {
+            "type": "string",
+            "title": "Educationtype",
+            "default": ""
+          },
+          "department": {
+            "type": "string",
+            "title": "Department",
+            "default": ""
+          },
+          "link": {
+            "type": "string",
+            "title": "Link",
+            "default": ""
           },
           "tags": {
             "items": {
@@ -1430,7 +2825,7 @@
             },
             "type": "array",
             "title": "Tags",
-            "description": "\u6280\u672f\u6808\u6216\u9ad8\u4eae\u6807\u7b7e\u5217\u8868",
+            "description": "技术栈或高亮标签列表",
             "examples": [
               [
                 "React",
@@ -1451,15 +2846,23 @@
           "id": {
             "type": "string",
             "title": "Id",
-            "description": "\u6a21\u5757\u7a33\u5b9a\u552f\u4e00\u6807\u8bc6 ID",
+            "description": "模块稳定唯一标识 ID",
             "examples": [
               "sec-experience"
             ]
           },
           "type": {
             "type": "string",
+            "enum": [
+              "summary",
+              "experience",
+              "education",
+              "project",
+              "skill",
+              "custom"
+            ],
             "title": "Type",
-            "description": "\u6a21\u5757\u7c7b\u578b\uff1asummary, experience, education, project, skill, custom",
+            "description": "模块类型：summary, experience, education, project, skill, custom",
             "examples": [
               "experience"
             ]
@@ -1467,20 +2870,20 @@
           "title": {
             "type": "string",
             "title": "Title",
-            "description": "\u6a21\u5757\u5bf9\u5916\u5c55\u793a\u6807\u9898",
+            "description": "模块对外展示标题",
             "examples": [
-              "\u5de5\u4f5c\u7ecf\u5386"
+              "工作经历"
             ]
           },
           "visible": {
             "type": "boolean",
             "title": "Visible",
-            "description": "\u6a21\u5757\u662f\u5426\u53ef\u89c1\uff08\u9690\u85cf\u4e0d\u4f1a\u5220\u9664\u6570\u636e\uff09",
+            "description": "模块是否可见（隐藏不会删除数据）",
             "default": true
           },
           "content": {
             "title": "Content",
-            "description": "\u76f4\u63a5\u5bcc\u6587\u672c\u6b63\u6587\uff08\u5e38\u7528\u4e8e summary \u7b80\u4ecb\u6a21\u5757\uff09"
+            "description": "直接富文本正文（常用于 summary 简介模块）"
           },
           "items": {
             "items": {
@@ -1488,7 +2891,7 @@
             },
             "type": "array",
             "title": "Items",
-            "description": "\u6a21\u5757\u5185\u7684\u91cd\u590d\u5b50\u9879\u5217\u8868"
+            "description": "模块内的重复子项列表"
           }
         },
         "type": "object",
@@ -1500,12 +2903,51 @@
         "title": "SectionSchema",
         "description": "A CV section (e.g. summary, education, experience, skills, custom)."
       },
+      "StylePreset": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Displayname"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/StyleSettingsSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "displayName",
+          "settings"
+        ],
+        "title": "StylePreset"
+      },
       "StyleSettingsSchema": {
         "properties": {
+          "accent": {
+            "type": "string",
+            "enum": [
+              "ink",
+              "blue",
+              "graphite"
+            ],
+            "title": "Accent",
+            "default": "ink"
+          },
           "templateId": {
             "type": "string",
+            "enum": [
+              "standard",
+              "compact",
+              "timeline"
+            ],
             "title": "Templateid",
-            "description": "\u6392\u7248\u6a21\u677f\u6807\u8bc6\uff1astandard\uff08\u6807\u51c6\uff09\u6216 compact\uff08\u7d27\u51d1\uff09",
+            "description": "排版模板标识：standard（标准）或 compact（紧凑）",
             "default": "standard",
             "examples": [
               "standard"
@@ -1516,7 +2958,7 @@
             "maximum": 20.0,
             "minimum": 12.0,
             "title": "Fontsize",
-            "description": "\u6b63\u6587\u5b57\u53f7\u57fa\u7ebf\u5927\u5c0f\uff08\u50cf\u7d20 px\uff09",
+            "description": "正文字号基线大小（像素 px）",
             "default": 15,
             "examples": [
               15
@@ -1527,7 +2969,7 @@
             "maximum": 2.0,
             "minimum": 1.2,
             "title": "Lineheight",
-            "description": "\u6b63\u6587\u6392\u7248\u884c\u9ad8\u6bd4\u4f8b",
+            "description": "正文排版行高比例",
             "default": 1.5,
             "examples": [
               1.5
@@ -1538,7 +2980,7 @@
             "maximum": 48.0,
             "minimum": 12.0,
             "title": "Margin",
-            "description": "\u9875\u9762\u5916\u8fb9\u8ddd\u5c3a\u5bf8\uff08\u50cf\u7d20 px\uff09",
+            "description": "页面外边距尺寸（像素 px）",
             "default": 24,
             "examples": [
               24
@@ -1563,7 +3005,7 @@
               }
             ],
             "title": "Displayname",
-            "description": "\u66f4\u65b0\u540e\u7684\u7b80\u5386\u540d\u79f0"
+            "description": "更新后的简历名称"
           },
           "profile": {
             "anyOf": [
@@ -1574,7 +3016,7 @@
                 "type": "null"
               }
             ],
-            "description": "\u66f4\u65b0\u540e\u7684\u4e2a\u4eba\u4fe1\u606f"
+            "description": "更新后的个人信息"
           },
           "sections": {
             "anyOf": [
@@ -1589,7 +3031,7 @@
               }
             ],
             "title": "Sections",
-            "description": "\u66f4\u65b0\u540e\u7684\u5b8c\u6574\u6a21\u5757\u5217\u8868\uff08\u652f\u6301\u8c03\u6574\u6392\u5e8f\u4e0e\u53ef\u89c1\u6027\uff09"
+            "description": "更新后的完整模块列表（支持调整排序与可见性）"
           },
           "styleSettings": {
             "anyOf": [
@@ -1600,7 +3042,7 @@
                 "type": "null"
               }
             ],
-            "description": "\u66f4\u65b0\u540e\u7684\u6392\u7248\u6837\u5f0f\u53c2\u6570"
+            "description": "更新后的排版样式参数"
           },
           "etag": {
             "anyOf": [
@@ -1612,7 +3054,7 @@
               }
             ],
             "title": "Etag",
-            "description": "\u5f53\u524d\u6301\u6709\u7684\u8d44\u6e90 ETag\u3002\u5fc5\u987b\u4e0e\u670d\u52a1\u7aef\u4e00\u81f4\uff0c\u5426\u5219\u62d2\u7edd\u5199\u5165\u5e76\u8fd4\u56de 409 ABORTED"
+            "description": "当前持有的资源 ETag。必须与服务端一致，否则拒绝写入并返回 409 ABORTED"
           },
           "updateMask": {
             "anyOf": [
@@ -1624,7 +3066,7 @@
               }
             ],
             "title": "Updatemask",
-            "description": "\u5b57\u6bb5\u63a9\u7801\u5217\u8868\uff0c\u9017\u53f7\u5206\u9694\uff0c\u4f8b\u5982\uff1adisplayName,profile,sections"
+            "description": "字段掩码列表，逗号分隔，例如：displayName,profile,sections"
           }
         },
         "type": "object",
@@ -1676,11 +3118,11 @@
   "tags": [
     {
       "name": "cvs",
-      "description": "CV \u4e2a\u4eba\u7b80\u5386\u6838\u5fc3\u8d44\u6e90\u7ba1\u7406\u63a5\u53e3\uff08\u521b\u5efa\u3001\u5217\u8868\u3001\u8be6\u60c5\u3001\u6761\u4ef6\u5c40\u90e8\u66f4\u65b0\u3001\u5220\u9664\u3001\u5934\u50cf\u4e0a\u4f20\u7b49\uff09\u3002\u9075\u5faa Google AIP-121 \u4e0e AIP-154 \u89c4\u8303\u3002"
+      "description": "CV 个人简历核心资源管理接口（创建、列表、详情、条件局部更新、删除、头像上传等）。遵循 Google AIP-121 与 AIP-154 规范。"
     },
     {
       "name": "system",
-      "description": "\u7cfb\u7edf\u5065\u5eb7\u68c0\u67e5\u4e0e\u63a2\u9488\u63a5\u53e3\u3002"
+      "description": "系统健康检查与探针接口。"
     }
   ]
 }
