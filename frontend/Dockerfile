@@ -7,7 +7,7 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
 # Default backend URL for Docker container network
-ENV BACKEND_INTERNAL_URL=http://backend:8000
+ENV BACKEND_INTERNAL_URL=http://backend:4321
 
 # Install locked dependencies
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -18,7 +18,7 @@ COPY . .
 RUN pnpm build
 
 ENV NODE_ENV=production
-ENV PORT=3000
-EXPOSE 3000
+ENV PORT=1234
+EXPOSE 1234
 
 CMD ["pnpm", "start"]

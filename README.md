@@ -17,8 +17,8 @@ docker compose up -d    # 启动后端与前端容器
 docker compose ps       # 查看容器状态
 docker compose logs -f  # 查看日志
 ```
-- 前端页面：`http://localhost:3000`
-- 后端 Swagger 接口文档：`http://localhost:8000/api/docs`
+- 前端页面：`http://localhost:1234`
+- 后端 Swagger 接口文档：`http://localhost:4321/api/docs`
 
 ### 方式二：本地进程独立启动
 
