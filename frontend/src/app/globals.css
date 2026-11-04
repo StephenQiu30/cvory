@@ -3,47 +3,51 @@
 @custom-variant dark (&:where(.dark, .dark *));
 :root {
   --font-geist-sans:"Geist Variable"; --font-geist-mono:"Geist Mono Variable"; --font-noto-sans-sc:"Noto Sans SC Variable";
-  --background:#F7F7F7;
-  --foreground:#0A0A0A;
-  --surface-subtle:#ECECEC;
-  --muted:#D6D6D6;
-  --muted-foreground:#8F8F8F;
-  --secondary-foreground:#474747;
-  --border:#E5E5E5;
-  --input-border:#D6D6D6;
-  --primary:#474747;
+  --background:#FAFAFA;
+  --surface:#FFFFFF;
+  --foreground:#171717;
+  --surface-subtle:#F5F5F5;
+  --control:#EDEDED;
+  --muted:#EBEBEB;
+  --muted-foreground:#666666;
+  --secondary-foreground:#4D4D4D;
+  --border:#EBEBEB;
+  --input-border:#767676;
+  --primary:#171717;
   --primary-foreground:#FFFFFF;
-  --ring:#0A0A0A;
-  --link:#0A0A0A;
+  --ring:#171717;
+  --link:#171717;
   --popover:#FFFFFF;
-  --popover-foreground:#0A0A0A;
-  --accent:#D6D6D6;
-  --accent-foreground:#0A0A0A;
+  --popover-foreground:#171717;
+  --accent:#F5F5F5;
+  --accent-foreground:#171717;
   --destructive:#B42318;
-  --radius:9999px;
+  --radius:6px;
 }
 .dark {
-  --background:#222222;
-  --foreground:#FFFFFF;
-  --surface-subtle:#2C2C2C;
-  --muted:#383838;
-  --muted-foreground:#8F8F8F;
-  --secondary-foreground:#D6D6D6;
-  --border:#383838;
-  --input-border:#474747;
-  --primary:#FFFFFF;
-  --primary-foreground:#0A0A0A;
-  --link:#FFFFFF;
-  --ring:#FFFFFF;
+  --background:#171717;
+  --surface:#222222;
+  --foreground:#FAFAFA;
+  --surface-subtle:#303030;
+  --control:#303030;
+  --muted:#303030;
+  --muted-foreground:#B5B5B5;
+  --secondary-foreground:#D4D4D4;
+  --border:#484848;
+  --input-border:#A3A3A3;
+  --primary:#FAFAFA;
+  --primary-foreground:#171717;
+  --link:#FAFAFA;
+  --ring:#FAFAFA;
   --popover:#222222;
   --popover-foreground:#FFFFFF;
-  --accent:#333333;
+  --accent:#303030;
   --accent-foreground:#FFFFFF;
   --destructive:#FF8880;
 }
-@theme inline { --color-background:var(--background); --color-foreground:var(--foreground); --color-surface-subtle:var(--surface-subtle); --color-muted:var(--muted); --color-muted-foreground:var(--muted-foreground); --color-secondary-foreground:var(--secondary-foreground); --color-border:var(--border); --color-input-border:var(--input-border); --color-primary:var(--primary); --color-primary-foreground:var(--primary-foreground); --color-ring:var(--ring); --color-link:var(--link); --color-popover:var(--popover); --color-popover-foreground:var(--popover-foreground); --color-accent:var(--accent); --color-accent-foreground:var(--accent-foreground); --color-destructive:var(--destructive); --font-sans:var(--font-geist-sans),var(--font-noto-sans-sc),sans-serif; --font-mono:var(--font-geist-mono),monospace; }
+@theme inline { --color-background:var(--background); --color-surface:var(--surface); --color-control:var(--control); --color-foreground:var(--foreground); --color-surface-subtle:var(--surface-subtle); --color-muted:var(--muted); --color-muted-foreground:var(--muted-foreground); --color-secondary-foreground:var(--secondary-foreground); --color-border:var(--border); --color-input-border:var(--input-border); --color-primary:var(--primary); --color-primary-foreground:var(--primary-foreground); --color-ring:var(--ring); --color-link:var(--link); --color-popover:var(--popover); --color-popover-foreground:var(--popover-foreground); --color-accent:var(--accent); --color-accent-foreground:var(--accent-foreground); --color-destructive:var(--destructive); --font-sans:var(--font-geist-sans),var(--font-noto-sans-sc),sans-serif; --font-mono:var(--font-geist-mono),monospace; }
 * { box-sizing:border-box; }
-:focus-visible { outline:2px solid var(--ring); outline-offset:3px; }
+:is(a, button, input, textarea, select, [role="button"], [role="tab"], [role="switch"], [role="menuitem"], [role="combobox"]):focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
 button, a, input, select, textarea { -webkit-tap-highlight-color:transparent; }
 body {
   background-color: var(--background);
@@ -53,7 +57,7 @@ body {
 }
 
 .app-shell-container {
-  width: min(100%, 1208px);
+  width: min(100%, 1280px);
   margin-inline: auto;
   padding-inline: 24px;
 }

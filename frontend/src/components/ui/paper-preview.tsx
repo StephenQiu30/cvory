@@ -73,7 +73,7 @@ export function PaperPreview({
           {Array.from({ length: pages }, (_, index) => (
             <div
               key={index}
-              className="relative mb-6 h-[1123px] w-[794px] overflow-hidden border border-[#ebebeb] bg-white shadow-[0_2px_12px_#00000008]"
+              className="relative mb-6 h-[1123px] w-[794px] overflow-hidden bg-white"
               aria-hidden={index > 0 ? true : undefined}
             >
               <div

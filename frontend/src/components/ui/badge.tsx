@@ -11,15 +11,15 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variants = {
-    default: "bg-muted text-foreground border-transparent",
-    outline: "border border-border text-foreground",
-    secondary: "bg-surface-subtle text-muted-foreground border border-border",
+    default: "bg-muted text-foreground",
+    outline: "bg-control text-foreground",
+    secondary: "bg-surface-subtle text-muted-foreground",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded px-2 py-0.5 text-xs font-normal border transition-colors",
+        "inline-flex items-center rounded px-2 py-0.5 text-xs font-normal transition-colors",
         variants[variant],
         className
       )}

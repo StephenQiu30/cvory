@@ -263,3 +263,30 @@ test("portrait and account avatar remain independent; cancel keeps crop", async 
     (await (await page.request.get(`/api/cvs/${id}`)).json()).profile.avatarUrl,
   ).toBe(before.profile.avatarUrl);
 });
+
+test("design tokens, dialogs and theme work on desktop and mobile", async ({ page }) => {
+  await signup(page);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    await page.evaluate(() => { localStorage.setItem("cvory.theme.v1", "light"); document.documentElement.classList.remove("dark"); });
+    const create = page.getByRole("button", { name: "新建简历", exact: true });
+    await expect(create).toBeVisible();
+    await expect(create).toHaveCSS("border-radius", "6px");
+    await expect(create).toHaveCSS("border-top-width", "0px");
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 250, 250)");
+    await create.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveCSS("border-radius", "6px");
+    await expect(dialog).toHaveCSS("border-top-width", "0px");
+    await expect(page.getByLabel("简历名称")).toHaveCSS("border-top-width", "0px");
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await page.getByRole("button", { name: "切换外观" }).click();
+    await page.getByRole("menuitemradio", { name: "深色" }).click();
+    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(23, 23, 23)");
+    await expect(create).toHaveCSS("background-color", "rgb(250, 250, 250)");
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  }
+});

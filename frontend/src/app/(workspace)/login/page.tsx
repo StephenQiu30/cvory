@@ -21,7 +21,7 @@ export default function Login() {
   return (
     <div className="mx-auto max-w-[400px] px-6 py-16">
       <LockKeyhole aria-hidden className="mb-6 size-6" />
-      <h1 className="text-xl font-medium">
+      <h1 className="text-[30px] font-medium leading-tight">
         {mode === "login" ? "欢迎回来" : "创建你的账户"}
       </h1>
       <p className="mb-8 mt-2 text-[13px] text-muted-foreground">
@@ -84,7 +84,7 @@ export default function Login() {
           >
             <input
               id="password"
-              className="h-11 rounded-full border border-input-border/70 bg-transparent px-4 text-sm focus:border-foreground focus:outline-none"
+              className="h-11 rounded-md border-0 bg-control px-4 text-sm"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

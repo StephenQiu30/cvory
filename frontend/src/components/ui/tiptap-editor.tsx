@@ -150,7 +150,7 @@ export function TiptapEditor({
     },
   ];
   return (
-    <div className="rounded-md bg-surface-subtle focus-within:ring-2 focus-within:ring-ring">
+    <div className="rounded-md border-0 bg-control focus-within:ring-2 focus-within:ring-ring">
       <div
         role="toolbar"
         aria-label="正文格式"

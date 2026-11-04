@@ -116,7 +116,7 @@ export default function CvEditor({ id }: { id: string }) {
             </Button>
             <Input
               aria-label="简历名称"
-              className="max-w-44 bg-transparent! font-medium sm:max-w-60"
+              className="max-w-44 font-medium sm:max-w-60"
               value={draft.displayName}
               onChange={(e) => patch({ displayName: e.target.value })}
             />

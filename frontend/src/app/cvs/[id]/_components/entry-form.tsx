@@ -66,7 +66,7 @@ export function EntryForm({
           >
             <Input
               id="entry-title"
-              className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+              className="h-11 rounded-md border-0 bg-control px-3 text-sm"
               {...register("title", {
                 validate: (v) =>
                   type === "skill" || !!v?.trim() || `请填写${labels.title}`,
@@ -82,7 +82,7 @@ export function EntryForm({
               >
                 <Input
                   id="entry-subtitle"
-                  className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                  className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                   {...register("subtitle", {
                     validate: (v) =>
                       type === "custom" ||
@@ -100,14 +100,14 @@ export function EntryForm({
                   >
                     <Input
                       id="entry-degree"
-                      className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                      className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                       {...register("degree", { required: "请填写学历" })}
                     />
                   </FormField>
                   <FormField id="entry-kind" label="学历类型（可选）">
                     <Input
                       id="entry-kind"
-                      className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                      className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                       {...register("educationType")}
                     />
                   </FormField>
@@ -122,7 +122,7 @@ export function EntryForm({
                   <Input
                     id="entry-start"
                     type="month"
-                    className="h-11 min-w-0 rounded-md bg-surface-subtle px-3 text-sm"
+                    className="h-11 min-w-0 rounded-md border-0 bg-control px-3 text-sm"
                     {...register("startDate", { required: "请选择开始月份" })}
                   />
                 </FormField>
@@ -136,7 +136,7 @@ export function EntryForm({
                     type="month"
                     min={start || undefined}
                     disabled={current}
-                    className="h-11 min-w-0 rounded-md bg-surface-subtle px-3 text-sm disabled:opacity-40"
+                    className="h-11 min-w-0 rounded-md border-0 bg-control px-3 text-sm disabled:opacity-40"
                     {...register("endDate", {
                       validate: (v) =>
                         current ||
@@ -172,7 +172,7 @@ export function EntryForm({
                   >
                     <Input
                       id="entry-department"
-                      className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                      className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                       {...register("department")}
                     />
                   </FormField>
@@ -180,7 +180,7 @@ export function EntryForm({
                 <FormField id="entry-location" label="城市（可选）">
                   <Input
                     id="entry-location"
-                    className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                    className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                     {...register("location")}
                   />
                 </FormField>
@@ -193,7 +193,7 @@ export function EntryForm({
                 >
                   <Input
                     id="entry-link"
-                    className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+                    className="h-11 rounded-md border-0 bg-control px-3 text-sm"
                     {...register("link", {
                       validate: (v) =>
                         !v || !!safeLink(v) || "请输入有效的 https:// 链接",

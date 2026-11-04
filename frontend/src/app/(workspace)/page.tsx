@@ -48,17 +48,17 @@ function ResumeCard({
   onCopy: () => void;
 }) {
   return (
-    <article className="min-w-0">
+    <article className="min-w-0 overflow-hidden rounded-md bg-surface">
       <Link
         href={`/cvs/${cv.id}`}
         aria-label={`编辑${cv.displayName}`}
-        className="flex aspect-[1.06] items-center justify-center overflow-hidden rounded-[24px] bg-surface-subtle p-6 transition-transform hover:scale-[1.01]"
+        className="flex aspect-[1.06] items-center justify-center overflow-hidden bg-surface-subtle p-6 transition-colors hover:bg-muted"
       >
         <div className="pointer-events-none w-[66%]" aria-hidden>
           <PaperPreview cv={cv} firstPageOnly />
         </div>
       </Link>
-      <div className="px-3 pt-4">
+      <div className="px-4 pb-3 pt-4">
         <h2 className="truncate text-sm font-medium" title={cv.displayName}>
           {cv.displayName}
         </h2>
@@ -69,7 +69,7 @@ function ResumeCard({
         <div className="mt-3 flex items-center justify-between">
           <Link
             href={`/cvs/${cv.id}`}
-            className="inline-flex min-h-11 items-center gap-2 text-xs text-link"
+            className="inline-flex min-h-11 items-center gap-2 text-sm text-link hover:underline"
           >
             编辑简历
             <ArrowRight aria-hidden className="size-3" />

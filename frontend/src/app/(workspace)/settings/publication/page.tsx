@@ -186,7 +186,7 @@ export default function Publication() {
           <FormField id="public-url" label="公开网址">
             <input
               id="public-url"
-              className="h-11 w-full rounded-md bg-surface-subtle px-3 text-sm"
+              className="h-11 w-full rounded-md border-0 bg-control px-3 text-sm"
               value={url}
               readOnly
               onFocus={(e) => e.target.select()}

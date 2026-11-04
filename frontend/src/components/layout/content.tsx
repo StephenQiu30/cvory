@@ -25,9 +25,9 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="text-xl font-medium leading-7">{title}</h1>
+        <h1 className="text-[30px] font-medium leading-tight">{title}</h1>
         {description ? (
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
             {description}
           </p>
         ) : null}
