@@ -31,7 +31,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
                   aria-current={
                     pathname.endsWith(String(path)) ? "page" : undefined
                   }
-                  className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-md px-3 text-[13px] ${pathname.endsWith(String(path)) ? "bg-surface-subtle" : "hover:bg-surface-subtle"}`}
+                  className={`inline-flex min-h-11 shrink-0 items-center gap-2.5 rounded-full px-3.5 text-[13px] font-medium transition-colors ${pathname.endsWith(String(path)) ? "bg-foreground text-background" : "hover:bg-surface-subtle text-secondary-foreground"}`}
                 >
                   <I aria-hidden className="size-4" />
                   {String(label)}

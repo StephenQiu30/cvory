@@ -19,16 +19,16 @@ export default async function Visitor({
     if (!(e instanceof ApiError) || e.code !== 404) throw e;
   }
   return document ? (
-    <main className="min-h-dvh bg-white px-6 py-12 text-[#171717] sm:px-10 sm:py-16">
+    <main className="min-h-dvh bg-[#F7F7F7] px-6 py-12 text-[#0A0A0A] sm:px-10 sm:py-16 dark:bg-[#222222] dark:text-[#FFFFFF]">
       <div className="mx-auto max-w-[880px]">
         <ResumeDocument web document={document} />
       </div>
     </main>
   ) : (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-white px-6 text-center text-[#171717]">
-      <Globe aria-hidden className="size-6" />
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-[#F7F7F7] px-6 text-center text-[#0A0A0A] dark:bg-[#222222] dark:text-[#FFFFFF]">
+      <Globe aria-hidden className="size-6 text-muted-foreground" />
       <h1 className="text-xl font-medium">这份简历暂未公开</h1>
-      <p className="text-sm text-[#666]">内容尚未发布，或已由本人撤回。</p>
+      <p className="text-sm text-muted-foreground">内容尚未发布，或已由本人撤回。</p>
     </main>
   );
 }

@@ -84,7 +84,7 @@ export default function Login() {
           >
             <input
               id="password"
-              className="h-11 rounded-md bg-surface-subtle px-3 text-sm"
+              className="h-11 rounded-full border border-input-border/70 bg-transparent px-4 text-sm focus:border-foreground focus:outline-none"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
