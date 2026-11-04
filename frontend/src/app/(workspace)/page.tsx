@@ -52,7 +52,7 @@ function ResumeCard({
       <Link
         href={`/cvs/${cv.id}`}
         aria-label={`编辑${cv.displayName}`}
-        className="flex aspect-[1.06] items-center justify-center overflow-hidden rounded-md bg-surface-subtle p-6"
+        className="flex aspect-[1.06] items-center justify-center overflow-hidden rounded-[24px] bg-surface-subtle p-6 transition-transform hover:scale-[1.01]"
       >
         <div className="pointer-events-none w-[66%]" aria-hidden>
           <PaperPreview cv={cv} firstPageOnly />

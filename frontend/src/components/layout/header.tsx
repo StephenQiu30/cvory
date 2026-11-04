@@ -23,7 +23,7 @@ export function Header() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="GitHub 仓库"
-            className="flex size-11 items-center justify-center rounded-md hover:bg-surface-subtle"
+            className="flex size-11 items-center justify-center rounded-full hover:bg-surface-subtle"
           >
             <GitFork aria-hidden className="size-4" />
           </a>
