@@ -1,6 +1,6 @@
 # 简序 · CVory
 
-个人 CV 制作与管理工具，同时展示选定的个人简历信息。提供结构化制作、模板、JSON／Markdown、PDF 与可控公开展示，使用邮箱密码账户隔离私有内容。实现与验收范围见 HANDOVER。
+面向多用户的 CV 制作与管理工具，同时展示每位用户选定的个人简历信息。提供结构化制作、模板、JSON／Markdown、PDF 与可控公开展示，使用邮箱密码账户隔离私有内容。实现与验收范围见 HANDOVER。
 
 [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md) → [产品设计](docs/design/02-CV制作管理与展示设计.md) → [按能力拆分的 PRD](docs/prd/00-PRD导航.md) → [执行 Plan](docs/plan/00-Plan导航.md)。
 
