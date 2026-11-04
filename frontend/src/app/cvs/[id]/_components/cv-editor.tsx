@@ -33,6 +33,7 @@ import { EntryForm } from "./entry-form";
 import { ModuleManager } from "./module-manager";
 import { StylePanel } from "./style-panel";
 import { ExportDialog } from "@/components/resume/export-dialog";
+import { useAccount } from "@/components/account/account-provider";
 import { useCvDocument } from "./use-cv-document";
 const RichEditor = dynamic(
   () => import("@/components/ui/tiptap-editor").then((m) => m.TiptapEditor),
@@ -40,6 +41,7 @@ const RichEditor = dynamic(
 );
 export default function CvEditor({ id }: { id: string }) {
   const router = useRouter();
+  const { openAuth } = useAccount();
   const [active, setActive] = useState("profile");
   const [collapsed, setCollapsed] = useState(false);
   const [preview, setPreview] = useState(false);
@@ -74,14 +76,7 @@ export default function CvEditor({ id }: { id: string }) {
             <StatusMessage>{loadError}</StatusMessage>
             <div className="mt-5 flex gap-3">
               <Button onClick={() => void load()}>重试</Button>
-              <a
-                href="/login"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-link"
-              >
-                登录
-              </a>
+              <Button variant="ghost" onClick={() => openAuth(() => void load())}>登录</Button>
               <Button variant="ghost" onClick={() => router.push("/")}>
                 返回简历库
               </Button>
@@ -250,14 +245,7 @@ export default function CvEditor({ id }: { id: string }) {
               <div className="mb-5">
                 <StatusMessage>{error}</StatusMessage>
                 {error.includes("登录") ? (
-                  <a
-                    className="mt-2 inline-block text-xs text-link"
-                    href="/login"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    在新标签页登录
-                  </a>
+                  <Button variant="ghost" className="mt-2" onClick={() => openAuth(() => setError(""))}>重新登录</Button>
                 ) : null}
               </div>
             ) : null}

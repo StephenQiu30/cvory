@@ -108,6 +108,7 @@ export default function Library() {
     loading: accountLoading,
     error: accountError,
     refresh,
+    openAuth,
   } = useAccount();
   const [cvs, setCvs] = useState<CVResource[]>([]);
   const [loading, setLoading] = useState(false);
@@ -194,12 +195,7 @@ export default function Library() {
             {accountError ? (
               <Button onClick={() => void refresh()}>重试连接</Button>
             ) : (
-              <Link
-                href="/login"
-                className="rounded-md bg-primary px-4 py-3 text-sm text-primary-foreground"
-              >
-                登录或注册
-              </Link>
+              <Button onClick={() => openAuth()}>登录或注册</Button>
             )}
           </EmptyContent>
         </Empty>

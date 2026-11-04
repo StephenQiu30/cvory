@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { logoutAccount } from "@/lib/api/generated/api/account";
 export function AccountMenu() {
-  const { account, loading, setAccount } = useAccount();
+  const { account, loading, setAccount, openAuth } = useAccount();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,9 +27,7 @@ export function AccountMenu() {
     return <span className="size-8 animate-pulse rounded-full bg-muted" />;
   if (!account)
     return (
-      <Link className="inline-flex min-h-11 items-center text-sm" href="/login">
-        登录
-      </Link>
+      <Button variant="ghost" onClick={() => openAuth()}>登录</Button>
     );
   return (
     <>
@@ -100,7 +98,7 @@ export function AccountMenu() {
                 await logoutAccount();
                 setAccount(null);
                 setOpen(false);
-                router.push("/login");
+                router.push("/");
               } catch {
                 setError("退出失败，请重试。");
               } finally {

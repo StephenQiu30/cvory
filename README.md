@@ -54,7 +54,7 @@ docker compose logs -f  # 查看日志
 
 ## 账户与存量数据
 
-首次访问在登录页注册邮箱与密码。密码至少 10 位；会话由 FastAPI 管理。邮箱注册不表示已验证，当前没有邮件发送与密码找回。
+首次访问可在登录弹窗中注册邮箱与密码。密码至少 10 位；会话由 FastAPI 管理。邮箱注册不表示已验证，当前没有邮件发送与密码找回。
 
 迁移保留已有 CV 的 `legacy` 归属，不将其自动交给新账户。需要接管自己的存量内容时，在注册后由管理者执行 `cd backend && uv run python migrations/001_account_ownership.py --assign-legacy-to <目标邮箱>`。该命令只迁移未归属账户的内容。
 

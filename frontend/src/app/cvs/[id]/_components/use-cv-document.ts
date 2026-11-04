@@ -84,7 +84,7 @@ export function useCvDocument(id: string, onConflict: () => void) {
         e instanceof ApiError && e.isConcurrencyConflict
           ? "服务器已有更新。本地内容已保留，请选择下一步。"
           : e instanceof ApiError && e.code === 401
-            ? "登录已过期。请在新标签页登录后回到这里重试，输入会保留。"
+            ? "登录已过期。请重新登录后重试保存，输入会保留。"
             : "保存失败，输入已保留，请重试。",
       );
       if (e instanceof ApiError && e.isConcurrencyConflict) onConflict();

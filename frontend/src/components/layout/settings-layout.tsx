@@ -7,7 +7,7 @@ import { Content } from "./content";
 import { useAccount } from "@/components/account/account-provider";
 export function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { account, loading, error, refresh } = useAccount();
+  const { account, loading, error, refresh, openAuth } = useAccount();
   return (
     <Content>
       <div className="grid gap-8 md:grid-cols-[208px_minmax(0,1fr)]">
@@ -56,12 +56,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
                   重新连接
                 </button>
               ) : (
-                <Link
-                  className="mt-4 inline-block text-link"
-                  href={`/login?returnTo=${encodeURIComponent(pathname)}`}
-                >
-                  登录账户
-                </Link>
+                <button className="mt-4 text-link underline" onClick={() => openAuth()}>登录账户</button>
               )}
             </div>
           )}

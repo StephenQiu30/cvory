@@ -2,14 +2,15 @@ import { readFile } from "node:fs/promises";
 import { test, expect, type Page } from "@playwright/test";
 const PASSWORD = "workflow-test-password-2026";
 async function signup(page: Page) {
-  await page.goto("/login");
+  await page.goto("/");
+  await page.getByRole("button", { name: "登录或注册" }).click();
   await page.getByRole("button", { name: "还没有账户？注册" }).click();
   await page.getByLabel("显示名称").fill("流程验收");
   const email = `workflow-${crypto.randomUUID()}@example.com`;
   await page.getByLabel("邮箱", { exact: false }).fill(email);
   await page.getByLabel("密码", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "注册并开始" }).click();
-  await page.waitForURL("/");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   return email;
 }
 async function create(page: Page) {
@@ -289,4 +290,41 @@ test("design tokens, dialogs and theme work on desktop and mobile", async ({ pag
     await expect(create).toHaveCSS("background-color", "rgb(250, 250, 250)");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
   }
+});
+
+test("authentication modal keeps context and preserves drafts after session expiry", async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  const trigger = page.getByRole("button", { name: "登录或注册" });
+  await trigger.click();
+  const dialog = page.getByRole("dialog", { name: "欢迎回来" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+  await expect(trigger).toBeFocused();
+  const email = await signup(page);
+  await create(page);
+  await page.getByLabel("姓名", { exact: true }).fill("保留的草稿");
+  await context.clearCookies();
+  await page.getByRole("button", { name: "保存", exact: true }).click();
+  await expect(page.getByText(/登录已过期/)).toBeVisible();
+  await page.getByRole("button", { name: "重新登录" }).click();
+  await page.getByRole("dialog").getByLabel("邮箱", { exact: false }).fill(email);
+  await page.getByRole("dialog").getByLabel("密码", { exact: true }).fill(PASSWORD);
+  await page.getByRole("dialog").getByRole("button", { name: "登录", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByLabel("姓名", { exact: true })).toHaveValue("保留的草稿");
+  await save(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+});
+
+test("login from settings keeps the current page", async ({ page }) => {
+  await page.goto("/settings/appearance");
+  await page.getByRole("button", { name: "登录账户" }).click();
+  await page.getByRole("button", { name: "还没有账户？注册" }).click();
+  await page.getByLabel("邮箱", { exact: false }).fill(`settings-${crypto.randomUUID()}@example.com`);
+  await page.getByLabel("密码", { exact: true }).fill(PASSWORD);
+  await page.getByRole("button", { name: "注册并开始" }).click();
+  await expect(page).toHaveURL(/\/settings\/appearance$/);
+  await expect(page.getByText("管理界面主题")).toBeVisible();
 });
