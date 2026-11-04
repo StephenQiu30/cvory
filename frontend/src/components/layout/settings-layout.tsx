@@ -5,6 +5,7 @@ import { Globe, UserRound, ShieldCheck, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 import { Content } from "./content";
 import { useAccount } from "@/components/account/account-provider";
+import { Button } from "@/components/ui/button";
 export function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { account, loading, error, refresh, openAuth } = useAccount();
@@ -20,7 +21,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             {[
               ["profile", "个人资料", UserRound],
               ["access", "账户与访问", ShieldCheck],
-            ["appearance", "外观", Palette],
+              ["appearance", "外观", Palette],
               ["publication", "公开简历", Globe],
             ].map(([path, label, Icon]) => {
               const I = Icon as typeof Globe;
@@ -49,14 +50,21 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             <div>
               <p>{error || "登录后管理个人资料与公开简历。"}</p>
               {error ? (
-                <button
+                <Button
+                  variant="link"
                   className="mt-3 text-link"
                   onClick={() => void refresh()}
                 >
                   重新连接
-                </button>
+                </Button>
               ) : (
-                <button className="mt-4 text-link underline" onClick={() => openAuth()}>登录账户</button>
+                <Button
+                  variant="link"
+                  className="mt-4 h-auto p-0 underline"
+                  onClick={() => openAuth()}
+                >
+                  登录账户
+                </Button>
               )}
             </div>
           )}

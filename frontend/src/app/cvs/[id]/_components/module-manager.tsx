@@ -6,7 +6,7 @@ import { MODULES } from "@/lib/resume/model";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { FormField } from "@/components/ui/form-field";
 import { FieldGroup } from "@/components/ui/field";
 export function ModuleManager({

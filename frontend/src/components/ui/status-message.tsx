@@ -1,4 +1,6 @@
 import { CircleAlert, LoaderCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
 export function StatusMessage({
   children,
   loading = false,
@@ -8,15 +10,12 @@ export function StatusMessage({
 }) {
   const Icon = loading ? LoaderCircle : CircleAlert;
   return (
-    <p
+    <Alert
       role={loading ? "status" : "alert"}
-      className="flex items-start gap-2 text-[13px] leading-5"
+      variant={loading ? "default" : "destructive"}
     >
-      <Icon
-        aria-hidden
-        className={`mt-0.5 size-4 shrink-0 ${loading ? "animate-spin" : ""}`}
-      />
-      {children}
-    </p>
+      <Icon aria-hidden className={loading ? "animate-spin" : undefined} />
+      <AlertDescription>{children}</AlertDescription>
+    </Alert>
   );
 }

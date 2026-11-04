@@ -16,7 +16,7 @@
   --primary:#171717;
   --primary-foreground:#FFFFFF;
   --ring:#171717;
-  --link:#171717;
+  --link:#3E65E8;
   --popover:#FFFFFF;
   --popover-foreground:#171717;
   --accent:#F5F5F5;
@@ -37,7 +37,7 @@
   --input-border:#A3A3A3;
   --primary:#FAFAFA;
   --primary-foreground:#171717;
-  --link:#FAFAFA;
+  --link:#A8BBFF;
   --ring:#FAFAFA;
   --popover:#222222;
   --popover-foreground:#FFFFFF;
@@ -107,7 +107,7 @@ body {
   color: var(--foreground);
 }
 
-@media (max-width:640px) { .app-shell-container {padding-inline:20px;} button:not([role=switch]), [role=tab], [role=menuitem], [data-slot=select-trigger] {min-height:44px;} }
+@media (max-width:640px) { .app-shell-container {padding-inline:20px;} button:not([role=switch]):not([role=radio]), [role=tab], [role=menuitem], [data-slot=select-trigger] {min-height:44px;} }
 @media (prefers-reduced-motion:reduce) { *, *::before, *::after {animation-duration:.01ms!important; transition-duration:.01ms!important;} }
 .resume-document { color:#171717; background:#fff; --resume-accent:#171717; font-family:var(--font-sans); overflow-wrap:anywhere; }
 .resume-document a {color:var(--resume-accent); text-decoration:underline; text-underline-offset:2px;}
@@ -120,3 +120,5 @@ body {
 .resume-entry header {break-after:avoid;}
 @page {size:A4; margin:0;}
 @media print {html,body{background:#fff!important;} .no-print{display:none!important;} .resume-document {box-shadow:none!important;border:0!important; width:210mm!important; min-height:297mm;} }
+
+.workspace-shell {background:var(--background);}

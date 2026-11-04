@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/layout/content";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { FieldGroup } from "@/components/ui/field";
 import {
   changeAccountPassword,
@@ -43,7 +43,7 @@ export default function Access() {
       {!account?.emailVerified ? (
         <>
           <p className="mt-5 text-sm text-muted-foreground">
-            验证邮箱后即可发布简历；私有简历仍可编辑和导出。
+            验证邮箱后可发布简历。
           </p>
           <Button
             variant="outline"
@@ -67,7 +67,7 @@ export default function Access() {
       ) : null}
       <h2 className="mt-10 text-lg font-medium">修改密码</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        新密码使用 15–128 位。修改后其他设备需要重新登录。
+        修改后其他设备需要重新登录。
       </p>
       <form
         className="mt-5 grid max-w-md gap-4"
@@ -111,7 +111,8 @@ export default function Access() {
             id="settings-password"
             type="password"
             autoComplete="new-password"
-            minLength={15}
+            placeholder="至少 8 位"
+            minLength={8}
             maxLength={128}
             required
             value={next}
@@ -123,7 +124,8 @@ export default function Access() {
             id="settings-confirm"
             type="password"
             autoComplete="new-password"
-            minLength={15}
+            placeholder="至少 8 位"
+            minLength={8}
             maxLength={128}
             required
             value={confirmation}
@@ -141,8 +143,7 @@ export default function Access() {
       ) : null}
       <h2 className="mt-10 text-lg font-medium">注销账户</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        提交后立即停止访问和公开展示，7
-        天内可用邮箱和密码撤销。到期后账户、简历、照片、预设及公开内容将被清理；已有备份将按保留策略处理，已下载的副本无法收回。请先从简历库导出需要保留的备份。
+        注销后立即退出并停止公开展示，7 天内可撤销。请先导出需要保留的简历。
       </p>
       <Button
         variant="outline"
@@ -161,7 +162,7 @@ export default function Access() {
           }
         }}
         title="确认注销账户"
-        description="提交后立即退出，7 天内可撤销；到期开始清理后无法撤销。"
+        description="7 天后清理账户、简历、照片和公开内容，清理开始后无法撤销。备份按保留策略处理，已下载的副本无法收回。"
       >
         <form
           onSubmit={async (event) => {
@@ -196,7 +197,7 @@ export default function Access() {
                 {deleteError}
               </p>
             ) : null}
-            <Button type="submit" variant="danger" disabled={busy}>
+            <Button type="submit" variant="destructive" disabled={busy}>
               {busy ? "正在提交…" : "确认注销"}
             </Button>
             <Button

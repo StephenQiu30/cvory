@@ -6,7 +6,7 @@ import { Globe, LogOut, UserRound, Settings } from "lucide-react";
 import { useAccount } from "./account-provider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import {
   DropdownMenu,
   DropdownMenuTrigger,

@@ -7,7 +7,7 @@
 | 项 | 值 |
 | --- | --- |
 | 产品名称 | 简序 · CVory，采用选定的 C/V 纸页图形 |
-| 视觉方向 | 白纸黑灰、Geist 排版与无边框界面；具体参数见 [DESIGN](DESIGN.md) |
+| 视觉方向 | 白纸黑灰、Geist 排版、无边框界面与少量蓝色点缀；具体参数见 [DESIGN](DESIGN.md) |
 | 本地目录 | CV，保持不变 |
 | 公开仓库 | [StephenQiu30/cvory](https://github.com/StephenQiu30/cvory)，默认分支 main |
 | 技术包名 | frontend / cvory-backend（当前工程包名） |

@@ -7,13 +7,13 @@ import {Navbar} from "./navbar";
 export function Header() {
   return (
     <header className="sticky top-0 z-40 h-16 shrink-0 bg-background/95 backdrop-blur">
-      <div className="app-shell-container flex h-full items-center gap-6">
+      <div className="app-shell-container flex h-full items-center gap-4 lg:gap-12">
         <Link
           href="/"
           aria-label="简序首页"
-          className="inline-flex items-center gap-2 text-sm font-medium"
+          className="inline-flex items-center gap-2 text-lg font-medium"
         >
-          <Image src="/brand/cvory.svg" width={24} height={24} alt="" className="dark:invert"/>
+          <Image src="/brand/cvory.svg" width={28} height={28} alt="" className="dark:invert"/>
           简序
         </Link>
         <Navbar/>

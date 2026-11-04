@@ -15,7 +15,7 @@ import {
   Redo2,
 } from "lucide-react";
 import { Button } from "./button";
-import { Dialog } from "./dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { FormField } from "./form-field";
 import { safeLink } from "@/lib/resume/model";
 import { cn } from "@/lib/utils";
@@ -158,6 +158,7 @@ export function TiptapEditor({
       >
         {actions.map(({ label, Icon, run, active, disabled }) => (
           <Button
+            type="button"
             key={label}
             variant="ghost"
             size="icon"
@@ -166,9 +167,9 @@ export function TiptapEditor({
             aria-pressed={active}
             disabled={disabled}
             onClick={run}
-            className={active ? "bg-muted" : ""}
+            className={cn(active && "bg-muted")}
           >
-            <Icon aria-hidden className="size-4" />
+            <Icon aria-hidden />
           </Button>
         ))}
       </div>

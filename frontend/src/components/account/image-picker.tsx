@@ -2,11 +2,13 @@
 import NextImage from "next/image";
 import { useRef, useState } from "react";
 import { Upload, ImagePlus } from "lucide-react";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { Button } from "@/components/ui/button";
 import { StatusMessage } from "@/components/ui/status-message";
 import { FieldGroup } from "@/components/ui/field";
 import { FormField } from "@/components/ui/form-field";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 export function ImagePicker({
   value,
   onApply,
@@ -84,7 +86,7 @@ export function ImagePicker({
               </span>
             )}
           </div>
-          <input
+          <Input
             ref={input}
             type="file"
             className="sr-only"
@@ -140,34 +142,34 @@ export function ImagePicker({
           {portrait && candidate ? (
             <>
               <FormField id="photo-x" label="水平位置">
-                <input
+                <Slider
                   id="photo-x"
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={x}
-                  onChange={(e) => setX(+e.target.value)}
+                  aria-label="水平位置"
+                  min={0}
+                  max={100}
+                  value={[x]}
+                  onValueChange={([value]) => setX(value)}
                 />
               </FormField>
               <FormField id="photo-y" label="垂直位置">
-                <input
+                <Slider
                   id="photo-y"
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={y}
-                  onChange={(e) => setY(+e.target.value)}
+                  aria-label="垂直位置"
+                  min={0}
+                  max={100}
+                  value={[y]}
+                  onValueChange={([value]) => setY(value)}
                 />
               </FormField>
               <FormField id="photo-zoom" label="缩放">
-                <input
+                <Slider
                   id="photo-zoom"
-                  type="range"
-                  min="1"
-                  max="3"
-                  step=".05"
-                  value={scale}
-                  onChange={(e) => setScale(+e.target.value)}
+                  aria-label="缩放"
+                  min={1}
+                  max={3}
+                  step={0.05}
+                  value={[scale]}
+                  onValueChange={([value]) => setScale(value)}
                 />
               </FormField>
             </>

@@ -108,11 +108,11 @@ def test_restored_database_snapshot_replays_deletion(clients, tmp_path):
 
 def test_change_password_rotates_sessions(clients):
     first, _, anon, _ = clients
-    assert first.post('/api/account:changePassword', json={'password': 'wrong-password', 'newPassword': 'a-new-long-password'}).status_code == 401
-    assert first.post('/api/account:changePassword', json={'password': 'correct-long-password', 'newPassword': 'a-new-long-password'}).status_code == 200
+    assert first.post('/api/account:changePassword', json={'password': 'wrong-password', 'newPassword': 'newpass8'}).status_code == 401
+    assert first.post('/api/account:changePassword', json={'password': 'correct-long-password', 'newPassword': 'newpass8'}).status_code == 200
     assert first.get('/api/account').status_code == 200
     assert anon.post('/api/account:login', json={'email': 'user0@example.com', 'password': 'correct-long-password'}).status_code == 401
-    assert anon.post('/api/account:login', json={'email': 'user0@example.com', 'password': 'a-new-long-password'}).status_code == 200
+    assert anon.post('/api/account:login', json={'email': 'user0@example.com', 'password': 'newpass8'}).status_code == 200
 
 
 def test_unverified_account_cannot_publish_but_can_keep_private_cv(clients):
@@ -159,11 +159,12 @@ def test_password_reset_is_generic_one_use_and_revokes_sessions(clients):
     with sessions() as db:
         job = db.query(MailJobModel).one()
         token = decrypt_payload(job.encrypted_payload)['token']
-    payload = {'token': token, 'password': 'a-new-long-password'}
+    assert anon.post('/api/account:resetPassword', json={'token':token, 'password':'seven77'}).status_code == 400
+    payload = {'token': token, 'password': 'newpass8'}
     assert anon.post('/api/account:resetPassword', json=payload).status_code == 204
     assert anon.post('/api/account:resetPassword', json=payload).status_code == 400
     assert first.get('/api/account').status_code == 401
-    assert anon.post('/api/account:login', json={'email':'user0@example.com','password':'a-new-long-password'}).status_code == 200
+    assert anon.post('/api/account:login', json={'email':'user0@example.com','password':'newpass8'}).status_code == 200
 
 
 def test_mail_queue_is_encrypted_and_delivered_once(clients, monkeypatch):
@@ -284,3 +285,14 @@ def test_due_deletion_cleans_only_owner_and_writes_tombstone(clients, tmp_path, 
     assert (tmp_path / 'ledger' / tombstone_name(owner)).is_file()
     assert second.get('/api/cvs/' + other['id']).status_code == 200
     assert second.get('/api/cvs/' + own['id']).status_code == 404
+
+
+def test_password_minimum_eight_characters(clients):
+    _, _, anonymous, _ = clients
+    account = {'email': 'boundary@example.com', 'password': 'seven77'}
+    assert anonymous.post('/api/account:register', json=account).status_code == 400
+    account['password'] = 'eight888'
+    assert anonymous.post('/api/account:register', json=account).status_code == 201
+    assert anonymous.post('/api/account:logout').status_code == 204
+    assert anonymous.post('/api/account:login', json=account).status_code == 200
+    assert anonymous.post('/api/account:changePassword', json={'password': 'eight888', 'newPassword': 'seven77'}).status_code == 400

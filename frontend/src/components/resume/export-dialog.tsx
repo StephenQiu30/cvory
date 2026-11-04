@@ -1,8 +1,9 @@
 "use client";
-import { useState, useRef } from "react";
-import { Dialog } from "@/components/ui/dialog";
+import { useState, useRef, type RefObject } from "react";
+import { Dialog } from "@/components/shared/app-dialog";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StatusMessage } from "@/components/ui/status-message";
 import { download, markdown, hasContent } from "@/lib/resume/files";
 import { cvApi, ApiError } from "@/lib/api/client";
@@ -14,12 +15,14 @@ export function ExportDialog({
   cv,
   dirty,
   save,
+  returnFocusRef,
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   cv: CVResource;
   dirty: boolean;
   save: () => Promise<boolean>;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }) {
   const [format, setFormat] = useState("pdf");
   const [busy, setBusy] = useState(false);
@@ -40,10 +43,19 @@ export function ExportDialog({
       }}
       title="导出简历"
       description="先保存，再从已保存内容生成文件。生成期间的编辑不会混入本次文件。"
+      returnFocusRef={returnFocusRef}
     >
       <FieldGroup>
-        <fieldset className="space-y-3">
-          <legend className="sr-only">文件格式</legend>
+        <RadioGroup
+          aria-label="文件格式"
+          value={format}
+          onValueChange={(value) => {
+            setFormat(value);
+            setMessage("");
+            setError("");
+          }}
+          className="gap-3"
+        >
           {[
             ["pdf", "PDF · 用于投递", "可选文字、多页 A4，保留当前样式。"],
             [
@@ -61,17 +73,7 @@ export function ExportDialog({
               key={value}
               className="flex cursor-pointer gap-3 rounded-md bg-surface-subtle p-3"
             >
-              <input
-                type="radio"
-                name="format"
-                value={value}
-                checked={format === value}
-                onChange={() => {
-                  setFormat(value);
-                  setMessage("");
-                  setError("");
-                }}
-              />
+              <RadioGroupItem value={value} aria-label={title} />
               <span className="text-sm">
                 {title}
                 <span className="mt-1 block text-xs leading-5 text-muted-foreground">
@@ -80,7 +82,7 @@ export function ExportDialog({
               </span>
             </label>
           ))}
-        </fieldset>
+        </RadioGroup>
         {dirty ? (
           <p className="text-xs text-muted-foreground">
             有未保存修改，将先保存。

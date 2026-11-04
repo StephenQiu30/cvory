@@ -50,13 +50,13 @@ docker compose logs -f  # 查看日志
 
 工程目录固定为 `frontend/` 和 `backend/`，目录职责、代码及 API 规范统一见 [PROJECT](PROJECT.md#34-工程目录与依赖边界)。
 
-品牌为简序 · CVory，采用[黑白 Logo](docs/assets/branding/CVory-黑白Logo概念.png)、黑白灰与 Geist 方向。前端采用 Next.js、Tailwind CSS、Tiptap，后端采用 FastAPI + MySQL，遵循 Google Python 与 API 设计规范，统一见[技术选型](docs/design/02-CV制作管理与展示设计.md#4-技术选型)。
+品牌为简序 · CVory，采用[黑白 Logo](docs/assets/branding/CVory-黑白Logo概念.png)、黑白灰、Geist 与少量蓝色点缀方向。前端采用 Next.js、Tailwind CSS、Tiptap，后端采用 FastAPI + MySQL，遵循 Google Python 与 API 设计规范，统一见[技术选型](docs/design/02-CV制作管理与展示设计.md#4-技术选型)。
 
 [GitHub 公开仓库](https://github.com/StephenQiu30/cvory)，默认分支 main。
 
 ## 账户与存量数据
 
-首次访问可在登录弹窗中注册邮箱与密码。新密码至少 15 位，已有账户的 10–14 位密码仍可登录；会话由 FastAPI 管理。邮箱注册不表示已验证，未验证账户不能发布或更新公开内容。邮箱验证及密码重置依赖正确配置的 SMTP、密钥和可访问的前端地址，真实投递尚待验收。
+首次访问可在登录弹窗中注册邮箱与密码。密码至少 8 位；会话由 FastAPI 管理。邮箱注册不表示已验证，未验证账户不能发布或更新公开内容。邮箱验证及密码重置依赖正确配置的 SMTP、密钥和可访问的前端地址，真实投递尚待验收。
 
 存量数据库在执行迁移前须备份并审查；迁移 002 已在隔离 SQLite 与 MySQL 8.4 中验证，未对现有数据库执行。注销默认关闭；启用前必须配置稳定的 `DELETION_TOMBSTONE_KEY`，在**全新且为空**的独立墓碑目录执行一次 `python scripts/init_deletion_ledger.py`，并将墓碑目录及密钥分别安全备份。Compose 使用 `deletion-ledger` 卷；可用 `docker compose run --rm backend python scripts/init_deletion_ledger.py` 初始化。确认持久化与备份策略后将 `DELETION_ENABLED` 设为 true。启动时会校验墓碑和密钥并重放删除记录；备份恢复须在对外服务前保留最新完整墓碑与正确密钥。不得在墓碑丢失时新建空目录冒充原记录；独立备份及保留到期由运营系统负责，程序无法判断外部备份是否已过期。
 

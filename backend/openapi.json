@@ -2815,7 +2815,7 @@
           "newPassword": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 15,
+            "minLength": 8,
             "title": "Newpassword"
           }
         },
@@ -2905,7 +2905,7 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 10,
+            "minLength": 8,
             "title": "Password"
           },
           "displayName": {
@@ -3366,7 +3366,7 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 15,
+            "minLength": 8,
             "title": "Password"
           },
           "displayName": {
@@ -3394,7 +3394,7 @@
           "password": {
             "type": "string",
             "maxLength": 128,
-            "minLength": 15,
+            "minLength": 8,
             "title": "Password"
           }
         },

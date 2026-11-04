@@ -7,7 +7,7 @@ from app.schemas.cv import ProfileSchema, SectionSchema, StyleSettingsSchema
 
 class Credentials(CamelModel):
     email: str = Field(max_length=254)
-    password: str = Field(min_length=10, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
     display_name: str = Field(default="", max_length=80)
 
     @field_validator("email")
@@ -20,7 +20,7 @@ class Credentials(CamelModel):
 
 
 class RegistrationCredentials(Credentials):
-    password: str = Field(min_length=15, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
 
 
 class AccountResource(CamelModel):
@@ -97,7 +97,7 @@ class TokenRequest(CamelModel):
 
 
 class ResetPasswordRequest(TokenRequest):
-    password: str = Field(min_length=15, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
 
 
 class CurrentPasswordRequest(CamelModel):
@@ -105,4 +105,4 @@ class CurrentPasswordRequest(CamelModel):
 
 
 class ChangePasswordRequest(CurrentPasswordRequest):
-    new_password: str = Field(min_length=15, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)

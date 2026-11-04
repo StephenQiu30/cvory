@@ -12,10 +12,11 @@ import {
 } from "@/lib/api/generated/api/publication";
 import { PageHeader } from "@/components/layout/content";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { Switch } from "@/components/ui/switch";
 import { FieldGroup } from "@/components/ui/field";
 import { FormField } from "@/components/ui/form-field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
@@ -199,7 +200,7 @@ export default function Publication() {
             ) : null}
           </div>
           <FormField id="public-url" label="公开网址">
-            <input
+            <Input
               id="public-url"
               className="h-11 w-full rounded-md border-0 bg-control px-3 text-sm"
               value={url}

@@ -14,16 +14,16 @@ export default function ResetPassword() {
   const [busy, setBusy] = useState(false);
   const { openAuth, setAccount } = useAccount();
   useEffect(() => {
-    const value = new URLSearchParams(window.location.hash.slice(1)).get("token");
+    const value = new URLSearchParams(window.location.hash.slice(1)).get(
+      "token",
+    );
     window.history.replaceState(null, "", window.location.pathname);
     if (value) void Promise.resolve().then(() => setToken(value));
   }, []);
   return (
     <main className="mx-auto max-w-md px-6 py-16">
       <h1 className="text-2xl font-medium">重置密码</h1>
-      <p className="mt-4 text-sm text-muted-foreground">
-        新密码使用 15–128 位。重置后所有设备需要重新登录。
-      </p>
+      <p className="mt-4 text-sm text-muted-foreground">重置后请重新登录。</p>
       <form
         className="mt-6 grid gap-5"
         onSubmit={async (e) => {
@@ -52,7 +52,8 @@ export default function ResetPassword() {
             id="new-password"
             type="password"
             autoComplete="new-password"
-            minLength={15}
+            placeholder="至少 8 位"
+            minLength={8}
             maxLength={128}
             required
             value={password}
@@ -64,7 +65,8 @@ export default function ResetPassword() {
             id="confirm-password"
             type="password"
             autoComplete="new-password"
-            minLength={15}
+            placeholder="至少 8 位"
+            minLength={8}
             maxLength={128}
             required
             value={confirmation}

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Trash2, Check, Pencil } from "lucide-react";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import type { StyleSettings } from "@/lib/api/types";
 import { TEMPLATES, ACCENTS, DEFAULT_STYLE } from "@/lib/resume/model";
 import {
@@ -10,6 +10,7 @@ import {
   deletePreset,
 } from "@/lib/api/generated/api/presets";
 import { FormField } from "@/components/ui/form-field";
+import { Slider } from "@/components/ui/slider";
 import { FieldGroup } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { StatusMessage } from "@/components/ui/status-message";
@@ -90,14 +91,16 @@ export function StylePanel({
           id={String(key)}
           label={`${label} · ${value[key as keyof StyleSettings]}`}
         >
-          <input
+          <Slider
             id={String(key)}
-            type="range"
+            aria-label={String(label)}
             min={Number(min)}
             max={Number(max)}
             step={Number(step)}
-            value={Number(value[key as keyof StyleSettings])}
-            onChange={(e) => onChange({ ...value, [key]: +e.target.value })}
+            value={[Number(value[key as keyof StyleSettings])]}
+            onValueChange={([current]) =>
+              onChange({ ...value, [key]: current })
+            }
           />
         </FormField>
       ))}

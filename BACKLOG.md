@@ -4,12 +4,12 @@
 
 | 任务 | 依赖 | 状态 | 工作入口 |
 | --- | --- | --- | --- |
-| UIUX 从零设计与竞品字段拆解 | 当前明确视觉要求、竞品观察 | 已实现共享布局、结构化制作、邮箱密码账户与公开流程；本地检查和浏览器验证通过，真实网站未发布 | [DESIGN](DESIGN.md)、[调研 02](docs/research/02-老鱼简历功能逆向与CV技术选型.md)、[Figma 草稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=18-9323) |
+| UIUX 与参考工作台对齐 | 已确认简历管理、模板、Markdown、导入和公开范围 | 已先按 DESIGN 同步 Figma 桌面／手机及状态稿，前端采用黑白灰与少量蓝色点缀；工作台功能已实现，真实网站未发布 | [DESIGN](DESIGN.md)、[调研 02](docs/research/02-老鱼简历功能逆向与CV技术选型.md)、[Figma 草稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-2880) |
 | 登录注册弹窗 | 邮箱密码账户与共享页面壳 | 已实现桌面／手机弹窗，会话过期保留草稿已验证 | [DESIGN](DESIGN.md)、[交接记录](HANDOVER.md) |
 | PLAN-CV-08 账户访问与资料 | 现有邮箱密码账户；公网目标及策略 | 修改密码及会话轮换已实现并隔离验证；公网防护与完整验收待完成 | [PRD 08](docs/prd/08-账户访问与资料.md)、[Plan 08](docs/plan/08-账户访问与资料.md) |
 | PLAN-CV-09 邮箱验证与账户恢复 | 账户基础、发信渠道与验证政策 | 验证、重置和加密发送队列已实现，真实 SMTP 测试邮件已确认收件；公网地址、防滥用及运营验收待完成 | [PRD 09](docs/prd/09-邮箱验证与账户恢复.md)、[Plan 09](docs/plan/09-邮箱验证与账户恢复.md) |
 | PLAN-CV-10 账户注销与数据处理 | 账户基础、注销及保留政策 | 等待、撤销、清理及启动时墓碑重放已实现并在隔离环境验证；部署前需配置独立持久存储、密钥和备份策略，入口默认关闭 | [PRD 10](docs/prd/10-账户注销与数据处理.md)、[Plan 10](docs/plan/10-账户注销与数据处理.md) |
-| 视觉基线同步 | [DESIGN](DESIGN.md) | 共享组件与页面已按无边框基线改造；桌面、手机及核心流程本地验证通过 | [交接记录](HANDOVER.md)；真实部署及跨浏览器验收未执行 |
+| 视觉基线同步 | [DESIGN](DESIGN.md) | 已恢复 DESIGN 的近白、黑白灰、Geist、无边框与 6px 控件，蓝色只作点缀；Figma 先于页面同步 | [交接记录](HANDOVER.md)；公网部署及跨浏览器验收未执行 |
 | 文档与需求收敛 | — | 复核通过 | [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计](docs/design/02-CV制作管理与展示设计.md)、按能力拆分的 PRD/Plan |
 | 前端技术基线 | — | 已安装并验证 | [设计 4.1](docs/design/02-CV制作管理与展示设计.md#41-已固定的前端基线)（Next.js 16 + React 19 + Tailwind 4 + Tiptap） |
 | 后端与 API 基线 | 简单维护及 Google API 约束 | 已安装并验证 | [服务设计](docs/design/02-CV制作管理与展示设计.md#42-已确定的服务与数据边界)、[API 规范](PROJECT.md#33-api-规范)（FastAPI + MySQL + AIP 规范） |

@@ -26,7 +26,7 @@ import { EditorLayout } from "@/components/layout/editor-layout";
 import { PaperPreview } from "@/components/ui/paper-preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 import { StatusMessage } from "@/components/ui/status-message";
 import { ProfileForm } from "./profile-form";
 import { EntryForm } from "./entry-form";
@@ -438,14 +438,14 @@ export default function CvEditor({ id }: { id: string }) {
       />
       <div className="fixed inset-x-0 bottom-0 z-30 flex justify-center gap-3 bg-background px-5 py-3 pb-[max(12px,env(safe-area-inset-bottom))] lg:hidden">
         <Button
-          variant={!preview ? "primary" : "secondary"}
+          variant={!preview ? "default" : "secondary"}
           className="flex-1"
           onClick={() => setPreview(false)}
         >
           填写信息
         </Button>
         <Button
-          variant={preview ? "primary" : "secondary"}
+          variant={preview ? "default" : "secondary"}
           className="flex-1"
           onClick={() => setPreview(true)}
         >

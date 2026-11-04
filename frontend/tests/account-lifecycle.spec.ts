@@ -18,8 +18,8 @@ for (const [name, width] of [
     });
     const page = await context.newPage();
     const email = `lifecycle-${crypto.randomUUID()}@example.com`;
-    const password = "test-password-long-2026";
-    const newPassword = "changed-password-long-2026";
+    const password = "eight888";
+    const newPassword = "newpass8";
     async function token(purpose: string) {
       let value = "";
       await expect

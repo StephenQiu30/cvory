@@ -7,7 +7,7 @@ import { FieldGroup, FieldSet, FieldLegend } from "@/components/ui/field";
 import { FormField } from "@/components/ui/form-field";
 import { Button } from "@/components/ui/button";
 import { ImagePicker } from "@/components/account/image-picker";
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/shared/app-dialog";
 const CONTACTS = [
   ["email", "邮箱"],
   ["phone", "电话"],

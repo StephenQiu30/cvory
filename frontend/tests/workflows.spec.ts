@@ -277,7 +277,12 @@ test("portrait and account avatar remain independent; cancel keeps crop", async 
   const before = await (await page.request.get(`/api/cvs/${id}`)).json();
   expect(before.profile.avatarUrl).toMatch(/^data:image\/jpeg/);
   await page.getByRole("button", { name: "更换／调整照片" }).click();
-  await page.locator("#photo-x").fill("75");
+  await page.getByRole("slider", { name: "水平位置" }).focus();
+  await page.getByRole("slider", { name: "水平位置" }).press("End");
+  await expect(page.getByRole("slider", { name: "水平位置" })).toHaveAttribute(
+    "aria-valuenow",
+    "100",
+  );
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "取消", exact: true })
@@ -318,6 +323,10 @@ test("design tokens, dialogs and theme work on desktop and mobile", async ({
       "background-color",
       "rgb(250, 250, 250)",
     );
+    const primary = page.getByRole("button", { name: "立即创建", exact: true });
+    await expect(primary).toHaveCSS("background-color", "rgb(23, 23, 23)");
+    await expect(primary).toHaveCSS("border-radius", "6px");
+    await expect(page.locator(".workspace-shell")).toHaveCSS("background-image", "none");
     await create.click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
@@ -335,7 +344,8 @@ test("design tokens, dialogs and theme work on desktop and mobile", async ({
       "background-color",
       "rgb(23, 23, 23)",
     );
-    await expect(create).toHaveCSS("background-color", "rgb(250, 250, 250)");
+    await expect(create).toHaveCSS("background-color", "rgb(48, 48, 48)");
+    await expect(primary).toHaveCSS("background-color", "rgb(250, 250, 250)");
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -399,4 +409,36 @@ test("login from settings keeps the current page", async ({ page }) => {
   await page.getByRole("button", { name: "注册并开始" }).click();
   await expect(page).toHaveURL(/\/settings\/appearance$/);
   await expect(page.getByText("管理界面主题")).toBeVisible();
+});
+
+test("Tiptap formatting keeps the entry open and persists JSON marks", async ({
+  page,
+}) => {
+  await signup(page);
+  const id = await create(page);
+  await page.getByRole("button", { name: "工作经历", exact: true }).click();
+  await page.getByRole("button", { name: "添加工作经历", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.locator("#entry-title").fill("Tiptap 验收");
+  await dialog.locator("#entry-subtitle").fill("工程师");
+  await dialog.getByLabel("开始月份").fill("2022-09");
+  await dialog.getByLabel("结束月份").fill("2026-06");
+  const editor = dialog.getByRole("textbox", { name: "经历正文" });
+  await editor.fill("格式保留");
+  await editor.press("ControlOrMeta+a");
+  await dialog.getByRole("button", { name: "加粗", exact: true }).click();
+  await expect(dialog).toBeVisible();
+  await expect(editor.locator("strong")).toHaveText("格式保留");
+  await dialog.getByRole("button", { name: "添加到简历" }).click();
+  await save(page);
+  const cv = await (await page.request.get(`/api/cvs/${id}`)).json();
+  const description = cv.sections.find(
+    (section: { type: string }) => section.type === "experience",
+  ).items[0].description;
+  expect(description.type).toBe("doc");
+  expect(JSON.stringify(description)).toContain('"type":"bold"');
+  await page.reload();
+  await expect(
+    page.locator(".resume-document strong").filter({ hasText: "格式保留" }),
+  ).toBeVisible();
 });

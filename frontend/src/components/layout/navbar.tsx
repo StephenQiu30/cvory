@@ -1,5 +1,43 @@
 "use client";
+
 import Link from "next/link";
-import {usePathname} from "next/navigation";
-import {NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuLink} from "@/components/ui/navigation-menu";
-export function Navbar(){const path=usePathname();return <NavigationMenu viewport={false}><NavigationMenuList><NavigationMenuItem><NavigationMenuLink asChild active={path==="/"}><Link href="/" aria-current={path==="/"?"page":undefined} className={`rounded-md px-3.5 py-1.5 text-sm font-medium hover:bg-surface-subtle ${path==="/"?"bg-surface-subtle":""}`}>我的简历</Link></NavigationMenuLink></NavigationMenuItem></NavigationMenuList></NavigationMenu>;}
+import { usePathname } from "next/navigation";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
+
+export function Navbar() {
+  const path = usePathname();
+  const links = [
+    { href: "/", label: "我的简历", active: path === "/" },
+    { href: "/#resume-templates", label: "简历模板", active: false },
+    {
+      href: "/settings/publication",
+      label: "公开展示",
+      active: path === "/settings/publication",
+    },
+  ];
+
+  return (
+    <NavigationMenu viewport={false} className="hidden sm:flex">
+      <NavigationMenuList className="gap-3 lg:gap-6">
+        {links.map(({ href, label, active }) => (
+          <NavigationMenuItem key={href}>
+            <NavigationMenuLink asChild active={active}>
+              <Link
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex h-16 items-center rounded-none bg-transparent px-2 data-active:bg-transparent data-active:hover:bg-transparent data-active:focus:bg-transparent data-active:text-link text-sm after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 ${active ? "text-link after:bg-primary" : "text-foreground hover:text-link"}`}
+              >
+                {label}
+              </Link>
+            </NavigationMenuLink>
+          </NavigationMenuItem>
+        ))}
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}

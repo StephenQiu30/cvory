@@ -19,6 +19,7 @@ import {
 } from "@/lib/resume/model";
 import { RichTextRenderer } from "@/components/ui/rich-text-renderer";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import type { CSSProperties } from "react";
 
 export function ResumeDocument({
@@ -179,14 +180,15 @@ export function ResumeDocument({
                   style={{ fontSize: web ? 16 : "1.12em" }}
                 >
                   {onSection ? (
-                    <button
+                    <Button
                       type="button"
-                      className="flex min-h-0! items-center gap-2 text-left"
+                      variant="ghost"
+                      className="h-auto min-h-0! justify-start gap-2 p-0 text-left text-inherit"
                       onClick={() => onSection(section.id)}
                     >
                       <Icon aria-hidden className="size-[1em]" />
                       {section.title}
-                    </button>
+                    </Button>
                   ) : (
                     <>
                       <Icon aria-hidden className="size-[1em]" />
