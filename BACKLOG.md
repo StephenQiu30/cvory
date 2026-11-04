@@ -9,7 +9,7 @@
 | PLAN-CV-08 账户访问与资料 | 现有邮箱密码账户；公网目标及策略 | 修改密码及会话轮换已实现并隔离验证；公网防护与完整验收待完成 | [PRD 08](docs/prd/08-账户访问与资料.md)、[Plan 08](docs/plan/08-账户访问与资料.md) |
 | PLAN-CV-09 邮箱验证与账户恢复 | 账户基础、发信渠道与验证政策 | 验证、重置和加密发送队列已实现，真实 SMTP 测试邮件已确认收件；公网地址、防滥用及运营验收待完成 | [PRD 09](docs/prd/09-邮箱验证与账户恢复.md)、[Plan 09](docs/plan/09-邮箱验证与账户恢复.md) |
 | PLAN-CV-10 账户注销与数据处理 | 账户基础、注销及保留政策 | 等待、撤销、清理及启动时墓碑重放已实现并在隔离环境验证；部署前需配置独立持久存储、密钥和备份策略，入口默认关闭 | [PRD 10](docs/prd/10-账户注销与数据处理.md)、[Plan 10](docs/plan/10-账户注销与数据处理.md) |
-| 视觉基线同步 | [DESIGN](DESIGN.md) | 已恢复 DESIGN 的近白、黑白灰、Geist、无边框与 6px 控件，蓝色只作点缀；Figma 先于页面同步 | [交接记录](HANDOVER.md)；公网部署及跨浏览器验收未执行 |
+| 视觉基线同步 | [DESIGN](DESIGN.md) | Figma 先于页面同步；移除顶栏／标签页黑色选中线，采用 shadcn 填充选中态及 Card、Badge、Empty、Skeleton 信息组合；桌面／手机浏览器回归通过 | [交接记录](HANDOVER.md)；公网部署及跨浏览器验收未执行 |
 | 文档与需求收敛 | — | 复核通过 | [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计](docs/design/02-CV制作管理与展示设计.md)、按能力拆分的 PRD/Plan |
 | 前端技术基线 | — | 已安装并验证 | [设计 4.1](docs/design/02-CV制作管理与展示设计.md#41-已固定的前端基线)（Next.js 16 + React 19 + Tailwind 4 + Tiptap） |
 | 后端与 API 基线 | 简单维护及 Google API 约束 | 已安装并验证 | [服务设计](docs/design/02-CV制作管理与展示设计.md#42-已确定的服务与数据边界)、[API 规范](PROJECT.md#33-api-规范)（FastAPI + MySQL + AIP 规范） |

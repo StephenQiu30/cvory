@@ -1,19 +1,29 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+const cardVariants = cva(
+  "group/card flex min-w-0 flex-col rounded-md text-foreground",
+  {
+    variants: {
+      variant: { default: "bg-surface", subtle: "bg-surface-subtle" },
+      size: { default: "gap-4 py-5", sm: "gap-3 py-4" },
+    },
+    defaultVariants: { variant: "default", size: "default" },
+  },
+);
 function Card({
   className,
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & VariantProps<typeof cardVariants>) {
   return (
     <div
       data-slot="card"
       data-size={size}
-      className={cn(
-        "group/card flex flex-col gap-4 rounded-md bg-surface py-5 text-foreground",
-        className,
-      )}
+      data-variant={variant}
+      className={cn(cardVariants({ variant, size }), className)}
       {...props}
     />
   );
@@ -23,7 +33,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "grid auto-rows-min gap-1.5 px-5 has-data-[slot=card-action]:grid-cols-[1fr_auto]",
+        "grid auto-rows-min gap-1.5 px-5 group-data-[size=sm]/card:px-4 has-data-[slot=card-action]:grid-cols-[1fr_auto]",
         className,
       )}
       {...props}
@@ -64,7 +74,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-5", className)}
+      className={cn("px-5 group-data-[size=sm]/card:px-4", className)}
       {...props}
     />
   );
@@ -73,7 +83,10 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center justify-between px-5", className)}
+      className={cn(
+        "flex items-center justify-between px-5 group-data-[size=sm]/card:px-4",
+        className,
+      )}
       {...props}
     />
   );

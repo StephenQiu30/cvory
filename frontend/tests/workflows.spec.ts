@@ -326,7 +326,38 @@ test("design tokens, dialogs and theme work on desktop and mobile", async ({
     const primary = page.getByRole("button", { name: "立即创建", exact: true });
     await expect(primary).toHaveCSS("background-color", "rgb(23, 23, 23)");
     await expect(primary).toHaveCSS("border-radius", "6px");
-    await expect(page.locator(".workspace-shell")).toHaveCSS("background-image", "none");
+    await expect(page.locator(".workspace-shell")).toHaveCSS(
+      "background-image",
+      "none",
+    );
+    const libraryTabs = page.getByRole("tablist", { name: "简历列表" });
+    const privateTab = libraryTabs.getByRole("tab", { name: "我的简历" });
+    await expect(privateTab).toHaveCSS(
+      "background-color",
+      "rgb(255, 255, 255)",
+    );
+    expect(
+      await privateTab.evaluate(
+        (node) => getComputedStyle(node, "::after").content,
+      ),
+    ).toBe("none");
+    const activeNavigation = page.locator(
+      '[data-slot="navigation-menu-link"][data-active]',
+    );
+    await expect(activeNavigation).toHaveCSS("border-bottom-width", "0px");
+    expect(
+      await activeNavigation.evaluate(
+        (node) => getComputedStyle(node, "::after").content,
+      ),
+    ).toBe("none");
+    await privateTab.focus();
+    await page.keyboard.press("ArrowRight");
+    const publicTab = libraryTabs.getByRole("tab", { name: "公开简历" });
+    await expect(publicTab).toBeFocused();
+    await expect(publicTab).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("ArrowLeft");
+    await expect(privateTab).toBeFocused();
+    await expect(privateTab).toHaveAttribute("aria-selected", "true");
     await create.click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();

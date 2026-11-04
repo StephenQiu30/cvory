@@ -27,11 +27,7 @@ export function Navbar() {
         {links.map(({ href, label, active }) => (
           <NavigationMenuItem key={href}>
             <NavigationMenuLink asChild active={active}>
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={`relative flex h-16 items-center rounded-none bg-transparent px-2 data-active:bg-transparent data-active:hover:bg-transparent data-active:focus:bg-transparent data-active:text-link text-sm after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 ${active ? "text-link after:bg-primary" : "text-foreground hover:text-link"}`}
-              >
+              <Link href={href} aria-current={active ? "page" : undefined}>
                 {label}
               </Link>
             </NavigationMenuLink>

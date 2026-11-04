@@ -28,6 +28,26 @@ import { Dialog } from "@/components/shared/app-dialog";
 import { FieldGroup } from "@/components/ui/field";
 import { FormField } from "@/components/ui/form-field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
+import { hasContent } from "@/lib/resume/files";
+import { CreationCard } from "./_components/creation-card";
 import { PaperPreview } from "@/components/ui/paper-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusMessage } from "@/components/ui/status-message";
@@ -40,8 +60,6 @@ import {
 } from "./_components/template-gallery";
 
 type TemplateId = NonNullable<StyleSettings["templateId"]>;
-const TAB_CLASS =
-  "data-[state=active]:text-link data-[state=active]:after:bg-primary";
 function updatedAt(value: string) {
   return new Date(value).toLocaleString("zh-CN", {
     year: "numeric",
@@ -68,10 +86,21 @@ function ResumeCard({
   onRename: (trigger: HTMLElement) => void;
 }) {
   return (
-    <article className="grid min-w-0 grid-cols-[42%_minmax(0,1fr)] gap-x-4 gap-y-3 border-b border-border py-5 first:pt-0">
-      <div className="relative col-start-1 row-start-1 w-full max-w-40 self-start overflow-hidden rounded-md bg-white transition-opacity hover:opacity-90 sm:row-span-2">
+    <article className="grid min-w-0 grid-cols-[42%_minmax(0,1fr)] gap-x-4 gap-y-3 py-5 first:pt-0">
+      <div className="relative col-start-1 row-start-1 w-full max-w-40 self-start overflow-hidden rounded-md bg-surface-subtle transition-opacity hover:opacity-90 sm:row-span-2">
         <div className="pointer-events-none" aria-hidden inert>
-          <PaperPreview cv={cv} firstPageOnly />
+          {hasContent(cv) ? (
+            <PaperPreview cv={cv} firstPageOnly />
+          ) : (
+            <Empty className="aspect-[.707] p-3">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <FileText aria-hidden />
+                </EmptyMedia>
+                <EmptyTitle>待填写</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          )}
         </div>
         <Link
           href={`/cvs/${cv.id}`}
@@ -112,7 +141,7 @@ function ResumeCard({
             aria-label={`管理${cv.displayName}的公开分享`}
             title="公开分享"
           >
-            <Share2 aria-hidden className="size-4" />
+            <Share2 aria-hidden data-icon="inline-start" />
           </Link>
         </Button>
         <Button
@@ -124,7 +153,7 @@ function ResumeCard({
           aria-label={`复制${cv.displayName}`}
           title="复制为新版本"
         >
-          <Copy aria-hidden className="size-4" />
+          <Copy aria-hidden data-icon="inline-start" />
         </Button>
         <Button
           variant="ghost"
@@ -135,7 +164,7 @@ function ResumeCard({
           aria-label={`下载${cv.displayName}`}
           title="下载简历"
         >
-          <Download aria-hidden className="size-4" />
+          <Download aria-hidden data-icon="inline-start" />
         </Button>
         <Button
           variant="ghost"
@@ -146,7 +175,7 @@ function ResumeCard({
           aria-label={`修改${cv.displayName}的名称`}
           title="修改名称"
         >
-          <Pencil aria-hidden className="size-4" />
+          <Pencil aria-hidden data-icon="inline-start" />
         </Button>
         <Button
           variant="ghost"
@@ -157,12 +186,25 @@ function ResumeCard({
           aria-label={`删除${cv.displayName}`}
           title="删除简历"
         >
-          <Trash2 aria-hidden className="size-4" />
+          <Trash2 aria-hidden data-icon="inline-start" />
         </Button>
       </div>
     </article>
   );
 }
+function ResumeListSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" aria-label={label} className="flex gap-4 py-5">
+      <Skeleton className="aspect-[.707] w-[42%]" />
+      <div className="flex flex-1 flex-col gap-3">
+        <span className="sr-only">{label}</span>
+        <Skeleton className="h-5 w-full" />
+        <Skeleton className="h-3 w-2/3" />
+      </div>
+    </div>
+  );
+}
+
 export default function Library() {
   const {
     account,
@@ -317,318 +359,287 @@ export default function Library() {
     <Content className="py-6 sm:py-6">
       <h1 className="sr-only">我的简历工作台</h1>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)]">
-        <section
-          aria-label="简历管理"
-          className="min-w-0 rounded-md bg-surface px-4 pb-5 pt-3 sm:px-5 lg:min-h-[720px]"
-        >
+        <Card role="region" aria-label="简历管理" className="lg:min-h-[720px]">
           <Tabs value={leftTab} onValueChange={setLeftTab} className="gap-0">
-            <div className="flex items-center justify-between gap-3 border-b border-border">
-              <TabsList variant="line" aria-label="简历列表" className="gap-6">
-                <TabsTrigger value="private" className={TAB_CLASS}>
-                  我的简历
-                </TabsTrigger>
-                <TabsTrigger value="public" className={TAB_CLASS}>
-                  公开简历
-                </TabsTrigger>
-              </TabsList>
-              {account && leftTab === "private" ? (
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {listOwner === ownerId ? total : "—"} 份
-                </span>
-              ) : null}
-            </div>
-            {accountLoading ? (
-              <p role="status" className="py-14 text-sm text-muted-foreground">
-                正在读取工作区…
-              </p>
-            ) : !account ? (
-              <div className="flex min-h-72 flex-col items-center justify-center px-3 text-center">
-                <FileText aria-hidden className="mb-4 size-9 text-primary/60" />
-                <h2 className="text-base font-medium">开始整理你的经历</h2>
-                <p className="mb-5 mt-2 text-sm leading-6 text-muted-foreground">
-                  {accountError || "登录后，新建、编辑并管理个人简历。"}
-                </p>
-                {accountError ? (
-                  <Button onClick={() => void refresh()}>重试连接</Button>
-                ) : (
-                  <Button onClick={() => openAuth()}>登录或注册</Button>
-                )}
+            <CardHeader>
+              <CardTitle className="sr-only">简历管理</CardTitle>
+              <div className="flex items-center justify-between gap-3">
+                <TabsList aria-label="简历列表">
+                  <TabsTrigger value="private">我的简历</TabsTrigger>
+                  <TabsTrigger value="public">公开简历</TabsTrigger>
+                </TabsList>
+                {account && leftTab === "private" ? (
+                  <Badge variant="secondary">
+                    {listOwner === ownerId ? total : "—"} 份
+                  </Badge>
+                ) : null}
               </div>
-            ) : (
-              <>
-                <TabsContent value="private" className="mt-5">
-                  {error ? (
-                    <div className="mb-4 space-y-2">
-                      <StatusMessage>{error}</StatusMessage>
+            </CardHeader>
+            <Separator />
+            <CardContent>
+              {accountLoading ? (
+                <ResumeListSkeleton label="正在读取工作区…" />
+              ) : !account ? (
+                <Empty className="min-h-72">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <FileText aria-hidden />
+                    </EmptyMedia>
+                    <EmptyTitle>开始整理你的经历</EmptyTitle>
+                    <EmptyDescription>
+                      {accountError || "登录后，新建、编辑并管理个人简历。"}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  <EmptyContent>
+                    {accountError ? (
+                      <Button onClick={() => void refresh()}>重试连接</Button>
+                    ) : (
+                      <Button onClick={() => openAuth()}>登录或注册</Button>
+                    )}
+                  </EmptyContent>
+                </Empty>
+              ) : (
+                <>
+                  <TabsContent value="private" className="mt-5">
+                    {error ? (
+                      <div className="mb-4 flex flex-col gap-2">
+                        <StatusMessage>{error}</StatusMessage>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={loading}
+                          onClick={() => void load()}
+                        >
+                          重试
+                        </Button>
+                      </div>
+                    ) : null}
+                    {message ? (
+                      <p role="status" className="mb-4 text-sm text-primary">
+                        {message}
+                      </p>
+                    ) : null}
+                    {loading && !currentCvs.length ? (
+                      <div
+                        className="flex gap-4 py-1"
+                        aria-label="正在加载简历"
+                        role="status"
+                      >
+                        <Skeleton className="aspect-[.707] w-[42%]" />
+                        <Skeleton className="h-6 w-[45%]" />
+                      </div>
+                    ) : currentCvs.length ? (
+                      currentCvs.map((cv) => (
+                        <ResumeCard
+                          key={cv.id}
+                          cv={cv}
+                          busy={busy}
+                          onDelete={(trigger) => {
+                            actionTrigger.current = trigger;
+                            setActionError("");
+                            setTarget(cv);
+                          }}
+                          onRename={(trigger) => {
+                            actionTrigger.current = trigger;
+                            setActionError("");
+                            setTitle(cv.displayName);
+                            setRenaming(cv);
+                          }}
+                          onExport={(trigger) => {
+                            actionTrigger.current = trigger;
+                            setExporting(cv);
+                          }}
+                          onCopy={async () => {
+                            if (busy) return;
+                            setBusy(true);
+                            setError("");
+                            try {
+                              const saved = await cvApi.getCv(cv.id);
+                              const created = await cvApi.createCv({
+                                ...editable(saved),
+                                displayName: `${saved.displayName.slice(0, 250)} · 副本`,
+                                requestId: crypto.randomUUID(),
+                              });
+                              router.push(`/cvs/${created.id}`);
+                            } catch {
+                              setError("复制失败，请检查登录后重试。");
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        />
+                      ))
+                    ) : !error ? (
+                      <Empty className="min-h-64">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon">
+                            <FileText aria-hidden />
+                          </EmptyMedia>
+                          <EmptyTitle>还没有简历</EmptyTitle>
+                          <EmptyDescription>
+                            选择模板，开始你的第一份简历。
+                          </EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
+                    ) : null}
+                    {next ? (
                       <Button
+                        className="mt-4 w-full"
                         variant="ghost"
-                        size="sm"
                         disabled={loading}
-                        onClick={() => void load()}
+                        onClick={() => void load(next)}
                       >
-                        重试
+                        {loading ? "正在加载" : "加载更多"}
                       </Button>
-                    </div>
-                  ) : null}
-                  {message ? (
-                    <p role="status" className="mb-4 text-sm text-primary">
-                      {message}
-                    </p>
-                  ) : null}
-                  {loading && !currentCvs.length ? (
-                    <div
-                      className="flex gap-4 py-1"
-                      aria-label="正在加载简历"
-                      role="status"
-                    >
-                      <div className="aspect-[.707] w-[42%] animate-pulse rounded-md bg-surface-subtle" />
-                      <div className="h-6 w-[45%] animate-pulse rounded bg-surface-subtle" />
-                    </div>
-                  ) : currentCvs.length ? (
-                    currentCvs.map((cv) => (
-                      <ResumeCard
-                        key={cv.id}
-                        cv={cv}
-                        busy={busy}
-                        onDelete={(trigger) => {
-                          actionTrigger.current = trigger;
-                          setActionError("");
-                          setTarget(cv);
-                        }}
-                        onRename={(trigger) => {
-                          actionTrigger.current = trigger;
-                          setActionError("");
-                          setTitle(cv.displayName);
-                          setRenaming(cv);
-                        }}
-                        onExport={(trigger) => {
-                          actionTrigger.current = trigger;
-                          setExporting(cv);
-                        }}
-                        onCopy={async () => {
-                          if (busy) return;
-                          setBusy(true);
-                          setError("");
-                          try {
-                            const saved = await cvApi.getCv(cv.id);
-                            const created = await cvApi.createCv({
-                              ...editable(saved),
-                              displayName: `${saved.displayName.slice(0, 250)} · 副本`,
-                              requestId: crypto.randomUUID(),
-                            });
-                            router.push(`/cvs/${created.id}`);
-                          } catch {
-                            setError("复制失败，请检查登录后重试。");
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
-                      />
-                    ))
-                  ) : !error ? (
-                    <div className="flex min-h-64 flex-col items-center justify-center text-center">
-                      <FileText
-                        aria-hidden
-                        className="mb-4 size-9 text-primary/50"
-                      />
-                      <h2 className="font-medium">还没有简历</h2>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        选择模板，开始你的第一份简历。
-                      </p>
-                    </div>
-                  ) : null}
-                  {next ? (
-                    <Button
-                      className="mt-4 w-full"
-                      variant="ghost"
-                      disabled={loading}
-                      onClick={() => void load(next)}
-                    >
-                      {loading ? "正在加载" : "加载更多"}
-                    </Button>
-                  ) : null}
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={(event) =>
-                        beginCreate("standard", event.currentTarget)
-                      }
-                    >
-                      <Plus aria-hidden className="size-4" />
-                      新建简历
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={(event) =>
-                        beginImport("files", event.currentTarget)
-                      }
-                    >
-                      <Upload aria-hidden className="size-4" />
-                      导入
-                    </Button>
-                  </div>
-                </TabsContent>
-                <TabsContent value="public" className="mt-5">
-                  {publicationLoading ? (
-                    <p
-                      role="status"
-                      className="py-10 text-sm text-muted-foreground"
-                    >
-                      正在读取公开简历…
-                    </p>
-                  ) : publicationError ? (
-                    <div className="space-y-3">
-                      <StatusMessage>{publicationError}</StatusMessage>
+                    ) : null}
+                    <Separator className="mt-4" />
+                    <CardFooter className="flex-wrap justify-start gap-2 px-0 pt-4">
                       <Button
+                        size="sm"
                         variant="secondary"
-                        onClick={() => void loadPublication()}
+                        onClick={(event) =>
+                          beginCreate("standard", event.currentTarget)
+                        }
                       >
-                        重试公开状态
+                        <Plus aria-hidden data-icon="inline-start" />
+                        新建简历
                       </Button>
-                    </div>
-                  ) : publication?.published ? (
-                    <div>
-                      {publicDocument ? (
-                        <div className="relative w-40 overflow-hidden rounded-md bg-white">
-                          <div
-                            aria-hidden
-                            inert
-                            className="pointer-events-none"
-                          >
-                            <PaperPreview cv={publicDocument} firstPageOnly />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(event) =>
+                          beginImport("files", event.currentTarget)
+                        }
+                      >
+                        <Upload aria-hidden data-icon="inline-start" />
+                        导入
+                      </Button>
+                    </CardFooter>
+                  </TabsContent>
+                  <TabsContent value="public" className="mt-5">
+                    {publicationLoading ? (
+                      <ResumeListSkeleton label="正在读取公开简历…" />
+                    ) : publicationError ? (
+                      <div className="flex flex-col gap-3">
+                        <StatusMessage>{publicationError}</StatusMessage>
+                        <Button
+                          variant="secondary"
+                          onClick={() => void loadPublication()}
+                        >
+                          重试公开状态
+                        </Button>
+                      </div>
+                    ) : publication?.published ? (
+                      <div>
+                        {publicDocument ? (
+                          <div className="relative w-40 overflow-hidden rounded-md bg-white">
+                            <div
+                              aria-hidden
+                              inert
+                              className="pointer-events-none"
+                            >
+                              <PaperPreview cv={publicDocument} firstPageOnly />
+                            </div>
+                            <Link
+                              href={`/u/${publication.publicId}`}
+                              aria-label="查看已公开简历"
+                              className="absolute inset-0 rounded-md"
+                            />
                           </div>
-                          <Link
-                            href={`/u/${publication.publicId}`}
-                            aria-label="查看已公开简历"
-                            className="absolute inset-0 rounded-md"
-                          />
-                        </div>
-                      ) : null}
-                      <h2 className="mt-4 break-all text-base font-medium">
-                        {publication.sourceName || "已公开简历"}
-                      </h2>
-                      <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                        已发布
-                        {publication.updateTime
-                          ? ` · ${updatedAt(publication.updateTime)}`
-                          : ""}
-                      </p>
-                      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                        这里展示当前公开快照。私有简历的后续编辑不会自动公开。
-                      </p>
-                      <Button className="mt-4" variant="secondary" asChild>
-                        <Link href={`/u/${publication.publicId}`}>
-                          查看公开页面
-                        </Link>
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex min-h-64 flex-col items-center justify-center text-center">
-                      <Globe
-                        aria-hidden
-                        className="mb-4 size-9 text-primary/50"
-                      />
-                      <h2 className="font-medium">还没有公开简历</h2>
-                      <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                        选择内容，核对预览后再发布。
-                      </p>
-                    </div>
-                  )}
-                  <Button variant="ghost" className="mt-5" asChild>
-                    <Link href="/settings/publication">
-                      <Share2 aria-hidden className="size-4" />
-                      管理公开简历
-                    </Link>
-                  </Button>
-                </TabsContent>
-              </>
-            )}
+                        ) : null}
+                        <h2 className="mt-4 break-all text-base font-medium">
+                          {publication.sourceName || "已公开简历"}
+                        </h2>
+                        <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                          已发布
+                          {publication.updateTime
+                            ? ` · ${updatedAt(publication.updateTime)}`
+                            : ""}
+                        </p>
+                        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                          这里展示当前公开快照。私有简历的后续编辑不会自动公开。
+                        </p>
+                        <Button className="mt-4" variant="secondary" asChild>
+                          <Link href={`/u/${publication.publicId}`}>
+                            查看公开页面
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <Empty className="min-h-64">
+                        <EmptyHeader>
+                          <EmptyMedia variant="icon">
+                            <Globe aria-hidden />
+                          </EmptyMedia>
+                          <EmptyTitle>还没有公开简历</EmptyTitle>
+                          <EmptyDescription>
+                            选择内容，核对预览后再发布。
+                          </EmptyDescription>
+                        </EmptyHeader>
+                      </Empty>
+                    )}
+                    <Button variant="ghost" className="mt-5" asChild>
+                      <Link href="/settings/publication">
+                        <Share2 aria-hidden data-icon="inline-start" />
+                        管理公开简历
+                      </Link>
+                    </Button>
+                  </TabsContent>
+                </>
+              )}
+            </CardContent>
           </Tabs>
-        </section>
-        <section
+        </Card>
+        <Card
+          role="region"
           aria-label="新建简历"
           id="resume-templates"
-          className="min-w-0 scroll-mt-24 rounded-md bg-surface px-4 pb-6 pt-3 sm:px-6 lg:min-h-[720px]"
+          className="scroll-mt-24 lg:min-h-[720px]"
         >
           <Tabs value={rightTab} onValueChange={setRightTab} className="gap-0">
-            <TabsList
-              variant="line"
-              aria-label="新建方式"
-              className="w-full justify-start gap-4 border-b border-border sm:gap-7"
-            >
-              <TabsTrigger value="templates" className={TAB_CLASS}>
-                从模板新建
-              </TabsTrigger>
-              <TabsTrigger value="markdown" className={TAB_CLASS}>
-                Markdown 简历
-              </TabsTrigger>
-              <TabsTrigger value="import" className={TAB_CLASS}>
-                导入简历
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="templates" className="mt-5">
-              <TemplateGallery
-                onCreate={beginCreate}
-                onPreview={(selected, trigger) => {
-                  actionTrigger.current = trigger;
-                  setPreview(selected);
-                }}
-                onMarkdown={(trigger) => beginImport("markdown", trigger)}
-              />
-            </TabsContent>
-            <TabsContent value="markdown" className="mt-5">
-              <div className="flex min-h-[460px] flex-col items-center justify-center rounded-md bg-surface-subtle px-5 text-center">
-                <FileCode2
-                  aria-hidden
-                  className="mb-6 size-16 text-primary"
-                  strokeWidth={1.5}
+            <CardHeader>
+              <CardTitle className="sr-only">新建简历</CardTitle>
+              <TabsList aria-label="新建方式">
+                <TabsTrigger value="templates">从模板新建</TabsTrigger>
+                <TabsTrigger value="markdown">Markdown 简历</TabsTrigger>
+                <TabsTrigger value="import">导入简历</TabsTrigger>
+              </TabsList>
+            </CardHeader>
+            <Separator />
+            <CardContent>
+              <TabsContent value="templates" className="mt-5">
+                <TemplateGallery
+                  onCreate={beginCreate}
+                  onPreview={(selected, trigger) => {
+                    actionTrigger.current = trigger;
+                    setPreview(selected);
+                  }}
+                  onMarkdown={(trigger) => beginImport("markdown", trigger)}
                 />
-                <h2 className="text-xl font-medium">
-                  用 Markdown 整理你的经历
-                </h2>
-                <p className="mb-6 mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-                  粘贴正文或上传 Markdown 文件，校对姓名和模块后另存为新简历。
-                </p>
-                <Button
-                  className="rounded-md px-6"
-                  onClick={(event) =>
-                    beginImport("markdown", event.currentTarget)
-                  }
-                >
-                  创建 Markdown 简历
-                </Button>
-                <p className="mt-4 text-xs leading-5 text-muted-foreground">
-                  支持标题、段落、强调、列表与链接；版式由模板控制。
-                </p>
-              </div>
-            </TabsContent>
-            <TabsContent value="import" className="mt-5">
-              <div className="flex min-h-[460px] flex-col items-center justify-center rounded-md bg-surface-subtle px-5 text-center">
-                <Upload
-                  aria-hidden
-                  className="mb-6 size-14 text-primary"
-                  strokeWidth={1.5}
+              </TabsContent>
+              <TabsContent value="markdown" className="mt-5">
+                <CreationCard
+                  title="用 Markdown 整理你的经历"
+                  description="粘贴正文或上传 Markdown 文件，校对姓名和模块后另存为新简历。"
+                  icon={FileCode2}
+                  action="创建 Markdown 简历"
+                  onAction={(trigger) => beginImport("markdown", trigger)}
+                  detail="支持标题、段落、强调、列表与链接；版式由模板控制。"
                 />
-                <h2 className="text-xl font-medium">导入已有简历</h2>
-                <p className="mb-6 mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-                  支持 CVory v1 JSON 备份和 Markdown，单文件不超过 10
-                  MB。校对后另存，保留已有简历。
-                </p>
-                <Button
-                  className="rounded-md px-6"
-                  onClick={(event) => beginImport("files", event.currentTarget)}
-                >
-                  选择文件导入
-                </Button>
-                <p className="mt-4 text-xs text-muted-foreground">
-                  暂不支持 PDF、Word 或图片解析。
-                </p>
-              </div>
-            </TabsContent>
+              </TabsContent>
+              <TabsContent value="import" className="mt-5">
+                <CreationCard
+                  title="导入已有简历"
+                  description="支持 CVory v1 JSON 备份和 Markdown，单文件不超过 10 MB。校对后另存，保留已有简历。"
+                  icon={Upload}
+                  action="选择文件导入"
+                  onAction={(trigger) => beginImport("files", trigger)}
+                  detail="暂不支持 PDF、Word 或图片解析。"
+                />
+              </TabsContent>
+            </CardContent>
           </Tabs>
-        </section>
+        </Card>
       </div>
       <Dialog
         open={create}
