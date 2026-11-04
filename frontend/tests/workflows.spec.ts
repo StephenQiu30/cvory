@@ -52,13 +52,49 @@ async function save(page: Page) {
   ).toBeVisible();
 }
 
+async function verifyTestAccount(page: Page, email: string) {
+  const mailbox = process.env.CV_TEST_MAILBOX;
+  if (!mailbox)
+    throw new Error(
+      "CV_TEST_MAILBOX must point to the isolated test mail capture file.",
+    );
+  await page.goto("/settings/access");
+  await page.getByRole("button", { name: "发送验证邮件" }).click();
+  let token = "";
+  await expect
+    .poll(
+      async () => {
+        try {
+          const lines = (await readFile(mailbox, "utf8")).trim().split("\n");
+          const message = lines
+            .map((line) => JSON.parse(line))
+            .find(
+              (item) =>
+                item.recipient === email && item.purpose === "verify_email",
+            );
+          token = message?.token ?? "";
+        } catch {
+          /* The isolated worker has not delivered the message yet. */
+        }
+        return Boolean(token);
+      },
+      { timeout: 20000 },
+    )
+    .toBe(true);
+  await page.goto(`/verify-email#token=${encodeURIComponent(token)}`);
+  await page.getByRole("button", { name: "确认验证" }).click();
+  await expect(page.getByText("邮箱验证成功。")).toBeVisible();
+  await page.goto("/");
+}
+
 test("register → blank CV → four modules → save/reopen → templates → frozen public result", async ({
   page,
   context,
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await signup(page);
+  const email = await signup(page);
+  await verifyTestAccount(page, email);
   const id = await create(page);
   await page.getByLabel("姓名", { exact: true }).fill("陈予安");
   await page.getByLabel("求职职位", { exact: true }).fill("前端工程师");
@@ -230,13 +266,11 @@ test("portrait and account avatar remain independent; cancel keeps crop", async 
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==",
     "base64",
   );
-  await page
-    .getByLabel("选择图片文件")
-    .setInputFiles({
-      name: "portrait.png",
-      mimeType: "image/png",
-      buffer: png,
-    });
+  await page.getByLabel("选择图片文件").setInputFiles({
+    name: "portrait.png",
+    mimeType: "image/png",
+    buffer: png,
+  });
   await expect(page.getByAltText("待应用的照片预览")).toBeVisible();
   await page.getByRole("button", { name: "应用照片" }).click();
   await save(page);
@@ -265,34 +299,55 @@ test("portrait and account avatar remain independent; cancel keeps crop", async 
   ).toBe(before.profile.avatarUrl);
 });
 
-test("design tokens, dialogs and theme work on desktop and mobile", async ({ page }) => {
+test("design tokens, dialogs and theme work on desktop and mobile", async ({
+  page,
+}) => {
   await signup(page);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    await page.evaluate(() => { localStorage.setItem("cvory.theme.v1", "light"); document.documentElement.classList.remove("dark"); });
+    await page.evaluate(() => {
+      localStorage.setItem("cvory.theme.v1", "light");
+      document.documentElement.classList.remove("dark");
+    });
     const create = page.getByRole("button", { name: "新建简历", exact: true });
     await expect(create).toBeVisible();
     await expect(create).toHaveCSS("border-radius", "6px");
     await expect(create).toHaveCSS("border-top-width", "0px");
-    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(250, 250, 250)");
+    await expect(page.locator("body")).toHaveCSS(
+      "background-color",
+      "rgb(250, 250, 250)",
+    );
     await create.click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog).toHaveCSS("border-radius", "6px");
     await expect(dialog).toHaveCSS("border-top-width", "0px");
-    await expect(page.getByLabel("简历名称")).toHaveCSS("border-top-width", "0px");
+    await expect(page.getByLabel("简历名称")).toHaveCSS(
+      "border-top-width",
+      "0px",
+    );
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await page.getByRole("button", { name: "切换外观" }).click();
     await page.getByRole("menuitemradio", { name: "深色" }).click();
-    await expect(page.locator("body")).toHaveCSS("background-color", "rgb(23, 23, 23)");
+    await expect(page.locator("body")).toHaveCSS(
+      "background-color",
+      "rgb(23, 23, 23)",
+    );
     await expect(create).toHaveCSS("background-color", "rgb(250, 250, 250)");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBeTruthy();
   }
 });
 
-test("authentication modal keeps context and preserves drafts after session expiry", async ({ page, context }) => {
+test("authentication modal keeps context and preserves drafts after session expiry", async ({
+  page,
+  context,
+}) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   const trigger = page.getByRole("button", { name: "登录或注册" });
@@ -309,20 +364,37 @@ test("authentication modal keeps context and preserves drafts after session expi
   await page.getByRole("button", { name: "保存", exact: true }).click();
   await expect(page.getByText(/登录已过期/)).toBeVisible();
   await page.getByRole("button", { name: "重新登录" }).click();
-  await page.getByRole("dialog").getByLabel("邮箱", { exact: false }).fill(email);
-  await page.getByRole("dialog").getByLabel("密码", { exact: true }).fill(PASSWORD);
-  await page.getByRole("dialog").getByRole("button", { name: "登录", exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("邮箱", { exact: false })
+    .fill(email);
+  await page
+    .getByRole("dialog")
+    .getByLabel("密码", { exact: true })
+    .fill(PASSWORD);
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "登录", exact: true })
+    .click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page.getByLabel("姓名", { exact: true })).toHaveValue("保留的草稿");
+  await expect(page.getByLabel("姓名", { exact: true })).toHaveValue(
+    "保留的草稿",
+  );
   await save(page);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBeTruthy();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBeTruthy();
 });
 
 test("login from settings keeps the current page", async ({ page }) => {
   await page.goto("/settings/appearance");
   await page.getByRole("button", { name: "登录账户" }).click();
   await page.getByRole("button", { name: "还没有账户？注册" }).click();
-  await page.getByLabel("邮箱", { exact: false }).fill(`settings-${crypto.randomUUID()}@example.com`);
+  await page
+    .getByLabel("邮箱", { exact: false })
+    .fill(`settings-${crypto.randomUUID()}@example.com`);
   await page.getByLabel("密码", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "注册并开始" }).click();
   await expect(page).toHaveURL(/\/settings\/appearance$/);

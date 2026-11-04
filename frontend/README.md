@@ -27,7 +27,9 @@ pnpm dev
 
 ## 浏览器验收
 
-先启动独立后端与前端。测试会注册合成账户并创建简历，应使用隔离数据库。默认前端地址为 `http://127.0.0.1:3100`，可通过 `CV_TEST_URL` 配置。
+先启动独立后端与前端。测试会注册合成账户并创建简历，应使用隔离数据库。默认前端地址为 `http://127.0.0.1:3100`，可通过 `CV_TEST_URL` 配置。公开发布测试需要隔离测试发件器：把模拟邮件逐行写入 JSONL，每行包含 `recipient`、`purpose`、`token`，并用 `CV_TEST_MAILBOX` 指向该文件；不得使用真实邮箱或真实账户运行该测试。
+
+可使用 `backend/tests/browser_test_server.py` 启动只监听本机、使用独立 SQLite 和模拟邮件的测试后端。为每次测试指定一个新建的空 `CV_TEST_DIR`，在后端目录执行 `CV_TEST_DIR=<空目录> CV_TEST_URL=http://127.0.0.1:3100 uv run python tests/browser_test_server.py`。前端构建和启动时均设置 `BACKEND_INTERNAL_URL=http://127.0.0.1:18432`；执行测试时设置 `CV_TEST_MAILBOX=<空目录>/mail.jsonl`。测试服务只接受发往 `example.com` 的模拟邮件。
 
 ```bash
 pnpm exec playwright install chromium

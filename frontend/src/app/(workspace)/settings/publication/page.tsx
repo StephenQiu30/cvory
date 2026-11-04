@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { StatusMessage } from "@/components/ui/status-message";
 import { ResumeDocument } from "@/components/resume/resume-document";
+import { useAccount } from "@/components/account/account-provider";
 const FIELDS = [
   ["email", "电子邮箱"],
   ["phone", "联系电话"],
@@ -35,6 +36,7 @@ const FIELDS = [
   ["avatarUrl", "简历照片"],
 ] as const;
 export default function Publication() {
+  const { account } = useAccount();
   const [cvs, setCvs] = useState<CVResource[]>([]);
   const [source, setSource] = useState("");
   const [status, setStatus] = useState<API.PublicationStatus | null>(null);
@@ -112,7 +114,11 @@ export default function Publication() {
       setReview(null);
       setMessage("公开内容已更新");
     } catch {
-      setError("发布失败，原公开内容已保留。可重试当前预览，或重新登录。");
+      setError(
+        account && !account.emailVerified
+          ? "请先在账户与访问中验证邮箱。原公开内容已保留。"
+          : "发布失败，原公开内容已保留。可重试当前预览，或重新登录。",
+      );
     } finally {
       setBusy(false);
     }
@@ -157,6 +163,15 @@ export default function Publication() {
         title="公开简历"
         description="选择一份已保存简历，核对后发布到固定网址。保存简历不会自动更新公开页。"
       />
+      {account && !account.emailVerified ? (
+        <p className="mb-5 text-sm text-muted-foreground">
+          发布或更新公开简历前请先
+          <Link className="underline" href="/settings/access">
+            验证邮箱
+          </Link>
+          。已有公开内容保持不变。
+        </p>
+      ) : null}
       {loading ? (
         <p role="status">正在读取公开设置…</p>
       ) : (

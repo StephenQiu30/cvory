@@ -1,10 +1,10 @@
 """Filter saved documents before they cross the anonymous boundary."""
 import uuid
 from datetime import datetime, timedelta, timezone
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.core.errors import AbortedError, InvalidArgumentError, NotFoundError
+from app.core.errors import AbortedError, InvalidArgumentError, NotFoundError, PermissionDeniedError
 from app.core.security import get_current_owner
 from app.models.account import AccountModel, PublicationModel, PublicationReviewModel
 from app.schemas.account import ResumeDocument, PublicSelection, PublicationReview, PublishRequest, PublicationStatus
@@ -64,6 +64,9 @@ def publish(payload: PublishRequest, db: Session = Depends(get_db), owner: str =
     review = db.query(PublicationReviewModel).filter_by(id=payload.review_id, owner_id=owner).first()
     if not review or review.expires_at < datetime.now(timezone.utc).replace(tzinfo=None):
         raise NotFoundError("Review expired. Refresh preview.")
+    account = db.get(AccountModel, owner)
+    if not account or not account.email_verified_at:
+        raise PermissionDeniedError("Email verification is required for publication.")
     CVService.get_cv(db, review.source_id, owner)
     publication = db.get(PublicationModel, owner)
     if not publication:
@@ -84,9 +87,10 @@ def withdraw(db: Session = Depends(get_db), owner: str = Depends(get_current_own
 
 
 @router.get("/public/{public_id}", response_model=ResumeDocument, operation_id="getPublicResume")
-def public_resume(public_id: str, db: Session = Depends(get_db)):
+def public_resume(public_id: str, response: Response, db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
     account = db.query(AccountModel).filter_by(public_id=public_id).first()
-    result = db.get(PublicationModel, account.id) if account else None
+    result = db.get(PublicationModel, account.id) if account and account.status == "active" else None
     if not result:
         raise NotFoundError()
     return ResumeDocument(**result.document)

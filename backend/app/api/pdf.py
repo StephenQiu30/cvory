@@ -11,18 +11,22 @@ from app.core.errors import AppError, NotFoundError, AbortedError
 from app.core.security import get_current_owner
 from app.schemas.account import ResumeDocument
 from app.services.cv_service import CVService
+from app.models.account import AccountModel
 
 router = APIRouter(tags=["files"])
-_contexts: dict[str, tuple[float, ResumeDocument]] = {}
+_contexts: dict[str, tuple[float, ResumeDocument, str]] = {}
 _lock = threading.Lock()
 _slots = threading.BoundedSemaphore(2)
 
 
 @router.get("/print/{ticket}", response_model=ResumeDocument, operation_id="getPrintContext")
-def print_context(ticket: str):
+def print_context(ticket: str, db: Session = Depends(get_db)):
     with _lock:
         context = _contexts.get(ticket)
     if not context or context[0] < time.monotonic():
+        raise NotFoundError()
+    account = db.get(AccountModel, context[2])
+    if not account or account.status != "active":
         raise NotFoundError()
     return context[1]
 
@@ -37,7 +41,7 @@ def pdf(cv_id: str, etag: str = Query(...), db: Session = Depends(get_db), owner
         raise AppError(429, "PDF renderer is busy.", "RESOURCE_EXHAUSTED")
     ticket = secrets.token_urlsafe(32)
     with _lock:
-        _contexts[ticket] = (time.monotonic() + 120, snapshot)
+        _contexts[ticket] = (time.monotonic() + 120, snapshot, owner)
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
@@ -49,6 +53,10 @@ def pdf(cv_id: str, etag: str = Query(...), db: Session = Depends(get_db), owner
                 content = page.pdf(format="A4", print_background=True, display_header_footer=False, prefer_css_page_size=True)
             finally:
                 browser.close()
+        db.expire_all()
+        account = db.query(AccountModel).filter_by(id=owner).with_for_update().first()
+        if not account or account.status != "active":
+            raise NotFoundError()
         return Response(content, media_type="application/pdf", headers={"Content-Disposition": 'attachment; filename="cvory-resume.pdf"', "Cache-Control": "no-store"})
     except PlaywrightError as exc:
         raise AppError(503, "PDF renderer unavailable. Retry after checking Chromium installation.", "UNAVAILABLE") from exc

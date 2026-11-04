@@ -19,12 +19,17 @@ class Credentials(CamelModel):
         return value
 
 
+class RegistrationCredentials(Credentials):
+    password: str = Field(min_length=15, max_length=128)
+
+
 class AccountResource(CamelModel):
     id: str
     email: str
     display_name: str
     avatar: str | None = None
     public_id: str
+    email_verified: bool = False
 
 
 class AccountUpdate(CamelModel):
@@ -73,3 +78,31 @@ class StylePreset(CamelModel):
     id: str
     display_name: str = Field(min_length=1, max_length=80)
     settings: StyleSettingsSchema
+
+
+class EmailRequest(CamelModel):
+    email: str = Field(max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def valid_email(cls, value):
+        value = value.strip().lower()
+        if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", value):
+            raise ValueError("Invalid email address.")
+        return value
+
+
+class TokenRequest(CamelModel):
+    token: str = Field(min_length=1, max_length=256)
+
+
+class ResetPasswordRequest(TokenRequest):
+    password: str = Field(min_length=15, max_length=128)
+
+
+class CurrentPasswordRequest(CamelModel):
+    password: str = Field(min_length=1, max_length=128)
+
+
+class ChangePasswordRequest(CurrentPasswordRequest):
+    new_password: str = Field(min_length=15, max_length=128)

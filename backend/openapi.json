@@ -729,7 +729,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Credentials"
+                "$ref": "#/components/schemas/RegistrationCredentials"
               }
             }
           },
@@ -1117,6 +1117,598 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:requestEmailVerification": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Request Email Verification",
+        "operationId": "requestEmailVerification",
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:verifyEmail": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Verify Email",
+        "operationId": "verifyEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:requestPasswordReset": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Request Password Reset",
+        "operationId": "requestPasswordReset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:resetPassword": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Reset Password",
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:requestDeletion": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Request Deletion",
+        "operationId": "requestAccountDeletion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrentPasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:changePassword": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Change Password",
+        "operationId": "changeAccountPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/account:cancelDeletion": {
+      "post": {
+        "tags": [
+          "account"
+        ],
+        "summary": "Cancel Deletion",
+        "operationId": "cancelAccountDeletion",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "400": {
+            "description": "请求参数不合法 (INVALID_ARGUMENT)，携带 fieldViolations 字段明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未经授权或所有者凭证缺失 (UNAUTHENTICATED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "拒绝访问 (PERMISSION_DENIED)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "请求的资源未找到 (NOT_FOUND)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "并发版本冲突 (ABORTED)，资源已被其他修改，ETag 不匹配",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2073,6 +2665,11 @@
           "publicId": {
             "type": "string",
             "title": "Publicid"
+          },
+          "emailVerified": {
+            "type": "boolean",
+            "title": "Emailverified",
+            "default": false
           }
         },
         "type": "object",
@@ -2207,6 +2804,28 @@
         "title": "CVResource",
         "description": "Complete CV resource schema conforming to Google AIP-121."
       },
+      "ChangePasswordRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          },
+          "newPassword": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 15,
+            "title": "Newpassword"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password",
+          "newPassword"
+        ],
+        "title": "ChangePasswordRequest"
+      },
       "CreateCVRequest": {
         "properties": {
           "requestId": {
@@ -2302,6 +2921,35 @@
           "password"
         ],
         "title": "Credentials"
+      },
+      "CurrentPasswordRequest": {
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "title": "CurrentPasswordRequest"
+      },
+      "EmailRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "EmailRequest"
       },
       "ErrorBody": {
         "properties": {
@@ -2708,6 +3356,55 @@
         ],
         "title": "PublishRequest"
       },
+      "RegistrationCredentials": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 15,
+            "title": "Password"
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 80,
+            "title": "Displayname",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "RegistrationCredentials"
+      },
+      "ResetPasswordRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Token"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 15,
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "ResetPasswordRequest"
+      },
       "ResumeDocument": {
         "properties": {
           "profile": {
@@ -2990,6 +3687,21 @@
         "type": "object",
         "title": "StyleSettingsSchema",
         "description": "Typography and layout style parameters."
+      },
+      "TokenRequest": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "TokenRequest"
       },
       "UpdateCVRequest": {
         "properties": {

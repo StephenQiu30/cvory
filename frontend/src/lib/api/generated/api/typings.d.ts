@@ -10,6 +10,8 @@ declare namespace API {
     avatar?: string | null;
     /** Publicid */
     publicId: string;
+    /** Emailverified */
+    emailVerified?: boolean;
   };
 
   type AccountUpdate = {
@@ -22,6 +24,13 @@ declare namespace API {
   type BodyUploadCvAvatar = {
     /** File 头像图片文件（支持 PNG、JPEG、WEBP 格式） */
     file: string;
+  };
+
+  type ChangePasswordRequest = {
+    /** Password */
+    password: string;
+    /** Newpassword */
+    newPassword: string;
   };
 
   type CreateCVRequest = {
@@ -44,6 +53,11 @@ declare namespace API {
     password: string;
     /** Displayname */
     displayName?: string;
+  };
+
+  type CurrentPasswordRequest = {
+    /** Password */
+    password: string;
   };
 
   type CVResource = {
@@ -73,6 +87,11 @@ declare namespace API {
 
   type deletePresetParams = {
     preset_id: string;
+  };
+
+  type EmailRequest = {
+    /** Email */
+    email: string;
   };
 
   type ErrorBody = {
@@ -226,6 +245,22 @@ declare namespace API {
     reviewId: string;
   };
 
+  type RegistrationCredentials = {
+    /** Email */
+    email: string;
+    /** Password */
+    password: string;
+    /** Displayname */
+    displayName?: string;
+  };
+
+  type ResetPasswordRequest = {
+    /** Token */
+    token: string;
+    /** Password */
+    password: string;
+  };
+
   type ResumeDocument = {
     profile: ProfileSchema;
     /** Sections */
@@ -304,6 +339,11 @@ declare namespace API {
     lineHeight?: number;
     /** Margin 页面外边距尺寸（像素 px） */
     margin?: number;
+  };
+
+  type TokenRequest = {
+    /** Token */
+    token: string;
   };
 
   type updateCvParams = {

@@ -11,10 +11,25 @@ services:
       - DATABASE_URL=mysql+pymysql://${MYSQL_USER:-root}:${MYSQL_PASSWORD:-123456}@${MYSQL_HOST:-host.docker.internal}:${MYSQL_PORT:-3306}/${MYSQL_DATABASE:-cvory}?charset=utf8mb4
       - FRONTEND_INTERNAL_URL=http://frontend:1234
       - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost:1234","http://127.0.0.1:1234"]}
+      - PUBLIC_APP_ORIGIN=${PUBLIC_APP_ORIGIN:-http://localhost:1234}
+      - SMTP_ENABLED=${SMTP_ENABLED:-false}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-465}
+      - SMTP_TLS_MODE=${SMTP_TLS_MODE:-tls}
+      - SMTP_USERNAME=${SMTP_USERNAME:-}
+      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-CVory}
+      - MAIL_ENCRYPTION_KEY=${MAIL_ENCRYPTION_KEY:-}
+      - MAIL_RATE_LIMIT_KEY=${MAIL_RATE_LIMIT_KEY:-}
+      - DELETION_ENABLED=${DELETION_ENABLED:-false}
+      - DELETION_TOMBSTONE_DIR=/deletion-ledger
+      - DELETION_TOMBSTONE_KEY=${DELETION_TOMBSTONE_KEY:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - backend-data:/app/data
+      - deletion-ledger:/deletion-ledger
 
   frontend:
     build:
@@ -35,3 +50,4 @@ services:
 
 volumes:
   backend-data:
+  deletion-ledger:

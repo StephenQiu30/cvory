@@ -16,6 +16,7 @@ RUN uv run playwright install --with-deps chromium
 # Copy application source code
 COPY app ./app
 COPY migrations ./migrations
+COPY scripts ./scripts
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1

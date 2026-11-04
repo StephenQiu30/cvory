@@ -66,7 +66,10 @@ def test_owner_isolation_and_origin(clients):
 
 
 def test_frozen_preview_and_withdrawal(clients):
-    first,second,anon,_=clients
+    first,second,anon,dbs=clients
+    with dbs() as db:
+        db.query(AccountModel).filter_by(email="user0@example.com").update({"email_verified_at": datetime.now()})
+        db.commit()
     cv=create(first)
     public_id=first.get("/api/account").json()["publicId"]
     response=first.post("/api/publication:preview",json={"sourceId":cv["id"],"etag":cv["etag"],"fields":["location","phone"],"sectionIds":["education","private"]})
@@ -126,6 +129,9 @@ def test_stale_save_does_not_overwrite_and_idempotent_create(clients):
 
 def test_expired_sessions_and_reviews_keep_published_result(clients):
     first,_,anon,dbs=clients
+    with dbs() as db:
+        db.query(AccountModel).filter_by(email="user0@example.com").update({"email_verified_at": datetime.now()})
+        db.commit()
     cv=create(first)
     review=first.post("/api/publication:preview",json={"sourceId":cv["id"],"etag":cv["etag"],"fields":[],"sectionIds":["education"]}).json()
     assert first.post("/api/publication:publish",json={"reviewId":review["id"]}).status_code==200

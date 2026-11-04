@@ -13,6 +13,7 @@
 cp .env.example .env    # 根据本地环境配置敏感信息（.env 已被 git 忽略）
 docker compose build
 docker compose run --rm backend python migrations/001_account_ownership.py
+docker compose run --rm backend python migrations/002_account_lifecycle.py
 docker compose up -d    # 启动后端与前端容器
 docker compose ps       # 查看容器状态
 docker compose logs -f  # 查看日志
@@ -27,6 +28,7 @@ docker compose logs -f  # 查看日志
   cd backend
   uv sync
   uv run python migrations/001_account_ownership.py
+  uv run python migrations/002_account_lifecycle.py
   uv run playwright install chromium
   uv run pytest -v
   uv run uvicorn app.main:app --port 8000
@@ -54,7 +56,9 @@ docker compose logs -f  # 查看日志
 
 ## 账户与存量数据
 
-首次访问可在登录弹窗中注册邮箱与密码。密码至少 10 位；会话由 FastAPI 管理。邮箱注册不表示已验证，当前没有邮件发送与密码找回。
+首次访问可在登录弹窗中注册邮箱与密码。新密码至少 15 位，已有账户的 10–14 位密码仍可登录；会话由 FastAPI 管理。邮箱注册不表示已验证，未验证账户不能发布或更新公开内容。邮箱验证及密码重置依赖正确配置的 SMTP、密钥和可访问的前端地址，真实投递尚待验收。
+
+存量数据库在执行迁移前须备份并审查；迁移 002 已在隔离 SQLite 与 MySQL 8.4 中验证，未对现有数据库执行。注销默认关闭；启用前必须配置稳定的 `DELETION_TOMBSTONE_KEY`，在**全新且为空**的独立墓碑目录执行一次 `python scripts/init_deletion_ledger.py`，并将墓碑目录及密钥分别安全备份。Compose 使用 `deletion-ledger` 卷；可用 `docker compose run --rm backend python scripts/init_deletion_ledger.py` 初始化。确认持久化与备份策略后将 `DELETION_ENABLED` 设为 true。启动时会校验墓碑和密钥并重放删除记录；备份恢复须在对外服务前保留最新完整墓碑与正确密钥。不得在墓碑丢失时新建空目录冒充原记录；独立备份及保留到期由运营系统负责，程序无法判断外部备份是否已过期。
 
 迁移保留已有 CV 的 `legacy` 归属，不将其自动交给新账户。需要接管自己的存量内容时，在注册后由管理者执行 `cd backend && uv run python migrations/001_account_ownership.py --assign-legacy-to <目标邮箱>`。该命令只迁移未归属账户的内容。
 

@@ -18,6 +18,20 @@ class Settings(BaseSettings):
     data_dir: Path = Path(__file__).resolve().parent.parent.parent / "data"
     
     frontend_internal_url: str = "http://127.0.0.1:3000"
+    public_app_origin: str = ""
+    smtp_enabled: bool = False
+    smtp_host: str = ""
+    smtp_port: int = 465
+    smtp_tls_mode: str = "tls"
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_from_name: str = "CVory"
+    mail_encryption_key: str = ""
+    mail_rate_limit_key: str = ""
+    deletion_tombstone_dir: Path | None = None
+    deletion_tombstone_key: str = ""
+    deletion_enabled: bool = False
 
     # CORS
     cors_origins: List[str] = [

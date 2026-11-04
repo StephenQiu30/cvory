@@ -1,6 +1,8 @@
 """Main application entrypoint for CVory backend with organized Swagger documentation."""
 
 from contextlib import asynccontextmanager
+import asyncio
+import logging
 from typing import Any, Dict
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -9,7 +11,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api import api_router
 from app.core.config import settings
-from app.core.database import Base, engine
+from app.core.database import Base, engine, SessionLocal
 from app.core.errors import (
     AppError,
     app_error_handler,
@@ -26,7 +28,48 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     # Ensure data directory exists
     settings.data_dir.mkdir(parents=True, exist_ok=True)
-    yield
+    marker = settings.deletion_tombstone_dir / '.cvory-ledger-v1' if settings.deletion_tombstone_dir else None
+    if settings.deletion_enabled or settings.deletion_tombstone_key or (marker and marker.exists()):
+        from app.services.account_deletion import reconcile_restored_accounts
+        with SessionLocal() as db:
+            reconcile_restored_accounts(db)
+    async def mail_worker():
+        from app.services.account_mail import process_mail_jobs
+        while True:
+            try:
+                def process():
+                    with SessionLocal() as db:
+                        process_mail_jobs(db)
+                await asyncio.to_thread(process)
+            except Exception as exc:
+                logging.getLogger(__name__).warning("Mail worker failed (%s).", type(exc).__name__)
+            await asyncio.sleep(5)
+    async def deletion_worker():
+        from app.services.account_deletion import process_deletion_jobs
+        while True:
+            try:
+                def process():
+                    with SessionLocal() as db:
+                        process_deletion_jobs(db)
+                await asyncio.to_thread(process)
+            except Exception as exc:
+                logging.getLogger(__name__).error("Deletion worker failed (%s).", type(exc).__name__)
+            await asyncio.sleep(30)
+    tasks = []
+    if settings.smtp_enabled:
+        tasks.append(asyncio.create_task(mail_worker()))
+    if settings.deletion_enabled:
+        tasks.append(asyncio.create_task(deletion_worker()))
+    try:
+        yield
+    finally:
+        for task in tasks:
+            task.cancel()
+        for task in tasks:
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 tags_metadata = [
