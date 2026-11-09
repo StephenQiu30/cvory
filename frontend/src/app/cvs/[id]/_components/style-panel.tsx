@@ -250,7 +250,7 @@ export function StylePanel({
               setBusy(true);
               setError("");
               try {
-                await deletePreset({ preset_id: remove.id });
+                await deletePreset({ id: remove.id || "" });
                 setPresets(presets.filter((p) => p.id !== remove.id));
                 setRemove(null);
               } catch (cause) {

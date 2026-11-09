@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Globe, UserRound, ShieldCheck, Palette } from "lucide-react";
+import { GitFork, Globe, UserRound, ShieldCheck, Palette } from "lucide-react";
 import type { ReactNode } from "react";
 import { Content } from "./content";
 import { useAccount } from "@/components/account/account-provider";
@@ -31,6 +31,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
             {[
               ["profile", "个人资料", UserRound],
               ["access", "账户与访问", ShieldCheck],
+              ["github", "GitHub 项目", GitFork],
               ["appearance", "外观", Palette],
               ["publication", "公开简历", Globe],
             ].map(([path, label, Icon]) => {

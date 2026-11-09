@@ -279,7 +279,7 @@ export default function Library() {
       setPublication(status);
       setPublicDocument(null);
       if (status.published) {
-        const document = await getPublicResume({ public_id: status.publicId });
+        const document = await getPublicResume({ publicId: status.publicId });
         if (generation === loadGeneration.current) setPublicDocument(document);
       }
     } catch (cause) {

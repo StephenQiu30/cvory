@@ -1,6 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { parseBackup, parseMarkdown, markdown } from "../src/lib/resume/files";
 import {
+  blankProfile,
+  completeResume,
   textContent,
   DEFAULT_STYLE,
   safeLink,
@@ -24,16 +26,13 @@ test("Markdown keeps prose, lists and supported marks without inventing dates", 
   expect(textContent(candidate.sections![0].content)).toContain("React");
   expect(candidate.sections![0].items).toEqual([]);
   expect(
-    markdown({
-      profile: candidate.profile!,
-      sections: candidate.sections!,
-      styleSettings: DEFAULT_STYLE,
-    }),
+    markdown(completeResume(candidate)),
   ).toContain("**React**");
 });
 test("hidden contact data stays out of Markdown and link protocols are constrained", () => {
   const text = markdown({
     profile: {
+      ...blankProfile(),
       fullName: "Name",
       email: "PRIVATE_HIDDEN_EMAIL@example.com",
       hiddenFields: ["email"],

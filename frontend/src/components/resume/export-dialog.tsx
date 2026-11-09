@@ -117,7 +117,7 @@ export function ExportDialog({
                 let blob: Blob;
                 if (format === "pdf") {
                   blob = (await exportCvPdf(
-                    { cv_id: saved.id, etag: saved.etag },
+                    { id: saved.id, etag: saved.etag },
                     {
                       responseType: "blob",
                       timeout: 120000,

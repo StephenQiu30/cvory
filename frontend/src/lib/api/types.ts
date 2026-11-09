@@ -1,11 +1,11 @@
-/** Aliases of the generated Pydantic/OpenAPI contracts; no second API schema. */
-export type Profile = API.ProfileSchema;
-export type SectionItem = API.SectionItemSchema;
-export type Section = API.SectionSchema;
-export type StyleSettings = API.StyleSettingsSchema;
+/** Aliases of the generated NestJS/OpenAPI contracts; no second API schema. */
+export type Profile = API.CVResource["profile"];
+export type SectionItem = API.CVResource["sections"][number]["items"][number];
+export type Section = API.CVResource["sections"][number];
+export type StyleSettings = API.CVResource["styleSettings"];
 export type CVResource = API.CVResource;
 export type CreateCVRequest = API.CreateCVRequest;
 export type UpdateCVRequest = API.UpdateCVRequest;
-export type ListCVsResponse = API.ListCVsResponse;
+export type ListCVsResponse = API.CvList;
 export type ResumeData = API.ResumeDocument;
 export type { GoogleApiError } from "./request";

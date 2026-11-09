@@ -1,1 +1,0 @@
-"""CVory Backend Application Package."""

@@ -99,7 +99,7 @@ test("password validation and logout failures use the shared error presentation"
     .fill("status-test-password");
   await page.getByLabel("新密码", { exact: true }).fill("new-password-one");
   await page.getByLabel("确认新密码").fill("new-password-two");
-  await page.getByRole("button", { name: "修改密码", exact: true }).click();
+  await page.getByRole("button", { name: "更新密码", exact: true }).click();
   await expect(page.getByRole("main").getByRole("alert")).toHaveText(
     "两次输入的密码不一致。",
   );

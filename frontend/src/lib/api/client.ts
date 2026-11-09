@@ -4,15 +4,15 @@ export { ApiError, type GoogleApiError } from "./request";
 export const cvApi = {
   listCvs: (pageSize = 50, pageToken?: string) =>
     generated.listCvs({ pageSize, pageToken }),
-  getCv: (id: string) => generated.getCv({ cv_id: id }),
+  getCv: (id: string) => generated.getCv({ id }),
   createCv: (data: CreateCVRequest) => generated.createCv(data),
   updateCv: (id: string, data: UpdateCVRequest, etag?: string) =>
-    generated.updateCv({ cv_id: id }, data, {
+    generated.updateCv({ id }, data, {
       headers: etag ? { "If-Match": `"${etag}"` } : {},
     }),
   deleteCv: (id: string, etag?: string) =>
     generated.deleteCv(
-      { cv_id: id },
+      { id },
       { headers: etag ? { "If-Match": `"${etag}"` } : {} },
     ),
 };

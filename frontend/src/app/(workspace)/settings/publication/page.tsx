@@ -133,8 +133,8 @@ export default function Publication() {
       setMessage("公开内容已更新");
     } catch {
       setError(
-        account && !account.emailVerified
-          ? "请先在账户与访问中验证邮箱。原公开内容已保留。"
+        account && !account.emailVerified && !account.githubConnected
+          ? "请先在账户设置中连接 GitHub。原公开内容已保留。"
           : "发布失败，原公开内容已保留。可重试当前预览，或重新登录。",
       );
     } finally {
@@ -188,11 +188,11 @@ export default function Publication() {
         title="公开简历"
         description="选择一份已保存简历，核对后发布到固定网址。保存简历不会自动更新公开页。"
       />
-      {account && !account.emailVerified ? (
+      {account && !account.emailVerified && !account.githubConnected ? (
         <StatusMessage tone="info" className="mb-5">
           发布或更新公开简历前请先
           <Link className="underline" href="/settings/access">
-            验证邮箱
+            连接 GitHub
           </Link>
           。已有公开内容保持不变。
         </StatusMessage>
@@ -427,7 +427,7 @@ export default function Publication() {
               setError("");
               setMessage("");
               try {
-                await withdrawPublication();
+                await withdrawPublication({etag: status?.etag || ""});
                 setStatus((s) =>
                   s ? { ...s, published: false, sourceName: "" } : s,
                 );

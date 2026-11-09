@@ -87,9 +87,9 @@ export function ProfileForm({
                   onChange({
                     ...profile,
                     avatarUrl: url,
-                    photoX: pos?.x,
-                    photoY: pos?.y,
-                    photoScale: pos?.scale,
+                    photoX: pos?.x ?? profile.photoX,
+                    photoY: pos?.y ?? profile.photoY,
+                    photoScale: pos?.scale ?? profile.photoScale,
                   })
                 }
               />

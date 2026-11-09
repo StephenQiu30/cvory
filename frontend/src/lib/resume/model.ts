@@ -37,9 +37,49 @@ export const ACCENTS = {
   blue: "#1D4ED8",
   graphite: "#475569",
 } as const;
-export function blankItem(): SectionItem {
+export function blankProfile(): ResumeData["profile"] {
   return {
-    id: crypto.randomUUID(),
+    fullName: "",
+    headline: "",
+    email: "",
+    phone: "",
+    location: "",
+    website: "",
+    github: "",
+    wechat: "",
+    jobStatus: "",
+    expectedLocation: "",
+    experienceYears: "",
+    expectedSalary: "",
+    hiddenFields: [],
+    photoHidden: false,
+    photoPosition: "right",
+    photoX: 50,
+    photoY: 50,
+    photoScale: 1,
+    avatarUrl: null,
+  };
+}
+export function completeResume(
+  input: Omit<API.CreateCVRequest, "displayName">,
+): ResumeData {
+  return {
+    profile: { ...blankProfile(), ...input.profile },
+    sections: (input.sections || []).map((section) => ({
+      ...section,
+      visible: section.visible ?? true,
+      content: section.content ?? null,
+      items: (section.items || []).map((item) => ({
+        ...blankItem(item.id),
+        ...item,
+      })),
+    })),
+    styleSettings: { ...DEFAULT_STYLE, ...input.styleSettings },
+  };
+}
+export function blankItem(id = crypto.randomUUID()): SectionItem {
+  return {
+    id,
     title: "",
     subtitle: "",
     dateRange: "",
@@ -55,7 +95,7 @@ export function blankItem(): SectionItem {
     link: "",
   };
 }
-export function dateLabel(item: SectionItem, type: string) {
+export function dateLabel(item: Partial<SectionItem>, type: string) {
   if (!item.startDate && !item.endDate && !item.current)
     return item.dateRange || "";
   return [

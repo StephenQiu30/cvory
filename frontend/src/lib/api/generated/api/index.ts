@@ -2,17 +2,19 @@
 /* eslint-disable */
 // API 更新时间：
 // API 唯一标识：
-import * as cvs from "./cvs";
+import * as health from "./health";
 import * as account from "./account";
-import * as publication from "./publication";
+import * as cvs from "./cvs";
 import * as presets from "./presets";
+import * as publication from "./publication";
 import * as files from "./files";
-import * as system from "./system";
+import * as github from "./github";
 export default {
-  cvs,
+  health,
   account,
-  publication,
+  cvs,
   presets,
+  publication,
   files,
-  system,
+  github,
 };

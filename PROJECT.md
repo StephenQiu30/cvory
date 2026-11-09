@@ -15,17 +15,17 @@
 
 ## 2. 仓库现状
 
-仓库包含需求与设计体系文档，以及已建立的 Next.js 前端 (`frontend/`) 与 FastAPI 后端 (`backend/`) 工程，包含 CV 制作、文件、公开展示和邮箱账户生命周期的实现。目标后端改为 NestJS + TypeScript，尚未建立 NestJS 工程或迁移现有服务；目标是开源自部署、GitHub 登录的个人简历/求职工具；GitHub、DOCX/PDF 导入、PNG、AI 和 BOSS 插件仍按设计评审，不把文档视作现有代码。依赖通过 pnpm 与 uv 分别管理，数据库使用 MySQL。尚未接入远端 CI。
+仓库包含 Next.js 前端与唯一 NestJS/TypeScript 后端，均使用 pnpm 锁定依赖，数据库为 MySQL。现有模块包括账户/会话/GitHub、CV/历史/预设、照片、公开快照及 PDF。历史 Python 源码、测试和 uv 清单已移除，历史由 Git 承载。邮箱恢复/注销、DOCX/PDF 导入、PNG、AI、Chrome 插件及站主首页仍按 BACKLOG 实施；不以源码删除或局部验证代表完整产品验收。尚未接入远端 CI。
 
 ## 3. 技术选型
 
 前端采用 Next.js、shadcn/ui + Radix UI、Tiptap 与 Geist，目标后端采用负责人明确指定的 NestJS + TypeScript，数据库继续使用 MySQL。固定前端基线、服务边界及配套工具建议、GitHub 身份与插件/AI 服务设计只在[产品设计 02](docs/design/02-CV制作管理与展示设计.md)维护。目录、编码和 API 通用规范由本文件维护，不在产品设计或业务需求中复制。
 
-依赖版本线与升级取舍按产品设计执行，清单和锁文件位置见 §3.4。目标前后端各自以 pnpm-lock.yaml 固定版本；现有 Python 后端的 uv.lock 仅描述迁移前实现；实际验证范围见 HANDOVER。
+依赖版本线与升级取舍按产品设计执行，清单和锁文件位置见 §3.4。目标前后端各自以 pnpm-lock.yaml 固定版本；不保留 uv/Python 运行依赖；实际验证范围见 HANDOVER。
 
 ### 3.1 后端 TypeScript 与 NestJS 规范
 
-后端代码以 [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)为规范基线，采用 NestJS + TypeScript strict；模块组织、依赖注入与生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。现有 Python 代码仅作为待迁移实现与数据兼容依据，不继续作为目标技术栈。
+后端代码以 [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)为规范基线，采用 NestJS + TypeScript strict；模块组织、依赖注入与生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。旧数据兼容由 SQL/TypeScript 显式迁移及固定 scrypt 测试向量维护，不保留第二套运行时。
 
 - 按实际业务使用 Module、Controller 和可注入 Service；Controller 只处理 HTTP，Service 负责业务与事务，Guard/Pipe/Filter 分别处理权限、输入和错误；不为每个动作新增独立模块或通用 repository 框架。
 - 类型/类使用 PascalCase，字段/方法使用 lowerCamelCase，不给接口加 I 前缀；后端文件按 Google 风格使用 snake_case，保留 Nest 职责后缀，如 `cv_version.service.ts`、`create_cv.dto.ts`。前端文件命名继续按 §3.2，不混用两端约定。
@@ -36,7 +36,7 @@
 - I/O 使用异步接口，解析、图片和重型文件处理移到受限独立 Node 进程，不在主事件循环执行无界 CPU/同步文件工作。超时、取消和进程清理显式处理，不以静默捕获或忽略 Promise 伪装成功。
 - 日志只记录必要元数据，不记录完整私有简历、Cookie 或模型密钥；应用启动验证配置，退出释放数据库连接、浏览器和任务进程。依赖注入用于实际服务替换和测试，不搭建多余抽象层。
 
-ESLint/TypeScript/格式化工具在 Nest 工程建立时按本节配置，并验证 Google 条款与 Nest 装饰器兼容；工具选型与脚本存在不代表全部风格已通过。检查脚本实际执行后登记 §8；设计阶段不创建空工程或将不存在的脚本计为通过。
+Nest 工程以 TypeScript strict、ESLint/typescript-eslint 与 Stylistic 校验类型、无 any/未使用变量、const/let、单引号和分号，Prettier 统一两空格及无对象括号空格。Nest DTO 的确定赋值由装饰器/校验承接；工具覆盖不等于 Google 指南全部语义条款自动检查。命令见 §8。
 
 ### 3.2 前端代码规范
 
@@ -55,7 +55,7 @@ ESLint/TypeScript/格式化工具在 Nest 工程建立时按本节配置，并�
 
 | 范围 | 本项目约定 |
 | --- | --- |
-| 资源与命名 | 以 CV、样式预设、当前公开结果为资源。稳定资源名如 name: cvs/{id}，用户标题用 displayName；TypeScript 字段与 JSON 使用 lowerCamelCase，存量数据库 snake_case 通过 ORM 映射保留 |
+| 资源与命名 | 以 CV、样式预设、当前公开结果为资源。稳定资源名如 name: cvs/{id}，用户标题用 displayName；TypeScript 字段与 JSON 使用 lowerCamelCase，存量数据库 snake_case 通过服务端映射保留 |
 | 路径与操作 | 对外前缀 /api，资源用复数名词；读取 GET、创建 POST、局部更新 PATCH、删除 DELETE。标准方法无法表达的动作才用自定义方法，如 POST /api/cvs/{id}:copy；保存不触发发布 |
 | 更新与并发 | PATCH 使用 updateMask 指定更新字段，明确空值与清空语义；正文 JSON 可作为整体字段替换，不要求逐节点路径。已有 CV 的更新和删除携带服务端输出的 etag，条件写入不匹配返回 HTTP 409 / ABORTED，缺少必需 etag 返回 400 / INVALID_ARGUMENT；保持本地输入供处理 |
 | 列表与时间 | 列表从起点支持 pageSize/pageToken 和 nextPageToken，token 不承载授权；不因此增加复杂筛选 UI。createTime/updateTime 由服务端产生，RFC 3339/UTC 表达 |
@@ -67,7 +67,7 @@ ESLint/TypeScript/格式化工具在 Nest 工程建立时按本节配置，并�
 
 ### 3.4 工程目录与依赖边界
 
-`frontend/` 和 `backend/` 是固定目录，不再作为候选。以下是目标工程的最小结构；当前 backend/ 仍为 Python/FastAPI，Nest 目录尚未建立。实施时按能力迁移并保留已有内容，只创建实际需要的文件，不用占位文件提前铺满目录。
+`frontend/` 和 `backend/` 是固定目录，不再作为候选。以下结构标明目标职责；Nest 身份/CV/GitHub 模块已建立，未列为现有的能力仍按需迁移。历史 Python 代码已删除。实施时保留存量数据，只创建实际需要的文件，不用占位文件提前铺满目录。
 
 ```text
 CV/
@@ -96,13 +96,13 @@ CV/
 │   ├── components.json
 │   ├── package.json
 │   └── pnpm-lock.yaml
-├── backend/                            # 目标 NestJS/TS；当前仍是 FastAPI
+├── backend/                            # 唯一 NestJS/TypeScript 后端
 │   ├── src/
 │   │   ├── main.ts                    # 启动、Pipe/Filter、OpenAPI
 │   │   ├── app.module.ts              # 模块组合与生命周期
 │   │   ├── config/                    # 配置读取和启动校验
 │   │   ├── common/                    # 复用 Guard/Filter/请求上下文
-│   │   ├── database/                  # ORM provider、连接/事务支持
+│   │   ├── database/                  # mysql2 provider、连接/事务与显式迁移
 │   │   └── modules/
 │   │       ├── account/               # 身份、会话、资料与生命周期
 │   │       ├── cvs/                   # CV、用途副本、修订历史与样式
@@ -118,7 +118,7 @@ CV/
 │   │       ├── ai/                    # 私有配置、三家 provider 与分析报告
 │   │       │   └── providers/         # 统一接口和官方适配
 │   │       └── delivery/              # 规则、设备配对、沟通/招呼与结果
-│   ├── prisma/                        # 采用 Prisma 后的 schema/迁移
+│   ├── migrations/                    # 版本化 SQL/旧迁移；不在 API 启动时执行
 │   ├── test/                          # API/真实 MySQL 集成验证
 │   ├── package.json
 │   ├── pnpm-lock.yaml
@@ -127,7 +127,7 @@ CV/
 └── PROJECT.md                          # 工程规范唯一入口
 ```
 
-- 目标前后端均用 Node.js/TypeScript，各自在 `frontend/`、`backend/` 管理 package.json 和 pnpm-lock.yaml。迁移前不删除 Python 清单/uv.lock；移除旧运行时须在替代链路及数据兼容验收后执行。根目录不另建一套应用依赖，`docs/` 不承载运行工程。
+- 目标前后端均用 Node.js/TypeScript，各自在 `frontend/`、`backend/` 管理 package.json 和 pnpm-lock.yaml。负责人已明确要求删除历史 Python 实现；仓库只保留 NestJS 后端与 pnpm 依赖。删除前把现有制作页面依赖的资料、照片、预设、公开和 PDF 接口迁入 Nest，未完成的邮箱恢复/注销明确关闭，不将清理描述为所有需求完成。根目录不另建一套应用依赖，`docs/` 不承载运行工程。
 - 路由组只组织 Next.js 页面壳，不改变 URL：`(workspace)/workspace/page.tsx` 才对应 `/workspace`；现有 `(workspace)/page.tsx` 仍是 `/`，首页切换须按发布能力实施，不能只移动文件就声称路由已改。路由私有组件留 `_components/`，复用后再提取；app 页面只编排，不承载数据库/模型密钥。
 - 后端按业务 Module 组织 Controller/Service/DTO，数据库模型与对外 DTO 分离；Guard 校验 owner，Service 控制事务。按实际需要拆文件，不为每个操作增加 repository 等中间层。
 - 后端模块以公开 Service/注入 token 协作，不跨模块访问对方私有 ORM 查询或导入 Controller；common 只放已复用基础设施，config 只管配置，database 不放业务规则，workers 不自行绕过授权写正式对象。存储字段、DTO 与领域状态分别维护，不将 ORM 模型直出匿名接口。
@@ -152,13 +152,10 @@ CV/
 工程已建立真实启动、检查、测试与构建验证命令，禁止跳过检查虚构通过。
 
 - **目标 NestJS 后端 (`backend/`)**
-  - 尚未建立 package.json、构建、lint、单元/集成测试及启动脚本；待实现后登记实际执行的命令，不以设计稿中的候选脚本算通过。
-  - 目标运行时延用项目 Node.js 24 LTS 和 pnpm，数据库继续 MySQL。NestJS/ORM/解析工具精确版本在集成验证后锁定。
-- **迁移前 Python 后端 (`backend/`，现存命令)**
-  - 依赖安装与同步：`cd backend && uv sync`
-  - 单元与集成测试：`cd backend && uv run pytest -v`
-  - 启动业务服务：`cd backend && uv run uvicorn app.main:app --host 127.0.0.1 --port 8000`
-  - 本地环境依赖：Python 3.12+、MySQL 8.4/9.x（数据库 `cvory`，utf8mb4）
+  - 目录 `backend/`，Node.js 24 + pnpm 12，NestJS 12、TypeScript 5.9、mysql2 3，精确版本见锁文件。
+  - `pnpm typecheck`、`pnpm lint`、`pnpm format:check`、`pnpm build`、`pnpm openapi`。
+  - `CVORY_TEST_MYSQL_URL` 通过环境提供后运行 `pnpm test`，使用随机隔离 MySQL 库。
+  - `pnpm db:migrate` 显式建表/迁移，`pnpm start` 启动首切片；完整迁移边界与配置见 [backend/README](backend/README.md)。
 - **前端 (`frontend/`)**
   - 依赖安装：`cd frontend && pnpm install`
   - OpenAPI 客户端生成：`cd frontend && pnpm run openapi`（基于后端 Swagger/OpenAPI 生成类型与服务）
@@ -174,6 +171,6 @@ CV/
 
 ## 9. 当前边界
 
-应用已实现简历制作与条件保存、独立副本、三套模板及个人预设、JSON／Markdown 交换、PDF 生成和按字段公开展示，并提供邮箱密码注册登录。目标补充 GitHub 登录与公开项目、Markdown 编辑模式、DOCX/文字 PDF 导入、PNG 导出、站主首页、三家官方 AI 预设（部署者自填配置）和 Chrome 插件（人工上传 PDF，插件筛选/沟通/招呼）。目标后端为 NestJS + TypeScript，现存 FastAPI 仍未迁移，Python 检查不能代表 NestJS 验收。当前只开展需求与服务设计评审，不启动实现；完整目标以业务需求和产品设计为准，实现范围和验证边界以 BACKLOG 与 HANDOVER 为准；代码存在及局部测试不代表完整链路已经可靠。数据库存量迁移须显式执行，旧 CV 不自动分配给首个注册者；邮箱验证、密码恢复和注销已有代码，完整生命周期、真实互联网部署及恢复验收仍须独立完成。
+现有 NestJS 实现覆盖身份、资料、CV 条件保存/历史、副本、样式、照片、PDF 与公开快照；Markdown/JSON 交换由前端和统一 API 协作。Python 源码删除，部署入口统一 Node；仍须区分代码、隔离验收与实际部署。邮箱恢复和注销入口关闭，不处理旧任务；未完成注销任务阻止就绪，业务库恢复需独立检查墓碑及账户状态。其余完整目标与未完成范围以 BACKLOG/HANDOVER 为准。数据库迁移显式执行，旧 CV 不自动归给首个注册者。
 
 未要求时不提交、推送或发布。仓库尚未接入 CI；后续获授权推送须单独核对远端必需检查，不以本地结果代替。代码提交标题严格遵循 [CONTRIBUTING](CONTRIBUTING.md) 的 `type(scope): description` 规范。

@@ -1,93 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
-import { StatusMessage, type StatusTone } from "@/components/ui/status-message";
-import { errorMessage } from "@/lib/api/error-message";
+import { useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
-import { resetPassword } from "@/lib/api/generated/api/account";
-import { useAccount } from "@/components/account/account-provider";
-
-export default function ResetPassword() {
-  const [token, setToken] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [message, setMessage] = useState("");
-  const [tone, setTone] = useState<StatusTone>("info");
-  const [busy, setBusy] = useState(false);
-  const { openAuth, setAccount } = useAccount();
+import { StatusMessage } from "@/components/ui/status-message";
+export default function Unavailable() {
   useEffect(() => {
-    const value = new URLSearchParams(window.location.hash.slice(1)).get(
-      "token",
-    );
     window.history.replaceState(null, "", window.location.pathname);
-    if (value) void Promise.resolve().then(() => setToken(value));
   }, []);
   return (
-    <main className="mx-auto max-w-md px-6 py-16">
-      <h1 className="text-2xl font-medium">重置密码</h1>
-      <p className="mt-4 text-sm text-muted-foreground">重置后请重新登录。</p>
-      <form
-        className="mt-6 grid gap-5"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (password !== confirmation) {
-            setTone("error");
-            setMessage("两次输入的密码不一致。");
-            return;
-          }
-          setBusy(true);
-          setMessage("");
-          try {
-            await resetPassword({ token, password });
-            setAccount(null);
-            setToken("");
-            setPassword("");
-            setConfirmation("");
-            setTone("success");
-            setMessage("密码已重置，请重新登录。");
-          } catch (cause) {
-            setTone("error");
-            setMessage(errorMessage(cause, "链接无效或已过期，请重新申请。"));
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <FormField id="new-password" label="新密码">
-          <Input
-            id="new-password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="至少 8 位"
-            minLength={8}
-            maxLength={128}
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </FormField>
-        <FormField id="confirm-password" label="确认新密码">
-          <Input
-            id="confirm-password"
-            type="password"
-            autoComplete="new-password"
-            placeholder="至少 8 位"
-            minLength={8}
-            maxLength={128}
-            required
-            value={confirmation}
-            onChange={(e) => setConfirmation(e.target.value)}
-          />
-        </FormField>
-        {busy ? <StatusMessage loading>正在重置密码…</StatusMessage> : null}
-        {message ? <StatusMessage tone={tone}>{message}</StatusMessage> : null}
-        <Button type="submit" disabled={!token || busy}>
-          重置密码
-        </Button>
-      </form>
-      <Button variant="ghost" className="mt-4" onClick={() => openAuth()}>
-        返回登录
+    <main className="mx-auto flex max-w-md flex-col gap-5 px-6 py-16">
+      <h1 className="text-2xl font-medium">密码恢复</h1>
+      <StatusMessage tone="info">
+        此功能暂未开放。请使用 GitHub 或已有的邮箱密码登录。
+      </StatusMessage>
+      <Button asChild variant="secondary">
+        <Link href="/">返回首页</Link>
       </Button>
     </main>
   );

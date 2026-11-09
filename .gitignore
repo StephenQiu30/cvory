@@ -26,3 +26,6 @@ build/
 dist/
 *.tsbuildinfo
 next-env.d.ts
+
+# NestJS test compilation
+dist-test/

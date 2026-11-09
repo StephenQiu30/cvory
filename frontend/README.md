@@ -1,42 +1,37 @@
 # CVory 前端
 
-Next.js 16 App Router、React 19、Tailwind 4、shadcn/Radix、React Hook Form 与按需加载的 Tiptap。Geist 与 Noto Sans SC 通过本地 Fontsource Variable 包提供，中文按 Unicode range 加载。项目工程规则见 [PROJECT](../PROJECT.md)，视觉与交互见 [DESIGN](../DESIGN.md)。
+Next.js 16 App Router、React 19、Tailwind 4、shadcn/Radix、Tiptap。Geist 与 Noto Sans SC 使用本地 Fontsource 包。工程规则见 [PROJECT](../PROJECT.md)，视觉见 [DESIGN](../DESIGN.md)。
 
-## 运行
-
-在 `frontend/` 执行：
+## 运行与生成
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm run openapi
+pnpm openapi
 pnpm lint
 pnpm build
-pnpm dev
+BACKEND_INTERNAL_URL=http://127.0.0.1:4321 pnpm dev --port 1234
 ```
 
-后端默认 `http://127.0.0.1:8000`，通过 `BACKEND_INTERNAL_URL` 配置；同站点 `/api/` 转发到 FastAPI，生产构建时也应设置此变量。OpenAPI 文件由后端生成，客户端不手改。生成器配置负责保留 AIP 自定义动作的冒号。
+同站点 `/api/` 只转发到 NestJS，默认 `http://127.0.0.1:4321`。构建/启动的后端地址及 `PUBLIC_APP_ORIGIN` 必须匹配实际入口；容器使用 `http://backend:4321`。API 客户端统一由 `backend/openapi.json` 生成到 `src/lib/api/generated/`，不保留 Python 合同或第二个生成 namespace；生成配置负责可空字段与 AIP 冒号。
 
-## 组件边界
+## 组件与功能边界
 
-- `components/layout/`：BasicLayout、Header、Navbar、Content、Footer、独立 EditorLayout 与 SettingsLayout；路由壳默认使用 Server Components。
-- `components/ui/`：项目内 shadcn/Radix 基础控件与统一表单、状态反馈，Lucide 矢量图标。
-- 状态反馈：`StatusMessage` 区分错误、成功、说明与处理中，`LoadingState` 组合状态文字与 Skeleton，`StatusBadge` 展示保存／发布状态；页面异常与不可用结果复用 `StatusPage`。API 状态码的中文提示集中在 `lib/api/error-message.ts`，不展示服务端错误原文。
-- `components/resume/`：ResumeDocument、文件入口；正文渲染器供封面、预览、公开页与打印复用。
-- `app/cvs/[id]/_components/`：页面内编辑表单、模块管理、样式工作台和 useCvDocument 保存状态；不引入全局编辑状态框架。
-- `components/account/`：共用账户状态、账户菜单、独立图片选择与外观控制。账户头像与证件照不共用数据源。
-- `lib/resume/`：日期、可见性、链接、文件转换和候选校验；API 仅通过 `lib/api/generated/` 的生成服务访问。
+- `components/layout/`：共享页面壳、编辑器和设置布局；默认 Server Components。
+- `components/ui/`：现有 shadcn/Radix 与语义颜色；状态用 StatusMessage/LoadingState/StatusBadge，不展示服务端错误原文。
+- `components/resume/`：共用正文、文件和导出；`lib/resume/` 管理纯内容转换、完整表单默认值及候选校验。
+- `app/cvs/[id]/_components/`：编辑与条件保存、修订历史、模块和样式；Tiptap 按需加载，不另建全局编辑状态。
+- `components/account/`：共用账户状态、登录和图片选择；GitHub 授权在新标签页完成后，返回原标签继续，保护编辑中的输入。
+- `/settings/github` 仅提供安全绑定与显式读取本人公开仓库；选入简历/主页按 BACKLOG 实施。邮箱恢复和注销关闭入口，保留路由说明；存量账户可以修改密码。
 
-## 浏览器验收
+## 真实浏览器验证
 
-先启动独立后端与前端。测试会注册合成账户并创建简历，应使用隔离数据库。默认前端地址为 `http://127.0.0.1:3100`，可通过 `CV_TEST_URL` 配置。公开发布测试需要隔离测试发件器：把模拟邮件逐行写入 JSONL，每行包含 `recipient`、`purpose`、`token`，并用 `CV_TEST_MAILBOX` 指向该文件；不得使用真实邮箱或真实账户运行该测试。
-
-可使用 `backend/tests/browser_test_server.py` 启动只监听本机、使用独立 SQLite 和模拟邮件的测试后端。为每次测试指定一个新建的空 `CV_TEST_DIR`，在后端目录执行 `CV_TEST_DIR=<空目录> CV_TEST_URL=http://127.0.0.1:3100 uv run python tests/browser_test_server.py`。前端构建和启动时均设置 `BACKEND_INTERNAL_URL=http://127.0.0.1:18432`；执行测试时设置 `CV_TEST_MAILBOX=<空目录>/mail.jsonl`。测试服务只接受发往 `example.com` 的模拟邮件。
+先按 [后端说明](../backend/README.md) 启动隔离 MySQL 夹具（`CVORY_TEST_MYSQL_URL` 由环境提供），再在独立终端：
 
 ```bash
-pnpm exec playwright install chromium
-pnpm exec playwright test
+BACKEND_INTERNAL_URL=http://127.0.0.1:4323 pnpm dev --hostname 127.0.0.1 --port 3123
+CV_TEST_NEST=true CV_TEST_URL=http://127.0.0.1:3123 pnpm exec playwright test
 ```
 
-覆盖完整制作、模板、公开隔离与撤回、保存期间继续输入、手机上下文、照片独立、真实 JSON/PDF 下载及文件合同。文件输出在 `/tmp/cvory-browser-results`，不进入仓库。后端、MySQL 与生产部署验证分别记录于 [HANDOVER](../HANDOVER.md)。
+先运行 `pnpm exec playwright install chromium`。测试只用合成账户，GitHub 外部边界模拟，不连接真实邮件或投递服务；HTML/Cookie/API/MySQL/文件下载实际执行。输出默认 `/tmp/cvory-browser-results`，不入库。
 
-全局状态测试覆盖网络失败后重试、成功提示被失败替换、输入保留、密码校验、退出及复制失败、深色窄屏和页面异常。服务端异常边界用例需要另一个前端进程指向不可用后端：在已有生产构建下运行 `BACKEND_INTERNAL_URL=http://127.0.0.1:1 pnpm start --hostname 127.0.0.1 --port 3101`，测试时加 `CV_TEST_UNAVAILABLE_URL=http://127.0.0.1:3101`；不设置时该用例跳过，不计为通过。
+覆盖工作台、模板、保存/恢复、照片、JSON/Markdown、实际 PDF、公开筛选/撤回、状态失败及手机访问。`nest-identity.spec.ts` 未设 `CV_TEST_NEST=true` 时跳过，不计通过；服务不可用测试须另启不可用后端的前端并设置 `CV_TEST_UNAVAILABLE_URL`，否则明确跳过。具体结果与未验收项见 [HANDOVER](../HANDOVER.md)。

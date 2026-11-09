@@ -2,13 +2,13 @@
 /* eslint-disable */
 import request from "@/lib/api/request";
 
-/** Public Resume GET /api/public/${param0} */
+/** 此处后端没有提供注释 GET /api/public/${param0} */
 export async function getPublicResume(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getPublicResumeParams,
   options?: { [key: string]: any }
 ) {
-  const { public_id: param0, ...queryParams } = params;
+  const { publicId: param0, ...queryParams } = params;
   return request<API.ResumeDocument>(`/api/public/${param0}`, {
     method: "GET",
     params: { ...queryParams },
@@ -16,7 +16,7 @@ export async function getPublicResume(
   });
 }
 
-/** Status GET /api/publication */
+/** 此处后端没有提供注释 GET /api/publication */
 export async function getPublication(options?: { [key: string]: any }) {
   return request<API.PublicationStatus>("/api/publication", {
     method: "GET",
@@ -24,15 +24,22 @@ export async function getPublication(options?: { [key: string]: any }) {
   });
 }
 
-/** Withdraw DELETE /api/publication */
-export async function withdrawPublication(options?: { [key: string]: any }) {
+/** 此处后端没有提供注释 DELETE /api/publication */
+export async function withdrawPublication(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.withdrawPublicationParams,
+  options?: { [key: string]: any }
+) {
   return request<any>("/api/publication", {
     method: "DELETE",
+    params: {
+      ...params,
+    },
     ...(options || {}),
   });
 }
 
-/** Preview POST /api/publication%3Apreview */
+/** 此处后端没有提供注释 POST /api/publication%3Apreview */
 export async function previewPublication(
   body: API.PublicSelection,
   options?: { [key: string]: any }
@@ -47,7 +54,7 @@ export async function previewPublication(
   });
 }
 
-/** Publish POST /api/publication%3Apublish */
+/** 此处后端没有提供注释 POST /api/publication%3Apublish */
 export async function publishPublication(
   body: API.PublishRequest,
   options?: { [key: string]: any }

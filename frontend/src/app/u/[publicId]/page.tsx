@@ -13,8 +13,8 @@ export default async function Visitor({
   let document: API.ResumeDocument | null = null;
   try {
     document = await getPublicResume(
-      { public_id: publicId },
-      { baseURL: process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:8000" },
+      { publicId },
+      { baseURL: process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:4321" },
     );
   } catch (e) {
     if (!(e instanceof ApiError) || e.code !== 404) throw e;

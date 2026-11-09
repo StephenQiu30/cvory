@@ -1,31 +1,47 @@
-# CVory 后端工程
+# CVory NestJS 后端
 
-FastAPI 业务服务，遵循 Google Python Style Guide 与 Google API Design Guide (AIP)。
+唯一后端运行时为 NestJS + TypeScript、Node.js 24、pnpm 12、MySQL。模块包括账户、CV/历史/预设、GitHub、公开展示、图片与 PDF，规则见 [PROJECT](../PROJECT.md)。
 
-## 本地开发与测试
+## 开发与运行
 
-- **依赖同步**：`uv sync`
-- **运行单元测试**：`uv run pytest -v`
-- **启动服务**：`uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload`
-- **API 文档**：服务启动后访问 `http://127.0.0.1:8000/api/docs`
-
-## 数据库与配置
-
-- 默认连接：`mysql+pymysql://root:123456@127.0.0.1:3306/cvory?charset=utf8mb4`
-- 环境变量可在 `.env` 中覆盖，参考 `.env.example`。
-
-## 账户、迁移与 PDF
-
-认证采用邮箱密码注册登录和 HttpOnly 会话 Cookie，不再使用开发模式免认证或 owner token。注册邮箱尚未验证，没有邮件发送或密码重置接口。
-
-已有数据库先执行 `uv run python migrations/001_account_ownership.py`。旧 CV 保持 legacy 归属；需要接管时，注册目标账户后由管理者执行 `uv run python migrations/001_account_ownership.py --assign-legacy-to <目标邮箱>`。迁移不会自动分配给第一位注册者。
-
-PDF 依赖 `uv run playwright install chromium`，并通过 `FRONTEND_INTERNAL_URL` 访问受控 Next.js 打印路由。打印上下文只在单个后端进程短期存在，结束即清理。容器包含 Chromium 安装步骤。
-
-API 的 Pydantic/OpenAPI 是唯一合同。修改接口后执行：
+在 `backend/` 执行，将 [.env.example](.env.example) 合并到本机 `.env`，先建立独立数据库和用户。
 
 ```bash
-uv run python -c 'import json; from app.main import app; open("openapi.json", "w").write(json.dumps(app.openapi(), ensure_ascii=False, indent=2))'
+pnpm install --frozen-lockfile
+pnpm build
+pnpm db:migrate
+pnpm exec playwright install chromium
+pnpm start
 ```
 
-再在 `frontend/` 执行 `pnpm run openapi`，不手改生成的客户端。运行证据与边界见 [HANDOVER](../HANDOVER.md)。
+默认端口 `4321`。`PUBLIC_APP_ORIGIN` 与浏览器公开入口一致，HTTPS 时启用 Secure Cookie；`FRONTEND_INTERNAL_URL` 是 PDF 子进程访问的受控前端来源。反向代理不自动信任任意转发地址。API 前缀 `/api`，`/api/health` 校验显式迁移及数据库就绪，不替代应用完整验收。
+
+`pnpm db:migrate` 运行已编译的迁移入口，可在只有生产依赖的镜像执行。开发修改迁移源码后先 `pnpm build`，或使用 `pnpm db:migrate:dev`；启动 API 不建表或修改 schema。
+
+GitHub 由部署者填写 OAuth App Client ID/Secret，回调 `${PUBLIC_APP_ORIGIN}/api/account/github/callback`。只申请 `read:user`，access token 不入库、不读私库。旧 scrypt/会话保留；新 GitHub 账户不创建假邮箱/密码，新增邮箱注册默认关闭。
+
+## 数据与处理边界
+
+- 显式迁移建立兼容 SQL 基线、补齐旧 owner/lifecycle 字段、创建身份/历史及公开版本约束，并扩大账户照片字段。保留已有表、owner、publicId 和 JSON snake_case，DDL 中断可重入；备份后在副本演练。
+- `pnpm db:migrate --assign-legacy-to <账户ID或邮箱>` 是管理员显式认领命令，目标必须唯一且活跃；平常迁移不认领 `legacy` CV。
+- `CV_HISTORY_LIMIT` 默认 50、范围 1～500，包含当前版本；保存时裁剪超限历史，没有按天过期。首次修改存量 CV 保留旧版，空保存不追加；恢复幂等另建私有 CV。
+- 图片限 JPEG/PNG/WebP、2 MiB、20M 像素；受限子进程解码、去元数据并规范化，照片随 JSON/历史保存。旧 `data/avatars/{cvId}.*` 仅读取本 CV 本地文件，不远程抓取；资源缺失明确失败，不擦掉旧引用。
+- PDF 固定来源 etag/快照，使用受限 Node/Chromium 子进程、临时票据和固定前端来源；并发 2，75 秒超时、取消/失败清理进程和票据，结束重新检查所有权/账户状态。
+- 公开候选绑定来源 etag 和当前公开版本，发布/撤回拒绝过期输入；匿名数据只包含筛选快照。GitHub 绑定或已验证的存量身份可发布，未验证新邮箱不能绕过。
+- 邮箱恢复和注销尚未开放；`DELETION_ENABLED=true` 或数据库有未完成注销任务时不允许就绪。旧状态/任务/墓碑不删除；启用过的注销与备份恢复需单独完成迁移验收。
+
+## 检查与接口生成
+
+```bash
+pnpm typecheck
+pnpm lint
+pnpm format:check
+pnpm build
+pnpm openapi
+```
+
+Nest DTO/路由与共享运行时校验生成唯一 `openapi.json`。前端在 `frontend/` 运行 `pnpm openapi` 生成客户端；输入默认值、可空字段及 AIP 动作由生成配置处理，不手改生成文件。
+
+真实 MySQL 集成测试：通过环境安全提供可创建/删除隔离库的 `CVORY_TEST_MYSQL_URL`，执行 `pnpm test`。测试创建随机 `cvory_nest_test_*` 库并清理；缺配置会失败而不是跳过，不应使用真实账户或业务库运行场景。
+
+浏览器夹具在编译测试后运行 `node dist-test/test/browser_server.js`，仅监听 `127.0.0.1:4323`，真实 MySQL 和本地 HTTP，GitHub 外部身份/仓库模拟；Ctrl+C 清理测试库。前端默认测试入口 `http://127.0.0.1:3123`，命令见 [frontend/README](../frontend/README.md)。真实 GitHub、公网部署与备份恢复需独立验收。

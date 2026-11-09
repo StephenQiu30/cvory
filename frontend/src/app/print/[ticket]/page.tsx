@@ -9,7 +9,7 @@ export default async function Print({
   const { ticket } = await params;
   const document = await getPrintContext(
     { ticket },
-    { baseURL: process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:8000" },
+    { baseURL: process.env.BACKEND_INTERNAL_URL || "http://127.0.0.1:4321" },
   );
   return (
     <main data-print-ready="true">

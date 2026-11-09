@@ -1,5 +1,7 @@
 # 猫步简历源码拆解与 CVory 制作能力接入调研
 
+CVory 源码对照引用提交 `c2a2eb3` 的历史快照；现行 NestJS 实现及验收范围见 [PROJECT](../../PROJECT.md) 和 [HANDOVER](../../HANDOVER.md)。
+
 调研日期：2026-11-09（Asia/Shanghai）。主对象：[Hacker233/resume-design](https://github.com/Hacker233/resume-design)，产品名称为猫步简历。范围包含同类开源项目、功能拆解、公开运行观察、CVory 差距、实现接入及可靠性验收建议。
 
 **当前执行前提：负责人明确指出 CVory 现有链路未经完整端到端验证，因此不能视为可靠基础。本文中的“已有”仅表示代码或测试定义存在；没有完整验收通过的能力均保持待验证状态。**
@@ -224,7 +226,7 @@ Markdown 转换实际走本地 `resumeJsonToMarkdown`。但抽屉先请求服务
 | PDF | 固定已保存数据、打印票据、Chromium、字体及图片等待 | 存在生成链路，尚非多实例可靠实现 |
 | 公开 | 服务端筛选和固定快照、匿名读取和撤回 | 机制存在，来源删除和并发行为仍需验证 |
 
-定位：[保存 Hook](../../frontend/src/app/cvs/[id]/_components/use-cv-document.ts#L55)、[CV 服务](../../backend/app/services/cv_service.py#L208)、[打印 API](../../backend/app/api/pdf.py#L34)、[公开 API](../../backend/app/api/publication.py#L20)。
+定位：[保存 Hook](../../frontend/src/app/cvs/[id]/_components/use-cv-document.ts#L55)、[CV 服务](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/services/cv_service.py#L208)、[打印 API](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/api/pdf.py#L34)、[公开 API](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/api/publication.py#L20)。
 
 ### 7.2 已确认的局部问题与代码推导风险
 
@@ -242,7 +244,7 @@ Markdown 转换实际走本地 `resumeJsonToMarkdown`。但抽屉先请求服务
 | 公开来源删除 | 删除服务未检查当前公开来源，公开快照可继续独立存在 | S：代码与“先切换或撤回来源”的设计规则需对齐 |
 | 发布／撤回竞争 | 缺少与 CV 保存同级的版本条件 | S：多标签旧操作覆盖新状态需独立验收 |
 
-详细定位：[保存与返回](../../frontend/src/app/cvs/[id]/_components/cv-editor.tsx#L582)、[JSON 校对](../../frontend/src/components/resume/import-dialog.tsx#L161)、[富文本校验](../../backend/app/schemas/content.py#L6)、[结构化字段](../../backend/app/schemas/cv.py#L62)、[转换](../../frontend/src/lib/resume/files.ts#L187)、[进程内票据](../../backend/app/api/pdf.py#L17)、[预览分页](../../frontend/src/components/ui/paper-preview.tsx#L73)、[打印布局](../../frontend/src/components/resume/resume-document.tsx#L85)、[删除](../../backend/app/services/cv_service.py#L217)。
+详细定位：[保存与返回](../../frontend/src/app/cvs/[id]/_components/cv-editor.tsx#L582)、[JSON 校对](../../frontend/src/components/resume/import-dialog.tsx#L161)、[富文本校验](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/schemas/content.py#L6)、[结构化字段](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/schemas/cv.py#L62)、[转换](../../frontend/src/lib/resume/files.ts#L187)、[进程内票据](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/api/pdf.py#L17)、[预览分页](../../frontend/src/components/ui/paper-preview.tsx#L73)、[打印布局](../../frontend/src/components/resume/resume-document.tsx#L85)、[删除](https://github.com/StephenQiu30/cvory/blob/c2a2eb35bb5c870d0460ba409b04b08cccfe792f/backend/app/services/cv_service.py#L217)。
 
 ### 7.3 局部复现的准确结论
 

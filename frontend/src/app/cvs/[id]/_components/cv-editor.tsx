@@ -36,6 +36,7 @@ import { StylePanel } from "./style-panel";
 import { ExportDialog } from "@/components/resume/export-dialog";
 import { useAccount } from "@/components/account/account-provider";
 import { useCvDocument } from "./use-cv-document";
+import { RevisionHistory } from "./revision-history";
 const RichEditor = dynamic(
   () => import("@/components/ui/tiptap-editor").then((m) => m.TiptapEditor),
   { ssr: false },
@@ -138,6 +139,7 @@ export default function CvEditor({ id }: { id: string }) {
               {busy ? "保存中" : dirty ? "未保存" : "已保存"}
             </StatusBadge>
             <div className="ml-auto flex gap-1">
+              <RevisionHistory id={id} />
               <Button
                 variant="ghost"
                 aria-label="调整样式"

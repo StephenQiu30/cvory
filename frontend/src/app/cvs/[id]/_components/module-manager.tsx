@@ -117,6 +117,7 @@ export function ModuleManager({
                 title: title.trim(),
                 visible: true,
                 items: [],
+                content: null,
               },
             ]);
             setAdding(false);

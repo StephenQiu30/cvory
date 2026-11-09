@@ -71,7 +71,7 @@ function ProfileForm({ account }: { account: API.AccountResource }) {
           <FormField
             id="account-email"
             label="登录邮箱"
-            value={account.email}
+            value={account.email || ""}
             disabled
           />
         </div>

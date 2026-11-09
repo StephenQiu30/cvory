@@ -1,13 +1,13 @@
 "use client";
 
 import { errorMessage } from "@/lib/api/error-message";
-import { useState } from "react";
-import { LoaderCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { GitFork, LoaderCircle } from "lucide-react";
+import { getAuthOptions } from "@/lib/api/generated/api/account";
 import {
   loginAccount,
+  getAccount,
   registerAccount,
-  requestPasswordReset,
-  cancelAccountDeletion,
 } from "@/lib/api/generated/api/account";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,15 +31,33 @@ export function AuthDialog({
   onSuccess: (account: API.AccountResource) => void;
   returnFocusRef: React.RefObject<HTMLElement | null>;
 }) {
-  const [mode, setMode] = useState<"login" | "register" | "forgot" | "cancel">(
-    "login",
-  );
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [options, setOptions] = useState<API.AuthOptions | null>(null);
+  const [optionsError, setOptionsError] = useState(false);
+  const [optionsRevision, setOptionsRevision] = useState(0);
+  const [oauthPending, setOauthPending] = useState(false);
+  useEffect(() => {
+    let active = true;
+    getAuthOptions()
+      .then((value) => {
+        if (active) {
+          setOptions(value);
+          setOptionsError(false);
+        }
+      })
+      .catch(() => {
+        if (!active) return;
+        setOptionsError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [optionsRevision]);
   return (
     <Dialog
       open
@@ -59,49 +77,84 @@ export function AuthDialog({
       >
         <DialogHeader className="gap-2">
           <DialogTitle className="text-xl font-medium">
-            {mode === "login"
-              ? "欢迎回来"
-              : mode === "register"
-                ? "创建你的账户"
-                : mode === "forgot"
-                  ? "找回密码"
-                  : "撤销注销"}
+            {mode === "login" ? "欢迎回来" : "创建你的账户"}
           </DialogTitle>
-          <DialogDescription
-            className={
-              mode === "login" || mode === "register" ? "sr-only" : undefined
-            }
-          >
-            {mode === "forgot"
-              ? "输入邮箱，我们会发送后续说明。"
-              : mode === "cancel"
-                ? "在等待期内使用账户邮箱和密码撤销注销。"
-                : "使用邮箱和密码登录。"}
+          <DialogDescription className={"sr-only"}>
+            使用 GitHub 或存量邮箱账户登录。
           </DialogDescription>
         </DialogHeader>
+        {mode === "login" && options?.githubEnabled ? (
+          <Button asChild size="lg">
+            <a
+              href="/api/account/github/authorize"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setOauthPending(true)}
+            >
+              <GitFork data-icon="inline-start" aria-hidden />
+              使用 GitHub 登录
+            </a>
+          </Button>
+        ) : null}
+        {mode === "login" && options && !options.githubEnabled ? (
+          <StatusMessage tone="info">
+            GitHub 登录尚未配置，请联系此站部署者。已有账户可使用邮箱登录。
+          </StatusMessage>
+        ) : null}
+        {oauthPending ? (
+          <StatusMessage
+            tone="info"
+            action={
+              <Button
+                disabled={busy}
+                variant="secondary"
+                onClick={async () => {
+                  setBusy(true);
+                  setError("");
+                  try {
+                    onSuccess(await getAccount());
+                  } catch {
+                    setError(
+                      "尚未完成 GitHub 登录，请在新标签页完成授权后重试。",
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                已完成授权，继续
+              </Button>
+            }
+          >
+            请在新标签页完成 GitHub 授权，然后返回这里。当前输入会保留。
+          </StatusMessage>
+        ) : null}
+        {optionsError ? (
+          <StatusMessage
+            action={
+              <Button
+                variant="secondary"
+                onClick={() => setOptionsRevision((value) => value + 1)}
+              >
+                重试
+              </Button>
+            }
+          >
+            暂时无法读取登录方式，已有账户仍可尝试邮箱登录。
+          </StatusMessage>
+        ) : null}
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             if (busy) return;
             setBusy(true);
             setError("");
-            setNotice("");
+
             try {
-              if (mode === "forgot") {
-                await requestPasswordReset({ email });
-                setNotice(
-                  "如果邮箱符合条件，重置说明将发送到该邮箱。请检查收件箱。",
-                );
-              } else if (mode === "cancel") {
-                await cancelAccountDeletion({ email, password });
-                setNotice("注销已撤销，请重新登录。");
-                setMode("login");
-              } else {
-                const account = await (
-                  mode === "login" ? loginAccount : registerAccount
-                )({ email, password, displayName: name });
-                onSuccess(account);
-              }
+              const account = await (
+                mode === "login" ? loginAccount : registerAccount
+              )({ email, password, displayName: name });
+              onSuccess(account);
             } catch (cause) {
               const fallback =
                 mode === "login"
@@ -140,7 +193,7 @@ export function AuthDialog({
                 required
               />
             </FormField>
-            {mode !== "forgot" ? (
+            {
               <Field>
                 <div className="flex items-center justify-between gap-4">
                   <FieldLabel
@@ -149,21 +202,6 @@ export function AuthDialog({
                   >
                     密码
                   </FieldLabel>
-                  {mode === "login" ? (
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 text-xs text-muted-foreground"
-                      disabled={busy}
-                      onClick={() => {
-                        setNotice("");
-                        setError("");
-                        setMode("forgot");
-                      }}
-                    >
-                      忘记密码
-                    </Button>
-                  ) : null}
                 </div>
                 <Input
                   id="auth-password"
@@ -180,10 +218,7 @@ export function AuthDialog({
                   maxLength={128}
                 />
               </Field>
-            ) : null}
-            {notice ? (
-              <StatusMessage tone="success">{notice}</StatusMessage>
-            ) : null}
+            }
             {error ? <StatusMessage>{error}</StatusMessage> : null}
             <Button type="submit" className="h-11 w-full" disabled={busy}>
               {busy ? (
@@ -193,44 +228,24 @@ export function AuthDialog({
                   className="size-4 animate-spin"
                 />
               ) : null}
-              {busy
-                ? "正在处理…"
-                : mode === "login"
-                  ? "登录"
-                  : mode === "register"
-                    ? "注册并开始"
-                    : mode === "forgot"
-                      ? "发送重置说明"
-                      : "撤销注销"}
+              {busy ? "正在处理…" : mode === "login" ? "登录" : "注册并开始"}
             </Button>
           </FieldGroup>
         </form>
         <div className="flex flex-col items-start gap-2 text-sm">
-          <Button
-            variant="link"
-            className="h-auto p-0"
-            disabled={busy}
-            onClick={() => {
-              setMode(mode === "login" ? "register" : "login");
-              setNotice("");
-              setError("");
-              setPassword("");
-            }}
-          >
-            {mode === "login" ? "还没有账户？注册" : "返回登录"}
-          </Button>
-          {mode === "login" ? (
+          {mode !== "login" || options?.legacyRegistrationEnabled ? (
             <Button
               variant="link"
-              className="h-auto p-0 text-xs text-muted-foreground"
+              className="h-auto p-0"
               disabled={busy}
               onClick={() => {
-                setNotice("");
+                setMode(mode === "login" ? "register" : "login");
+
                 setError("");
-                setMode("cancel");
+                setPassword("");
               }}
             >
-              撤销账户注销
+              {mode === "login" ? "还没有账户？注册" : "返回登录"}
             </Button>
           ) : null}
         </div>

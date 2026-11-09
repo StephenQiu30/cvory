@@ -53,37 +53,27 @@ async function save(page: Page) {
 }
 
 async function verifyTestAccount(page: Page, email: string) {
-  const mailbox = process.env.CV_TEST_MAILBOX;
-  if (!mailbox)
-    throw new Error(
-      "CV_TEST_MAILBOX must point to the isolated test mail capture file.",
+  const pattern = "**/api/account/github/link?**";
+  await page.route(pattern, async (route) => {
+    const response = await route.fetch({ maxRedirects: 0 });
+    expect(response.status()).toBe(303);
+    const authorization = new URL(response.headers().location);
+    expect(authorization.origin).toBe("https://github.com");
+    const target = new URL(
+      `/api/account/github/callback?state=${authorization.searchParams.get("state")}&code=${encodeURIComponent(email)}`,
+      page.url(),
     );
-  await page.goto("/settings/access");
-  await page.getByRole("button", { name: "发送验证邮件" }).click();
-  let token = "";
-  await expect
-    .poll(
-      async () => {
-        try {
-          const lines = (await readFile(mailbox, "utf8")).trim().split("\n");
-          const message = lines
-            .map((line) => JSON.parse(line))
-            .find(
-              (item) =>
-                item.recipient === email && item.purpose === "verify_email",
-            );
-          token = message?.token ?? "";
-        } catch {
-          /* The isolated worker has not delivered the message yet. */
-        }
-        return Boolean(token);
-      },
-      { timeout: 20000 },
-    )
-    .toBe(true);
-  await page.goto(`/verify-email#token=${encodeURIComponent(token)}`);
-  await page.getByRole("button", { name: "确认验证" }).click();
-  await expect(page.getByText("邮箱验证成功。")).toBeVisible();
+    await route.fulfill({
+      response,
+      headers: { ...response.headers(), location: target.toString() },
+    });
+  });
+  await page.goto("/settings/github");
+  await page.getByRole("button", { name: "授权并绑定 GitHub" }).click();
+  await expect(
+    page.getByText("已连接 @cvory-fixture", { exact: true }),
+  ).toBeVisible();
+  await page.unroute(pattern);
   await page.goto("/");
 }
 
@@ -263,7 +253,7 @@ test("portrait and account avatar remain independent; cancel keeps crop", async 
   await page.getByLabel("姓名", { exact: true }).fill("照片用户");
   await page.getByRole("button", { name: "选择照片", exact: true }).click();
   const png = Buffer.from(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==",
+    "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAADklEQVQImWP4DwYMEAoAU7oL9W/sIDEAAAAASUVORK5CYII=",
     "base64",
   );
   await page.getByLabel("选择图片文件").setInputFiles({

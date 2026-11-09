@@ -11,7 +11,7 @@ import {
 import { CreationCard } from "./creation-card";
 import { PaperPreview } from "@/components/ui/paper-preview";
 import type { ResumeData, StyleSettings } from "@/lib/api/types";
-import { DEFAULT_STYLE, TEMPLATES } from "@/lib/resume/model";
+import { completeResume, DEFAULT_STYLE, TEMPLATES } from "@/lib/resume/model";
 
 type TemplateId = NonNullable<StyleSettings["templateId"]>;
 
@@ -26,7 +26,7 @@ export function templateStyle(templateId: TemplateId): StyleSettings {
 
 /** Synthetic display content. Creation requests use only the chosen style. */
 export function templateExample(templateId: TemplateId): ResumeData {
-  return {
+  return completeResume({
     profile: {
       fullName: "林知夏",
       headline: "前端开发工程师",
@@ -97,7 +97,7 @@ export function templateExample(templateId: TemplateId): ResumeData {
         ],
       },
     ],
-  };
+  });
 }
 
 export function TemplateGallery({
