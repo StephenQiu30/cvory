@@ -1,12 +1,12 @@
 # BOSS直聘自动投递简历方案与自研可行性调研
 
-核查日期：2026-11-09（Asia/Shanghai）。目标是选择可复用的求职执行能力，减少 CVory 从头开发登录、搜索、匹配和沟通的工作。负责人已明确自主实现、允许基于开源项目改造；具体基础项目与运行形态仍待选；产品目标和首期验收已归入 PRD 11，合同入口见[产品设计第 6 节](../design/02-CV制作管理与展示设计.md#6-boss-直聘投递自主实现方向)。
+核查日期：2026-11-09（Asia/Shanghai）。目标是选择可复用的求职执行能力，减少 CVory 从头开发登录、搜索、匹配和沟通的工作。负责人已明确自主实现、允许基于开源项目改造；浏览器插件形态已明确，首期仅 Chrome、PDF 人工上传，插件只筛选/沟通/招呼；复用模块/分发方式待选；产品目标和首期验收已归入 PRD 11，合同入口见[产品设计第 6 节](../design/02-CV制作管理与展示设计.md#6-boss-直聘投递自主实现方向)。
 
 采用后的目标见[完整业务需求](../requirement/04-个人CV制作与管理需求说明.md)与[PRD 11](../prd/11-BOSS直聘自主投递.md)；本文保留调研证据及建议，不承担实施状态。
 
 ## 1. 结论与证据边界
 
-CVory 自主实现和维护投递能力，复用上游成熟模块作为开发基础。建议优先核查 **boss-agent-cli** 的 Python 平台适配、去重和错误处理；浏览器方案核查 **jitou** 的页面操作与扩展实现；FastAPI 小原型可参考 **czc-good-job**。以模块适配成本选择一个主要基础，不将用户安装并操作第三方产品作为目标交付方式。
+CVory 自主实现和维护投递能力，复用上游成熟模块作为开发基础。按插件目标，建议优先参考 **jitou** 的 MV3 侧栏、页面适配和分动作确认；**boss-helper** 可参考规则流水线但复用前须澄清许可文本冲突。**boss-agent-cli** 的去重和错误语义作为对照，不另建一套桌面 CLI 产品。以模块适配成本选择一个主要基础，不将用户安装并操作第三方产品作为目标交付方式。
 
 GitHub 插件用于仓库、README、许可证与关键源码核查，GitHub API 补充 stars、推送、发布和公开问题；Firecrawl 检索生态与官方 API 线索，Context7 核对 WXT 扩展机制。没有安装或运行这些工具，没有登录 BOSS、获取真实岗位、发送消息或简历、调用付费模型。上游测试数量和作者成功案例均为上游自述，不是 CVory 实测。
 
@@ -14,14 +14,14 @@ GitHub 插件用于仓库、README、许可证与关键源码核查，GitHub API
 
 ## 2. 候选比较
 
-stars 为核查时快照；最近推送取 pushed_at，不以 updated_at 代替代码维护证据。推送日期也不能证明全部功能已适配当前网页。
+下表来自生态调研时点，非所有仓库均在本次逐一重验；jitou/boss-helper 固定提交与关键路径已用 GitHub 插件复核。stars 为记录快照；最近推送取 pushed_at，不以 updated_at 代替代码维护证据。推送日期也不能证明全部功能已适配当前网页。
 
-| 项目 | stars | 最近推送（UTC） | 能力与复用价值 | 许可及取舍 |
+| 项目 | stars | 记录的推送（UTC） | 能力与复用价值 | 许可及取舍 |
 | --- | ---: | --- | --- | --- |
 | [boss-agent-cli](https://github.com/can4hou6joeng4/boss-agent-cli) | 2203 | 2026-11-09 | Python、CLI/JSON、MCP；登录、搜索详情、筛选、候选池、去重、开聊、统计和停止恢复 | [MIT](https://github.com/can4hou6joeng4/boss-agent-cli/blob/master/LICENSE)；本地执行器集成首选候选 |
 | [jitou／即投](https://github.com/impengpong/jitou) | 163 | 2026-11-03 | Chrome/Edge MV3 侧栏；岗位收集、文字简历、招呼语与确认后批量发送，自带模型接口 | [MIT](https://github.com/impengpong/jitou/blob/main/LICENSE)；扩展复用首选候选，原生 JS/HTML/CSS |
 | [boss-helper](https://github.com/Ocyss/boss-helper) | 2505 | 2026-11-07 | WXT/Vue 扩展，规则和 AI 筛选、通勤条件、去重与招呼语 | LICENSE 为 MIT，但 README 明确禁止商用；商业集成前需澄清冲突 |
-| [czc-good-job](https://github.com/czc6666/czc-good-job) | 59 | 2026-04-27 | 油猴 + 本地 FastAPI；单方向规则打分、固定招呼、收到新消息后发简历 | [MIT](https://github.com/czc6666/czc-good-job/blob/main/LICENSE)；代码小、技术栈接近，但规则带作者个人求职偏好 |
+| [czc-good-job](https://github.com/czc6666/czc-good-job) | 59 | 2026-04-27 | 油猴 + 本地 FastAPI；单方向规则打分、固定招呼、收到新消息后发简历 | [MIT](https://github.com/czc6666/czc-good-job/blob/main/LICENSE)；代码小、FastAPI 接近采样实现，目标已改 NestJS；规则带个人偏好 |
 | [ai-job](https://github.com/yangfeng20/ai-job) | 727 | 2026-08-18 | Vue 油猴 + Spring Boot/Spring AI/MySQL，投递、回复、通知与支付 | [MIT](https://github.com/yangfeng20/ai-job/blob/master/LICENSE)；流程可参考，整套移植引入 Java 服务和重复账户／支付能力 |
 | [Boss-Claw](https://github.com/YanQuan-dozzy/Boss-Claw) | 75 | 2026-11-07 | Electron/React/TS 桌面应用，画像、匹配、审核队列、沟通和 MCP，宣称支持四平台 | [Apache-2.0](https://github.com/YanQuan-dozzy/Boss-Claw/blob/main/LICENSE)；README 披露部分更新暂不开源，公开代码与安装包可能不一致 |
 | [JobPilot](https://github.com/handsomekai924/jobpilot) | 74 | 2026-11-07 | Python uv workspace + Web 控制台，登录、岗位、匹配、招呼与批量发送 | README 标 MIT 又限制商业用途，目录未找到 LICENSE；暂不作商业复用首选 |
@@ -51,7 +51,22 @@ stars 为核查时快照；最近推送取 pushed_at，不以 updated_at 代替�
 
 ### 3.3 czc-good-job：小原型参考
 
-[README](https://github.com/czc6666/czc-good-job/blob/main/readme.md) 明确当前主链为规则打分，resume.md 不是主链评分输入。FastAPI 接近 CVory 后端，但个人评分、单简历索引和油猴流程改成多用户产品仍需开发。最近推送较早，且存在公开[打招呼超时问题](https://github.com/czc6666/czc-good-job/issues/1)，不能只因技术栈相同就整套搬入。
+[README](https://github.com/czc6666/czc-good-job/blob/main/readme.md) 明确当前主链为规则打分，resume.md 不是主链评分输入。FastAPI 接近 CVory 采样实现，但目标后端已选 NestJS + TypeScript；个人评分、单简历索引和油猴流程改成多用户产品仍需开发。最近推送较早，且存在公开[打招呼超时问题](https://github.com/czc6666/czc-good-job/issues/1)，不能只因技术栈相同就整套搬入。
+
+### 3.4 插件目标的固定源码复核
+
+2026-11-09 经 GitHub 插件核验 jitou main 仍为 `4a6c77174949baae5fa0ae0df0bf945591798344`，boss-helper main 为 `5845c1d4c37361caf37737c1a76fd6d9c3741a2b`。以下为静态观察与 CVory 设计推论，没有运行平台动作。
+
+| 源码证据 | 观察 | CVory 所需补充 |
+| --- | --- | --- |
+| [jitou 发送确认](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/zitou-extension/src/content/job-sender.js#L88) | 新消息内容指纹及 delivery 状态；图片另外检查 CDN 和 delivery，超时不直接重试 | 仅能确认对应页面信号，不等于 HR 已读；按文字、图片、PDF 附件分别记录 |
+| [图片读取](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/zitou-extension/src/content/job-sender.js#L660) | 发送时读取可变 storage；无图片也可能整体成功 | CV/PDF/图片固定版本与哈希；未尝试附件不记成功，PDF 通道另做适配 |
+| [批次启动](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/zitou-extension/src/background/service-worker.js#L2588) | 每次启动清空 sentJobIds | 自建持久跨任务去重；换任务/版本不自动重新发送 |
+| [worker 重启](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/zitou-extension/src/background/service-worker.js#L2814) | 收口回 review，不直接重跑 | 断连后先核验在途动作，不自动接管 unknown |
+| [岗位条件](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/zitou-extension/src/content/job-collector.js#L421) | 有明确命中/不符/缺失的判断 | 关键词、薪资等硬条件三态；未知不冒充符合，AI 不能放宽必需条件 |
+| [boss-helper 流水线](https://github.com/Ocyss/boss-helper/blob/5845c1d4c37361caf37737c1a76fd6d9c3741a2b/src/entrypoints/boss/delivery.ts#L16) | 规则筛选、AI、招呼及发送分阶段；sendPublishReq 返回后记投递成功 | 可借鉴阶段分工；成功只能解释为已发起沟通，不证明附件 |
+
+jitou [MIT](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/LICENSE)与 [NOTICE](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0bf945591798344/NOTICE)须按实际复制模块保留；boss-helper [LICENSE](https://github.com/Ocyss/boss-helper/blob/5845c1d4c37361caf37737c1a76fd6d9c3741a2b/LICENSE)为 MIT，但 [README](https://github.com/Ocyss/boss-helper/blob/5845c1d4c37361caf37737c1a76fd6d9c3741a2b/README.md)另有限制，未澄清前仅参考设计，不直接采用其代码。源码许可不能推导平台许可。
 
 ## 4. 成功状态与不确定性
 
@@ -65,26 +80,26 @@ stars 为核查时快照；最近推送取 pushed_at，不以 updated_at 代替�
 
 ## 5. 减少工作量的接入建议
 
-建议流程：CVory 选择并导出简历 → 本地执行器发现岗位 → 展示匹配依据和草稿 → 用户选择具体目标与发送范围 → 执行 → 按实际证据回写状态。
+建议流程：CVory 选择并导出简历 → 浏览器插件按关键词读取/筛选岗位 → 展示匹配依据和草稿 → 用户手工上传 PDF、核对具体目标与招呼范围 → 插件执行沟通/招呼 → 按实际证据回写状态。
 
 | 能力 | 优先复用 | CVory 补充 |
 | --- | --- | --- |
 | 简历制作、版本、Markdown／PDF | CVory 现有能力 | 选定版本快照与任务关联，不重建另一份主简历 |
-| 登录、搜索、详情 | 以 boss-agent-cli 或 jitou 的适用模块为主要改造基础 | 自有平台适配边界、统一岗位字段和错误映射 |
+| 登录、搜索、详情 | 优先参考 jitou 的扩展页面模块 | 自有平台适配边界、统一岗位字段和错误映射 |
 | 硬条件、去重、匹配草稿 | 执行器现有能力 | 求职偏好、事实依据与未知项展示 |
 | 沟通与附件 | 分别验证现有执行路径 | 精确状态与证据，不将开聊算作附件送达 |
 | 任务历史 | 执行器本地记录 | 账户隔离、简历版本、审核记录、结果回写 |
 | 本机连接与更新 | 上游安装方式 | 来源校验、明确配对和卸载；平台凭据留本机 |
 
-开发起点建议为 CVory 现有简历版本与导出能力、自己的投递任务模型和一个 BOSS 平台适配器。开源模块按实际需要改造，保留来源、版本及许可信息；不先合并多个项目或引入其账户、支付和无关平台能力。是否采用自有扩展或本地执行程序，需结合主要基础项目的模块审查确定。
+开发起点建议为 CVory 现有简历版本与导出能力、自己的投递任务模型和一个 BOSS 平台适配器。开源模块按实际需要改造，保留来源、版本及许可信息；不先合并多个项目或引入其账户、支付和无关平台能力。浏览器插件方向已明确，复用文件范围、支持浏览器及 PDF 附件通道须在实施前核验。
 
 Web 页面不能直接启动用户本机 Python／Chrome；多用户云部署需要本地程序或扩展桥接。本地 Compose 后端与未来云端部署要分别设计，不能把一个用户的浏览器执行器直接复用于所有账户。
 
-Context7 核对的 [WXT 入口文档](https://github.com/wxt-dev/wxt/blob/main/docs/guide/essentials/entrypoints.md) 说明 MV3 background 为 service worker，不能假设内存定时循环永久运行。选择自研扩展后才继续评估持久化、页面关闭及 worker 重启，无需为原型提前迁移框架。
+Context7 核对的 [WXT 入口文档](https://github.com/wxt-dev/wxt/blob/main/docs/guide/essentials/entrypoints.md) 说明 MV3 background 为 service worker，不能假设内存定时循环永久运行。按已选插件方向继续评估持久化、页面关闭及 worker 重启，无需为原型提前迁移框架。
 
 ## 6. 进入实现前的最小验收
 
-先固定上游版本，在隔离目录核查依赖和离线能力；再用明确授权的账号验证一页搜索、一个详情和去重。只读通过后，分别验证一个已选目标的招呼与附件，核对对象、版本和状态；另验证未登录、限制、页面变化、停止及中断恢复，防止重复发送。
+先固定上游版本，在隔离目录核查依赖和离线能力；再用明确授权的账号验证一页搜索、一个详情和去重。只读通过后，验证一个已选目标的沟通/招呼；首期人工上传 PDF 不伪装为自动附件验收，核对对象、版本和状态；另验证未登录、限制、页面变化、停止及中断恢复，防止重复发送。
 
 目前不能给出已节省多少百分比或保证的交付工期，因为尚未运行验证；可确认的是已有模块覆盖范围与所需集成工作。
 

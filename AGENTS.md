@@ -33,7 +33,7 @@
 | 核对范围 | 唯一来源 |
 | --- | --- |
 | 项目标识、仓库现状、技术选型与待定项 | [PROJECT §1](PROJECT.md#1-项目标识)、[§2](PROJECT.md#2-仓库现状)、[§3](PROJECT.md#3-技术选型)、[§9](PROJECT.md#9-当前边界) |
-| 前后端代码规范、API 与工程目录 | [PROJECT §3.1～3.4](PROJECT.md#31-python-代码规范) |
+| 前后端代码规范、API 与工程目录 | [PROJECT §3.1～3.4](PROJECT.md#31-后端-typescript-与-nestjs-规范) |
 | 文档目录、编号与来源保护 | [PROJECT §3.5](PROJECT.md#35-文档工作区)、[设计 01](docs/design/01-文档管理与Obsidian设计.md) |
 | 任务状态与阶段证据 | [BACKLOG](BACKLOG.md)、[HANDOVER](HANDOVER.md) |
 | 文档检查 | [PROJECT §8](PROJECT.md#8-质量与验收) |
