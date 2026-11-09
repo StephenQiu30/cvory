@@ -2,7 +2,7 @@
 
 面向个人、由使用者自行部署的开源简历与求职工具，开源许可选定 MIT。目标为 GitHub 登录、富文本/Markdown 编辑、用途版本管理、MD/DOCX/文字 PDF 导入、PDF/PNG 导出、站主个人首页与 GitHub 项目展示，以及火山引擎/DeepSeek/OpenAI 官方 AI 预设和 BOSS Chrome 插件。AI 密钥及模型由部署者自行填写；PDF 在 BOSS 页面人工上传，插件负责岗位筛选、沟通和招呼。扫描 PDF 首期提示不支持，OCR 后续再定。
 
-目标后端已确定为 NestJS + TypeScript，MySQL 保留；当前处于需求与服务设计评审，不展开编码。现有代码仍是邮箱密码账户、部分制作/JSON/Markdown/PDF 与公开页；新目标不能视为已实现。完整链路尚未验收，状态见 BACKLOG。
+前端设计采用 Vercel Web Interface Guidelines/Geist 与 shadcn Radix，目标后端采用 NestJS + TypeScript 和 Google TypeScript 代码规范；目录与依赖职责见 PROJECT，MySQL 保留；当前处于需求与服务设计评审，不展开编码。现有代码仍是邮箱密码账户、部分制作/JSON/Markdown/PDF 与公开页；新目标不能视为已实现。完整链路尚未验收，状态见 BACKLOG。
 
 [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md) → [产品设计](docs/design/02-CV制作管理与展示设计.md) → [按能力拆分的 PRD](docs/prd/00-PRD导航.md) → [执行 Plan](docs/plan/00-Plan导航.md)。
 

@@ -4,6 +4,8 @@
 
 ## 1. 品牌与设计原则
 
+前端规范采用 [Vercel Web Interface Guidelines](https://vercel.com/design/guidelines)与 [Geist Design System](https://vercel.com/geist/introduction)，组件实现遵循 shadcn/ui 的官方 Radix 系列及负责人指定的 shadcn、shadcn-shadcn-ui 技能。Vercel 规范用于界面设计和交互，不改变开源自部署交付方式。本文的 6px、近白画布及蓝色点缀是 CVory 的选定映射，不声称与 Vercel 组件像素完全一致。
+
 - 品牌名称为「简序 · CVory」，保留现有 C/V 纸页标识；[品牌概念图](docs/assets/branding/CVory-黑白Logo概念.png)为参考，应用使用 `frontend/public/brand/cvory.svg`。
 - 内容优先：简历、编辑任务和阅读路径是主体；用排版、对齐、留白和表面色区分信息，避免装饰性图形、摄影和渐变。
 - 精密但可读：管理界面采用紧凑密度，长文、中文、表单和触屏保留足够行高与操作面积。营销式大标题只用于适合的入口，不强加到编辑器。
@@ -104,6 +106,25 @@
 - 读取页面使用统一的 LoadingState（状态文字和 Skeleton），局部处理使用 StatusMessage 的 loading 状态；编辑器保存和邮箱／发布状态使用带图标的 Badge。空内容使用 Empty，字段错误继续使用关联字段的 FieldError，不弹出额外全局提示。
 - 页面异常、404 和未公开结果使用 Empty 的同一结构及明确标题。异常提供重试或返回入口；没有公开内容与读取失败保持不同语义。异常边界覆盖未捕获的渲染错误，异步业务错误在操作处捕获，不用全局监听器吞掉异常。
 
+### 5.2 shadcn 组件实现规则
+
+| 范围 | 项目规则 |
+| --- | --- |
+| 配置和来源 | 以 frontend/components.json 及 CLI info 为准；当前 radix-nova、Radix、Tailwind v4、Lucide、@/ 别名。执行包管理器为 pnpm，先核对已安装组件，再用 `pnpm dlx shadcn@latest docs` 读取目标文档；需要新增时显式指定来源并查 registry，不整站重新 init |
+| 外观 | 优先内置 variant/size；统一外观在基础组件变体与 globals.css 语义 token 维护。页面 className 只布局，不逐页覆盖颜色/字体；使用 cn、gap、等边 size 与 truncate，深色通过语义变量适配，不加独立 dark 色覆盖；弹层不手工叠加 z-index |
+| 表单 | FieldGroup/Field 组织标签、控件与错误，相关选项用 FieldSet/FieldLegend；Field 设置 data-invalid，控件设置 aria-invalid。InputGroup 使用自己的 InputGroupInput/Textarea 与 Addon；少量可切换选项用 ToggleGroup，不手写按钮选中状态 |
+| 组合 | Radix 自定义触发器用 asChild；SelectItem/DropdownMenuItem/CommandItem 放入相应 Group；TabsTrigger 放在 TabsList。Card 以 Header/Title/Description/Content/Footer 组织语义，不只将所有内容堆入 Content |
+| 可访问与状态 | Dialog/Sheet/Drawer 必须有 Title，Avatar 有 Fallback；按钮 loading 由 Spinner/禁用状态组合并保留动作文字，不编造 isLoading API。图标按钮有名称，按钮内图标用 data-icon，由组件控制尺寸 |
+| 现有反馈 | 沿用 §5.1 的 Alert/Empty/Skeleton/Badge/Separator 组合，不为遵循技能新增无需求通知系统；需要短时 toast 时按 Radix 系列核对 Sonner 及安装状态，不能导入未添加组件 |
+| 更新边界 | 增量更新先查看 dry-run/diff 并保留项目定制；设计阶段不执行 preset apply、全量 add 或覆盖主题。新增组件及 API 必须在实际浏览器验收后才记为已符合规范 |
+
+### 5.3 Vercel 交互与阅读映射
+
+- 保留键盘、焦点进入/返回、浏览器缩放和粘贴；导航使用真实链接。拖动排序同时有按钮/键盘替代。窄屏输入字号至少 16px，触屏目标按 §5；吸顶区域不遮挡焦点，长文/中文及安全区域不溢出。
+- 表单有持久标签、类型/自动填充等适当语义；失败保留输入，错误关联字段。状态明确处理中/失败/完成，保存、发布和发送必须取得相应真实结果后才确认，不以乐观文案伪装成功。
+- 可分享/返回的筛选、分页和标签状态按需放 URL；私有正文、密钥与未确认编辑内容不进入 URL。返回/前进保持适当滚动及上下文，页面 hydration 不丢输入或焦点。
+- 视觉保持对齐、留白、阅读层级和语义对比，继续使用现有 Geist/Noto 字体；重要阅读内容可选择、放大，图片/封面预留尺寸。动画只服务操作反馈，遵循 reduced-motion，避免全属性 transition 或遮挡任务的装饰。
+
 ## 6. 项目场景
 
 | 场景 | 视觉与交互要求 |
@@ -135,6 +156,8 @@
 - 变更视觉规范不等于现有页面已符合规范；界面实施后需通过实际浏览器检查，并单独核对简历预览、公开页面和 PDF 输出。
 
 ## 9. 参考与边界
+
+官方参照：[Vercel 交互规范](https://vercel.com/design/guidelines)、[Geist 色彩](https://vercel.com/geist/colors)、[Geist 排版](https://vercel.com/geist/typography)、[shadcn Field](https://ui.shadcn.com/docs/components/radix/field)、[Button](https://ui.shadcn.com/docs/components/radix/button)、[Card](https://ui.shadcn.com/docs/components/radix/card)、[Dialog](https://ui.shadcn.com/docs/components/radix/dialog)、[Tabs](https://ui.shadcn.com/docs/components/radix/tabs)、[Select](https://ui.shadcn.com/docs/components/radix/select)。这些规范进入设计合同，不表示现有页面已经逐项通过。
 
 视觉沿用负责人提供的「Vercel — Style Reference」所确立的近白、黑白灰、Geist、无边框与 6px 控件方向，并允许少量蓝色点缀。参考中的品牌标识、营销文案不进入 CVory。
 

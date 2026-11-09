@@ -25,20 +25,25 @@
 
 ### 3.1 后端 TypeScript 与 NestJS 规范
 
-后端采用 NestJS + TypeScript strict，组织和生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。现有 Python 代码仅作为待迁移实现与数据兼容依据，不继续作为目标技术栈。
+后端代码以 [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)为规范基线，采用 NestJS + TypeScript strict；模块组织、依赖注入与生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。现有 Python 代码仅作为待迁移实现与数据兼容依据，不继续作为目标技术栈。
 
 - 按实际业务使用 Module、Controller 和可注入 Service；Controller 只处理 HTTP，Service 负责业务与事务，Guard/Pipe/Filter 分别处理权限、输入和错误；不为每个动作新增独立模块或通用 repository 框架。
-- 类型/类 PascalCase、字段/方法 camelCase、文件 kebab-case，遵循 Nest 的 `.module.ts`、`.controller.ts`、`.service.ts` 职责命名。开启 strict，不用 any/类型断言跳过外部 JSON 的运行时校验。
+- 类型/类使用 PascalCase，字段/方法使用 lowerCamelCase，不给接口加 I 前缀；后端文件按 Google 风格使用 snake_case，保留 Nest 职责后缀，如 `cv_version.service.ts`、`create_cv.dto.ts`。前端文件命名继续按 §3.2，不混用两端约定。
+- 使用命名导出、明确导入，优先 const、需要重新赋值时用 let，不使用 var。字符串使用单引号，语句显式分号；局部值允许类型推断，公共接口标明契约类型。用 unknown 接收不可信数据，缩窄/运行时校验后使用，不用 any、非空断言或双重断言逃避校验。只抛出 Error，异步操作必须等待或显式处理失败，不吞异常。
+- Google 指南约束代码写法；Nest 的装饰器、DTO 类和依赖注入按框架执行，Node 模块/编译配置按目标 Nest 版本验证，不照搬 Google 内部构建环境。业务状态和接口语义分别由 design 与 §3.3 定义；不将代码风格称为一套 Google 专用 NestJS 架构。
 - 请求和响应使用具体 DTO 类，`class-validator` 与 ValidationPipe 校验输入，`@nestjs/swagger` 生成 OpenAPI；响应也需显式投影/序列化白名单，TS 类型或 Swagger 装饰器不替代实际数据校验。
 - 单例 provider 不存请求 owner 或跨用户可变状态；从会话 Guard 的请求上下文取得身份。数据库操作使用事务和条件更新，捕获具体错误并转换为 PROJECT §3.3 的稳定响应。
 - I/O 使用异步接口，解析、图片和重型文件处理移到受限独立 Node 进程，不在主事件循环执行无界 CPU/同步文件工作。超时、取消和进程清理显式处理，不以静默捕获或忽略 Promise 伪装成功。
 - 日志只记录必要元数据，不记录完整私有简历、Cookie 或模型密钥；应用启动验证配置，退出释放数据库连接、浏览器和任务进程。依赖注入用于实际服务替换和测试，不搭建多余抽象层。
 
-检查脚本在 Nest 工程建立并验证后登记 §8；设计阶段不创建空工程或将不存在的脚本计为通过。
+ESLint/TypeScript/格式化工具在 Nest 工程建立时按本节配置，并验证 Google 条款与 Nest 装饰器兼容；工具选型与脚本存在不代表全部风格已通过。检查脚本实际执行后登记 §8；设计阶段不创建空工程或将不存在的脚本计为通过。
 
 ### 3.2 前端代码规范
 
+界面以 Vercel Web Interface Guidelines 与 Geist 为参照，视觉/交互映射唯一维护在 [DESIGN](DESIGN.md)。组件按负责人指定的两份 shadcn 技能执行，当前项目为 Radix 系列，配置事实见产品设计 §4.1；不混用 Base UI API，不引入另一套整站组件系统。
+
 - 目录职责按 §3.4 执行。页面专用组件靠近所属路由，实际出现复用时再提取；接口访问以外的内容转换及通用函数放 `src/lib/`。
+- 独立读取并行发起，避免可消除的请求瀑布；编辑器等重型交互按需加载，向客户端只传必要数据。公开页面与私有请求分别处理缓存，不使用跨请求缓存共享 owner 内容。性能改动以实际测量验证，不为引用指南机械引入状态/缓存库。
 - 默认使用 Server Components；Tiptap、表单及依赖浏览器交互的组件明确使用客户端边界。浏览器代码不导入服务端配置、数据库驱动或私密凭据。
 - 基础界面组件统一使用 `src/components/ui/` 的 shadcn/ui + Radix UI；页面复用组件与根 DESIGN 的语义变量，简历正文和打印模板独立于管理界面样式。组件使用 PascalCase，组件文件使用 kebab-case。
 - API 访问集中在 `src/lib/api/`，共用请求与错误处理。生成的接口类型同目录保存并标明来源，不手工修改；服务端数据不能靠类型断言跳过错误判断。表单、编辑器与本地状态各有明确职责，同一正文不维护多个保存源。
@@ -66,35 +71,66 @@
 
 ```text
 CV/
-├── frontend/                    # Next.js 前端工程
+├── frontend/                            # Next.js；现有页面按需演进
 │   ├── src/
-│   │   ├── app/                 # 页面、布局和路由专用组件
+│   │   ├── app/
+│   │   │   ├── layout.tsx              # 根壳、字体和全局样式入口
+│   │   │   ├── globals.css             # 唯一全局主题 token 入口
+│   │   │   ├── (public)/               # 目标：首页和 /u/{publicId}
+│   │   │   ├── (workspace)/            # 目标：/workspace、账户与配置页面
+│   │   │   ├── cvs/[id]/               # 编辑路由和 _components，独立页面壳
+│   │   │   └── print/[ticket]/         # 受控固定快照打印视图
 │   │   ├── components/
-│   │   │   ├── layout/          # 共享 BasicLayout、Header、Footer
-│   │   │   └── ui/              # shadcn/ui + Radix UI 基础组件
-│   │   └── lib/
-│   │       └── api/             # API 请求封装与生成类型
-│   ├── public/                  # 可直接公开的静态资源
+│   │   │   ├── ui/                    # shadcn Radix 基础组件源码
+│   │   │   ├── layout/                # 共享页面壳
+│   │   │   ├── resume/                # 跨场景复用正文/模板与文件界面
+│   │   │   ├── account/               # 账户与身份交互
+│   │   │   └── shared/                # 已出现复用的状态/对话框组合
+│   │   ├── lib/
+│   │   │   ├── api/                   # 统一请求、生成客户端/类型
+│   │   │   ├── resume/                # 纯内容转换与文档模型适配
+│   │   │   └── utils.ts               # cn 等小型通用函数
+│   │   └── hooks/                     # 确有跨页面复用时建立
+│   ├── public/                        # 仅可公开静态资源
+│   ├── tests/                         # 浏览器与跨流程验证
+│   ├── components.json
 │   ├── package.json
 │   └── pnpm-lock.yaml
-├── backend/                     # 目标 NestJS + TypeScript 工程，尚未迁移
+├── backend/                            # 目标 NestJS/TS；当前仍是 FastAPI
 │   ├── src/
-│   │   ├── main.ts              # 启动、全局 Pipe/Filter、OpenAPI 和生命周期
-│   │   ├── app.module.ts        # 根模块组合
-│   │   ├── common/             # 实际复用的 Guard、Filter 和配置
-│   │   ├── database/           # 数据库 provider 与事务访问
-│   │   └── modules/            # 按账户、CV、文件、公开、AI、投递等业务组织
-│   ├── prisma/                # 采用 Prisma 时的 schema 和版本化迁移
-│   ├── test/                  # API/集成测试；局部测试可与业务文件相邻
+│   │   ├── main.ts                    # 启动、Pipe/Filter、OpenAPI
+│   │   ├── app.module.ts              # 模块组合与生命周期
+│   │   ├── config/                    # 配置读取和启动校验
+│   │   ├── common/                    # 复用 Guard/Filter/请求上下文
+│   │   ├── database/                  # ORM provider、连接/事务支持
+│   │   └── modules/
+│   │       ├── account/               # 身份、会话、资料与生命周期
+│   │       ├── cvs/                   # CV、用途副本、修订历史与样式
+│   │       │   ├── cvs.module.ts
+│   │       │   ├── cvs.controller.ts
+│   │       │   ├── cvs.service.ts
+│   │       │   ├── dto/               # 如 create_cv.dto.ts
+│   │       │   └── cvs.service.spec.ts
+│   │       ├── files/                 # 导入候选、资源、PDF/PNG与备份
+│   │       │   └── workers/           # 受限解析/渲染进程，如 pdf_render.worker.ts
+│   │       ├── publication/           # 筛选候选、发布/撤回与匿名快照
+│   │       ├── github/                # 公开仓库来源同步与项目素材
+│   │       ├── ai/                    # 私有配置、三家 provider 与分析报告
+│   │       │   └── providers/         # 统一接口和官方适配
+│   │       └── delivery/              # 规则、设备配对、沟通/招呼与结果
+│   ├── prisma/                        # 采用 Prisma 后的 schema/迁移
+│   ├── test/                          # API/真实 MySQL 集成验证
 │   ├── package.json
 │   ├── pnpm-lock.yaml
 │   └── tsconfig.json
-├── docs/                        # 正式文档与最终附件
-└── PROJECT.md                   # 工程规范入口；其他根文档职责见 §3.5
+├── docs/                               # 正式文档与必要附件
+└── PROJECT.md                          # 工程规范唯一入口
 ```
 
 - 目标前后端均用 Node.js/TypeScript，各自在 `frontend/`、`backend/` 管理 package.json 和 pnpm-lock.yaml。迁移前不删除 Python 清单/uv.lock；移除旧运行时须在替代链路及数据兼容验收后执行。根目录不另建一套应用依赖，`docs/` 不承载运行工程。
+- 路由组只组织 Next.js 页面壳，不改变 URL：`(workspace)/workspace/page.tsx` 才对应 `/workspace`；现有 `(workspace)/page.tsx` 仍是 `/`，首页切换须按发布能力实施，不能只移动文件就声称路由已改。路由私有组件留 `_components/`，复用后再提取；app 页面只编排，不承载数据库/模型密钥。
 - 后端按业务 Module 组织 Controller/Service/DTO，数据库模型与对外 DTO 分离；Guard 校验 owner，Service 控制事务。按实际需要拆文件，不为每个操作增加 repository 等中间层。
+- 后端模块以公开 Service/注入 token 协作，不跨模块访问对方私有 ORM 查询或导入 Controller；common 只放已复用基础设施，config 只管配置，database 不放业务规则，workers 不自行绕过授权写正式对象。存储字段、DTO 与领域状态分别维护，不将 ORM 模型直出匿名接口。
 - 前端通过 HTTP/OpenAPI 使用后端；Next.js 不直接访问 MySQL，后端不跨目录导入前端源码。PDF 渲染通过受控打印视图协作，具体流程见产品设计。
 - 公共头像或附件必须经过发布规则筛选；私有 CV、上传文件、生成 PDF、数据库数据与备份不放 `frontend/public/`、`docs/` 或 Git，运行位置通过部署配置指定。
 - 环境变量按进程配置；前端本地配置放 `frontend/.env.local`，后端放 `backend/.env`，真实值不入库。必要示例仅列变量名和非敏感示例；仅允许公开的值使用 `NEXT_PUBLIC_` 前缀。

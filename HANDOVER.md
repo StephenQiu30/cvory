@@ -2,25 +2,21 @@
 
 任务调度唯一入口为 [BACKLOG](BACKLOG.md)。
 
-## NestJS 服务设计与自部署边界
+## Vercel、shadcn 与 Google TypeScript 工程规范
 
-后端已明确选用 NestJS + TypeScript，MySQL 与现有前端基线保留；[PROJECT](PROJECT.md)同步编码/API/目录规范，[设计 02](docs/design/02-CV制作管理与展示设计.md)补充目标服务模块、Node 文件链与兼容切换要求。现存 backend/ 仍是 FastAPI/Python，NestJS 工程、依赖和真实脚本尚未建立；没有改应用代码、迁移数据或切换服务。
+前端以 Vercel Web Interface Guidelines/Geist 和负责人指定的两份 shadcn 技能为规范，视觉与组件/交互规则集中在 [DESIGN](DESIGN.md)；后端以 Google TypeScript Style Guide、NestJS 业务模块和 Google API 指南分别约束代码、服务边界及接口。[PROJECT](PROJECT.md)细化目录、文件命名和依赖方向，产品技术入口同步到[设计 02](docs/design/02-CV制作管理与展示设计.md)。
 
-负责人通过问答明确：MIT 开源自部署，由使用者自行填写火山引擎、DeepSeek、OpenAI 官方密钥与模型；首期只支持 Chrome，PDF 由用户在 BOSS 页面手工上传，插件仅负责筛选、沟通及招呼。密钥私有管理/加密/脱敏、三家协议适配为设计建议；具体模型、预算、保留与 Chrome 分发仍待落实。根 LICENSE/第三方许可声明尚未补齐，MIT 选择不等于许可文件已交付或应用已发布。
+目录是目标设计：前端区分路由编排、页面私有组件、共享 Radix 组件、简历渲染及生成 API 客户端；后端区分配置、基础设施、数据库、业务模块、DTO 与受限文件任务。后端 snake_case 保留 Nest 职责后缀，前端沿用 kebab-case。没有新建空目录或移动运行代码。现存 FastAPI 尚未迁移，NestJS 工程/脚本和完整业务链路未验收；MIT、自部署、用户填写三家官方 AI、Chrome 与人工上传 PDF 的确认范围保持。
 
-[需求 04](docs/requirement/04-个人CV制作与管理需求说明.md)、相关 PRD/Plan 和导航已同步；PDF 首期文字层、扫描件提示/OCR后续，站主首页展示简历与 GitHub 项目的选择保留。首期投递验收不再要求自动附件；人工上传确认标注用户来源，不能冒充平台回执。AI 新增三家预设和自部署私有配置验收。
+## 依据与验证
 
-## 设计依据与未验证项
+- Vercel 插件查询官方资料，直接读取 Web Interface Guidelines、Geist 色彩/排版；不创建或关联 Vercel 项目，不改变自部署交付形态。
+- 指定的两份 shadcn SKILL 均已读取。前端执行 `pnpm dlx shadcn@latest info --json` 确认 radix-nova/Radix、Tailwind v4、Lucide 和 @/ 别名；CLI docs 查询 Field/Button/Card/Dialog/Tabs/Select 并读取官方页面。未执行 init/add/apply，组件、依赖和主题均未改。
+- Google TypeScript 官方指南已读取；按本项目 Nest/Node 环境落实风格，不将其表述为 Google 专用 NestJS 服务架构。自动 lint/格式化规则须在实际建立 Nest 工程后验证。
+- 文档检查覆盖 49 份 Markdown，346 个本地链接/锚点；PRD/Plan 唯一来源与编号、既有验收编号保留及 `git diff --check` 通过。仅规范/说明和设计变更，原始需求 01、前后端代码、依赖、数据库、容器和部署未改；纯文档没有运行应用测试。
 
-- NestJS 官方文档/Context7 核对模块、DTO/ValidationPipe、异常/Swagger 和 Prisma 接入；Prisma baseline 为存量迁移建议，不运行 reset 或 db push。
-- 文件链建议改为 Mammoth → 清洗/校对，PDF.js 提取/逐页 PNG，Node Playwright 生成 PDF；官方文档不等于本项目已通过 DOCX/文字 PDF/PNG 验收。
-- OpenAI Docs 核对官方 JS/TS SDK/Responses，DeepSeek 官方文档核对兼容格式；Ark 官方动态页面抓取超时，精确参数及地域在实施前复核。三家均未配置或调用真实服务。
-- 竞品固定源码、许可证及 REA 限制继续见[调研导航](docs/research/00-调研导航.md)；没有重跑竞品运行观察或登录 BOSS。
+## main 交付
 
-## 验证与交付边界
+需求/服务设计阶段已推送 main，提交 `2c58235178b87fecf8d8b0f1f0ccc224ffd655b1`。远端查询未发现 Actions 运行或 commit checks/status 项，不能表述为 CI 通过。规范与目录变更按负责人授权继续提交、推送 main，实际提交与同步结果以 Git 记录为准；仓库尚未接入远端 CI。
 
-文档检查通过：49 份 Markdown、344 个本地链接/锚点，PRD/Plan 01～12 唯一来源及编号、既有验收编号保留，`git diff --check` 无空白错误。原始需求 01、frontend/backend、Compose 与环境示例相对 HEAD 无差异；NestJS/Chrome/人工 PDF/三家官方预设/自部署和 MIT 的已确认范围已交叉核对。
-
-只调整正式文档和 AGENTS 中的技术规范锚点，保留已有文档修改；原始需求 01、前后端应用、依赖、数据库、容器和部署未改。未运行应用测试，不把 Python 检查视作 NestJS 通过；未配置密钥、调用付费 AI 或发送消息/简历。负责人已授权将文档提交并推送至 main，实际结果以 Git 记录为准；不涉及应用发布。
-
-当前继续停留在需求与服务设计评审，完整业务链路及 NestJS 迁移均未验收。后续执行按 BACKLOG，技术建议不冒充逐项确认。
+未执行应用发布、真实 AI 调用或 BOSS 发送。后续实现按 BACKLOG，规范完成不等于 UI/后端迁移已完成。

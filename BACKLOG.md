@@ -20,6 +20,7 @@
 | PLAN-CV-10 账户注销与数据处理 | 账户基础、注销及保留政策 | 等待、撤销、清理及启动时墓碑重放已实现并在隔离环境验证；部署前需配置独立持久存储、密钥和备份策略，入口默认关闭；GitHub-only 的 OAuth 身份核验/AI与项目清理尚未实现 | [PRD 10](docs/prd/10-账户注销与数据处理.md)、[Plan 10](docs/plan/10-账户注销与数据处理.md) |
 | 视觉基线同步 | [DESIGN](DESIGN.md) | Figma 先于页面同步；移除顶栏／标签页黑色选中线，采用 shadcn 填充选中态及 Card、Badge、Empty、Skeleton 信息组合；桌面／手机浏览器回归通过 | [交接记录](HANDOVER.md)；公网部署及跨浏览器验收未执行 |
 | 完整需求与调研转化 | 最新业务要求、调研 03／04 | 完整目标、设计及 PRD/Plan 01～12 已整理；文档检查单独留证，不代表产品完成 | [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计](docs/design/02-CV制作管理与展示设计.md)、按能力拆分的 PRD/Plan |
+| 前后端设计与目录规范 | Vercel/Geist、两份 shadcn 技能、Google TypeScript | 已整理到 DESIGN/PROJECT 及设计 02；目录是目标职责，不创建空工程，现有页面/后端迁移未因此完成 | [DESIGN](DESIGN.md)、[PROJECT](PROJECT.md) |
 | 前端技术基线 | — | 已安装并验证 | [设计 4.1](docs/design/02-CV制作管理与展示设计.md#41-已固定的前端基线)（Next.js 16 + React 19 + Tailwind 4 + Tiptap） |
 | 后端与 API 基线 | NestJS + TypeScript；MySQL 与 Google API 合同 | 目标技术栈已确认，现存 FastAPI 未迁移；Nest 工程/依赖/脚本/新链路验收尚未建立，旧 Python 测试不代表迁移通过 | [服务设计](docs/design/02-CV制作管理与展示设计.md#42-已确定的服务与数据边界)、[API 规范](PROJECT.md#33-api-规范)（NestJS + TypeScript + MySQL + AIP 规范） |
 | PLAN-CV-01 制作与保存 | 运行环境、所有者与持久化明确 | 有编辑与条件保存实现及局部证据；持续 Markdown 编辑/富文本往返切换须补齐；自动保存、意外关闭恢复、最新输入离开屏障及有界校验按现行验收补齐，完整结果待验证 | [Plan 01](docs/plan/01-CV制作与保存.md) |
