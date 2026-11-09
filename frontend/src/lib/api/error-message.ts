@@ -7,6 +7,8 @@ export function errorMessage(
   unauthenticated = "登录已过期，请重新登录后重试。当前输入已保留。",
 ) {
   if (!(error instanceof ApiError)) return fallback;
+  if (error.details.some((detail) => detail.reason === "ACCOUNT_CHANGED"))
+    return "账户已切换，输入仍保留在原账户，请重新登录原账户后重试。";
   if (error.code === 401) return unauthenticated;
   if (error.code === 403)
     return "当前账户无法执行此操作，请确认权限和邮箱验证状态。";

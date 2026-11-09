@@ -17,20 +17,18 @@ test("unsupported backup structures fail before rendering", () => {
   ])
     expect(() => parseBackup(input)).toThrow();
 });
-test("Markdown keeps prose, lists and supported marks without inventing dates", () => {
-  const candidate = parseMarkdown(
+test("Markdown keeps prose, lists and supported marks without inventing dates", async () => {
+  const candidate = await parseMarkdown(
     "# 张三\n前端工程师\n## 技能\n- **React** 与 [项目](https://example.com)\n- TypeScript",
   );
   expect(candidate.profile?.fullName).toBe("张三");
   expect(candidate.sections).toHaveLength(1);
   expect(textContent(candidate.sections![0].content)).toContain("React");
   expect(candidate.sections![0].items).toEqual([]);
-  expect(
-    markdown(completeResume(candidate)),
-  ).toContain("**React**");
+  expect(await markdown(completeResume(candidate))).toContain("**React**");
 });
-test("hidden contact data stays out of Markdown and link protocols are constrained", () => {
-  const text = markdown({
+test("hidden contact data stays out of Markdown and link protocols are constrained", async () => {
+  const text = await markdown({
     profile: {
       ...blankProfile(),
       fullName: "Name",

@@ -2,85 +2,51 @@ import { z } from "zod";
 import type { CreateCVRequest, ResumeData, Section } from "@/lib/api/types";
 import { DEFAULT_STYLE, textContent } from "./model";
 export const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
-function inline(text: string): unknown[] {
-  const re = /(\*\*(.+?)\*\*|\*(.+?)\*|\[([^\]]+)\]\(([^)]+)\))/g;
-  let index = 0;
-  const nodes: unknown[] = [];
-  for (const m of text.matchAll(re)) {
-    if (m.index! > index)
-      nodes.push({ type: "text", text: text.slice(index, m.index) });
-    nodes.push({
-      type: "text",
-      text: m[2] ?? m[3] ?? m[4],
-      marks: [
-        {
-          type: m[2] ? "bold" : m[3] ? "italic" : "link",
-          ...(m[5] ? { attrs: { href: m[5] } } : {}),
-        },
-      ],
-    });
-    index = m.index! + m[0].length;
-  }
-  if (index < text.length)
-    nodes.push({ type: "text", text: text.slice(index) });
-  return nodes;
-}
-export function parseMarkdown(text: string): CreateCVRequest {
+export async function parseMarkdown(text: string): Promise<CreateCVRequest> {
   if (!text.trim()) throw Error("文件中没有文字。");
+  if (new Blob([text]).size > MAX_IMPORT_BYTES)
+    throw Error("文件超过 10 MB，请选择较小的文件。");
+  const { parseBodyMarkdown } = await import("./body-markdown");
   const sections: Section[] = [];
   let name = "";
   let headline = "";
   let current: Section | undefined;
-  const add = (line: string) => {
-    if (!current) {
-      current = {
-        id: crypto.randomUUID(),
-        type: "summary",
-        title: "个人简介",
-        visible: true,
-        items: [],
-        content: { type: "doc", content: [] },
-      };
-      sections.push(current);
-    }
-    const doc = current.content as { type: string; content: unknown[] };
-    const list = /^\s*[-*+]\s+/.test(line);
-    const numbered = /^\s*\d+\.\s+/.test(line);
-    const p = {
-      type: "paragraph",
-      content: /^### /.test(line) ? [{type:"text",text:line.slice(4),marks:[{type:"bold"}]}] : inline(line.replace(/^\s*(?:[-*+]|\d+\.)\s+/, "")),
+  let lines: string[] = [];
+  const flush = () => {
+    if (current) current.content = parseBodyMarkdown(lines.join("\n"));
+    lines = [];
+  };
+  const start = (title: string, type: Section["type"]) => {
+    flush();
+    current = {
+      id: crypto.randomUUID(),
+      type,
+      title,
+      visible: true,
+      items: [],
+      content: null,
     };
-    if (list || numbered)
-      doc.content.push({
-        type: numbered ? "orderedList" : "bulletList",
-        content: [{ type: "listItem", content: [p] }],
-      });
-    else doc.content.push(p);
+    sections.push(current);
+    if (sections.length > 100) throw Error("模块超过 100 个，请精简后导入。");
   };
   for (const line of text.split(/\r?\n/)) {
-    if (!line.trim()) continue;
-    if (line.startsWith("# ") && !name) {
+    if (line.startsWith("# ") && !name && !current) {
       name = line.slice(2).trim();
       continue;
     }
     if (/^## /.test(line)) {
-      current = {
-        id: crypto.randomUUID(),
-        type: "custom",
-        title: line.slice(3).trim(),
-        visible: true,
-        items: [],
-        content: { type: "doc", content: [] },
-      };
-      sections.push(current);
+      start(line.slice(3).trim(), "custom");
       continue;
     }
+    if (!current && !line.trim()) continue;
     if (!current && name && !headline) {
       headline = line;
       continue;
     }
-    add(line);
+    if (!current) start("个人简介", "summary");
+    lines.push(/^### /.test(line) ? `**${line.slice(4)}**` : line);
   }
+  flush();
   return {
     displayName: name || "导入的简历",
     profile: { fullName: name, headline },
@@ -184,39 +150,16 @@ export function parseBackup(text: string): CreateCVRequest {
   return result.data.document;
 }
 
-function richMarkdown(value: unknown): string {
-  if (typeof value === "string") return value;
-  if (!value || typeof value !== "object") return "";
-  const n = value as {
-    type?: string;
-    text?: string;
-    content?: unknown[];
-    marks?: { type: string; attrs?: { href?: string } }[];
-  };
-  if (n.type === "text") {
-    let t = n.text ?? "";
-    for (const m of n.marks ?? [])
-      t =
-        m.type === "bold"
-          ? `**${t}**`
-          : m.type === "italic"
-            ? `*${t}*`
-            : m.type === "link"
-              ? `[${t}](${m.attrs?.href})`
-              : t;
-    return t;
-  }
-  const children = (n.content ?? []).map(richMarkdown);
-  if (n.type === "listItem") return `- ${children.join("").trim()}\n`;
-  if (n.type === "paragraph") return `${children.join("")}\n`;
-  return children.join("");
-}
-export function markdown(document: ResumeData) {
+export async function markdown(document: ResumeData) {
+  const { bodyMarkdown: richMarkdown } = await import("./body-markdown");
   const p = document.profile;
   return [
     `# ${p.fullName || ""}`,
     p.headline || "",
-    ...(["email","phone","location","website","github"] as const).filter(key=>!p.hiddenFields?.includes(key)).map(key=>p[key]).filter(Boolean),
+    ...(["email", "phone", "location", "website", "github"] as const)
+      .filter((key) => !p.hiddenFields?.includes(key))
+      .map((key) => p[key])
+      .filter(Boolean),
     ...document.sections
       .filter((s) => s.visible !== false)
       .flatMap((s) => [

@@ -1,6 +1,6 @@
 "use client";
 import { errorMessage } from "@/lib/api/error-message";
-import { useDeferredValue, useRef, useState } from "react";
+import { useDeferredValue, useRef, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
@@ -19,7 +19,7 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { cvApi } from "@/lib/api/client";
+import { cvApi, ApiError } from "@/lib/api/client";
 import type { CVResource, SectionItem, Section } from "@/lib/api/types";
 import { MODULES, editable, textContent, dateLabel } from "@/lib/resume/model";
 import { EditorLayout } from "@/components/layout/editor-layout";
@@ -53,9 +53,11 @@ export default function CvEditor({ id }: { id: string }) {
     "manage" | "entry" | "remove" | "conflict" | "leave" | "export" | null
   >(null);
   const [entry, setEntry] = useState<SectionItem | undefined>();
-  const [style, setStyle] = useState<CVResource["styleSettings"] | null>(null);
   const [folded, setFolded] = useState<string[]>([]);
   const formRef = useRef<HTMLElement>(null);
+  const copyRequests = useRef(new Map<string, string>());
+  const copyInFlight = useRef(false);
+  const [copyBusy, setCopyBusy] = useState(false);
   const {
     draft,
     busy,
@@ -68,7 +70,62 @@ export default function CvEditor({ id }: { id: string }) {
     patch,
     load,
     save,
+    storageError,
+    ownerId,
+    ensureOwner,
+    discard,
+    scratch,
+    setScratch,
+    candidates,
+    resolveRecovery,
+    setComposition,
   } = useCvDocument(id, () => setModal("conflict"));
+  const style = scratch.style ?? null;
+  const setStyle = (
+    update:
+      | CVResource["styleSettings"]
+      | null
+      | ((
+          value: CVResource["styleSettings"] | null,
+        ) => CVResource["styleSettings"] | null),
+  ) => {
+    setScratch((value) => {
+      const next = { ...value };
+      const result =
+        typeof update === "function" ? update(value.style ?? null) : update;
+      if (result) next.style = result;
+      else delete next.style;
+      return next;
+    });
+  };
+  useEffect(() => {
+    if (scratch.entry && modal !== "entry" && candidates.length === 0) {
+      const restored = scratch.entry;
+      void Promise.resolve().then(() => {
+        setActive(restored.sectionId);
+        setEntry(restored.item);
+        setModal("entry");
+      });
+    }
+  }, [scratch.entry, modal, candidates.length]);
+  const clearEntry = () => {
+    const next = { ...scratch };
+    delete next.entry;
+    if (next.markdown) {
+      next.markdown = { ...next.markdown };
+      delete next.markdown.entry;
+    }
+    setScratch(next);
+    setModal(null);
+  };
+  const pendingBody = (key: string, source: string | undefined) => {
+    setScratch((value) => {
+      const markdown = { ...value.markdown };
+      if (source === undefined) delete markdown[key];
+      else markdown[key] = source;
+      return { ...value, markdown };
+    });
+  };
   const deferred = useDeferredValue(draft);
   const section = draft?.sections.find((s) => s.id === active);
   const updateSection = (next: Section) =>
@@ -115,7 +172,10 @@ export default function CvEditor({ id }: { id: string }) {
     updateSection({ ...section, items });
   };
   return (
-    <>
+    <div
+      onCompositionStartCapture={() => setComposition(true)}
+      onCompositionEndCapture={() => setComposition(false)}
+    >
       <EditorLayout
         collapsed={collapsed}
         showPreview={preview}
@@ -125,7 +185,9 @@ export default function CvEditor({ id }: { id: string }) {
               variant="ghost"
               size="icon"
               aria-label="返回我的简历"
-              onClick={() => (dirty ? setModal("leave") : router.push("/"))}
+              onClick={() =>
+                dirty || busy ? setModal("leave") : router.push("/")
+              }
             >
               <ArrowLeft aria-hidden className="size-4" />
             </Button>
@@ -250,6 +312,11 @@ export default function CvEditor({ id }: { id: string }) {
                   ? "填写你希望出现在简历上的信息。"
                   : "经历按当前顺序展示。新增内容确认后进入简历。"}
             </p>
+            {storageError ? (
+              <StatusMessage tone="info" className="mb-5">
+                {storageError}
+              </StatusMessage>
+            ) : null}
             {error ? (
               <div className="mb-5">
                 <StatusMessage>{error}</StatusMessage>
@@ -257,7 +324,14 @@ export default function CvEditor({ id }: { id: string }) {
                   <Button
                     variant="ghost"
                     className="mt-2"
-                    onClick={() => openAuth(() => setError(""))}
+                    onClick={() =>
+                      openAuth(
+                        () =>
+                          void ensureOwner().then((ok) => {
+                            if (ok) setError("");
+                          }),
+                      )
+                    }
                   >
                     重新登录
                   </Button>
@@ -290,6 +364,11 @@ export default function CvEditor({ id }: { id: string }) {
                 ) : null}
                 {section.type === "summary" ? (
                   <RichEditor
+                    key={section.id}
+                    pendingSource={scratch.markdown?.[section.id]}
+                    onPendingChange={(source) =>
+                      pendingBody(section.id, source)
+                    }
                     value={section.content}
                     onChange={(content) =>
                       updateSection({ ...section, content })
@@ -300,6 +379,11 @@ export default function CvEditor({ id }: { id: string }) {
                     {section.content != null ? (
                       <div className="mb-5">
                         <RichEditor
+                          key={section.id}
+                          pendingSource={scratch.markdown?.[section.id]}
+                          onPendingChange={(source) =>
+                            pendingBody(section.id, source)
+                          }
                           value={section.content}
                           onChange={(content) =>
                             updateSection({ ...section, content })
@@ -481,7 +565,7 @@ export default function CvEditor({ id }: { id: string }) {
       </Dialog>
       <Dialog
         open={modal === "entry"}
-        onOpenChange={(v) => !v && setModal(null)}
+        onOpenChange={(v) => !v && clearEntry()}
         title={section?.title ?? "编辑经历"}
         description="填写具体信息，应用后同步到预览。"
       >
@@ -490,17 +574,26 @@ export default function CvEditor({ id }: { id: string }) {
             key={entry?.id ?? "new"}
             type={section.type}
             initial={entry}
-            onCancel={() => setModal(null)}
+            pendingSource={scratch.markdown?.["entry"]}
+            onPendingChange={(source) => pendingBody("entry", source)}
+            onDraftChange={(item) =>
+              setScratch((value) => ({
+                ...value,
+                entry: { sectionId: section.id, item },
+              }))
+            }
+            onCancel={clearEntry}
             onApply={(item) => {
               updateSection({
                 ...section,
-                items: entry
-                  ? (section.items ?? []).map((i) =>
-                      i.id === entry.id ? item : i,
-                    )
-                  : [...(section.items ?? []), item],
+                items:
+                  entry && section.items.some((item) => item.id === entry.id)
+                    ? (section.items ?? []).map((i) =>
+                        i.id === entry.id ? item : i,
+                      )
+                    : [...(section.items ?? []), item],
               });
-              setModal(null);
+              clearEntry();
             }}
           />
         ) : null}
@@ -509,7 +602,7 @@ export default function CvEditor({ id }: { id: string }) {
         open={modal === "remove"}
         onOpenChange={(v) => !v && setModal(null)}
         title={`移除「${entry?.title || "此段经历"}」？`}
-        description="移除后不会出现在当前简历，保存前可重新载入服务器版本。"
+        description="移除后不会出现在当前简历，自动保存后可从修订历史恢复为副本。"
       >
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setModal(null)}>
@@ -542,14 +635,45 @@ export default function CvEditor({ id }: { id: string }) {
           <Button
             variant="secondary"
             onClick={async () => {
+              if (
+                scratch.entry ||
+                scratch.style ||
+                Object.keys(scratch.markdown ?? {}).length
+              ) {
+                setError("请先应用正在编辑的内容，再另存副本。");
+                setModal(null);
+                return;
+              }
+              if (copyInFlight.current) return;
+              copyInFlight.current = true;
+              setCopyBusy(true);
               try {
-                const created = await cvApi.createCv({
-                  ...editable(draft),
-                  displayName: `${draft.displayName} · 副本`,
-                });
+                if (!(await ensureOwner())) return;
+                const requestId =
+                  copyRequests.current.get("conflict") ?? crypto.randomUUID();
+                copyRequests.current.set("conflict", requestId);
+                const created = await cvApi.createCv(
+                  {
+                    requestId,
+                    ...editable(draft),
+                    displayName: `${draft.displayName} · 副本`,
+                  },
+                  ownerId!,
+                );
+                if (!discard()) return;
                 router.push(`/cvs/${created.id}`);
               } catch (cause) {
+                if (
+                  cause instanceof ApiError &&
+                  cause.details.some(
+                    (detail) => detail.reason === "ACCOUNT_CHANGED",
+                  )
+                )
+                  await ensureOwner();
                 setError(errorMessage(cause, "另存失败，本地内容仍保留。"));
+              } finally {
+                copyInFlight.current = false;
+                setCopyBusy(false);
               }
             }}
           >
@@ -557,6 +681,7 @@ export default function CvEditor({ id }: { id: string }) {
           </Button>
           <Button
             onClick={() => {
+              if (!discard()) return;
               void Promise.resolve().then(load);
               setModal(null);
             }}
@@ -575,17 +700,120 @@ export default function CvEditor({ id }: { id: string }) {
           <Button variant="ghost" onClick={() => setModal(null)}>
             继续编辑
           </Button>
-          <Button variant="secondary" onClick={() => router.push("/")}>
+          <Button
+            variant="secondary"
+            disabled={busy}
+            onClick={() => {
+              if (discard()) router.push("/");
+            }}
+          >
             放弃修改并离开
           </Button>
           <Button
-            disabled={busy}
             onClick={async () => {
               if (await save()) router.push("/");
             }}
           >
             保存并返回
           </Button>
+        </div>
+      </Dialog>
+      <Dialog
+        open={candidates.length > 0}
+        onOpenChange={(open) => {
+          if (!open && !copyBusy) router.push("/");
+        }}
+        title="发现本机未保存草稿"
+        description="核对时间与服务器版本后恢复。仅原账户可见；关闭会返回简历库并保留候选。本机草稿不是跨设备备份。"
+      >
+        <div className="flex flex-col gap-5">
+          {candidates.map(({ key, value }) => (
+            <div key={key} className="flex flex-col gap-2">
+              <p className="text-sm font-medium">
+                {value.document.displayName || "未命名简历"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {new Date(value.time).toLocaleString()} ·{" "}
+                {value.baseEtag === draft.etag
+                  ? "服务器版本一致"
+                  : "服务器已有其他版本，建议另存"}
+              </p>
+              <p className="break-all text-xs text-muted-foreground">
+                草稿基准 {value.baseEtag} / 服务器 {draft.etag}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="ghost"
+                  onClick={() => resolveRecovery(key, false)}
+                >
+                  放弃此草稿
+                </Button>
+                <Button
+                  variant="secondary"
+                  disabled={copyBusy}
+                  onClick={async () => {
+                    if (copyInFlight.current) return;
+                    copyInFlight.current = true;
+                    setCopyBusy(true);
+                    try {
+                      if (!(await ensureOwner())) return;
+                      const requestId =
+                        copyRequests.current.get(key) ?? crypto.randomUUID();
+                      copyRequests.current.set(key, requestId);
+                      const created = await cvApi.createCv(
+                        {
+                          requestId,
+                          ...value.document,
+                          displayName: `${value.document.displayName || "未命名简历"} · 恢复副本`,
+                        },
+                        ownerId!,
+                      );
+                      const { recoveryKey, writeRecovery } =
+                        await import("@/lib/resume/recovery");
+                      writeRecovery(
+                        localStorage,
+                        recoveryKey(
+                          value.owner,
+                          created.id,
+                          crypto.randomUUID(),
+                        ),
+                        { ...value, cv: created.id, baseEtag: created.etag },
+                        key,
+                      );
+                      resolveRecovery(key, false);
+                      router.push(`/cvs/${created.id}`);
+                    } catch (cause) {
+                      if (
+                        cause instanceof ApiError &&
+                        cause.details.some(
+                          (detail) => detail.reason === "ACCOUNT_CHANGED",
+                        )
+                      )
+                        await ensureOwner();
+                      setError(
+                        errorMessage(cause, "另存失败，恢复候选仍保留。"),
+                      );
+                    } finally {
+                      copyInFlight.current = false;
+                      setCopyBusy(false);
+                    }
+                  }}
+                >
+                  恢复为副本
+                </Button>
+                <Button
+                  disabled={value.baseEtag !== draft.etag}
+                  onClick={() => resolveRecovery(key, true)}
+                >
+                  恢复继续编辑
+                </Button>
+              </div>
+            </div>
+          ))}
+          {error ? <StatusMessage>{error}</StatusMessage> : null}
+          {storageError ? (
+            <StatusMessage tone="info">{storageError}</StatusMessage>
+          ) : null}
         </div>
       </Dialog>
       <ExportDialog
@@ -595,6 +823,6 @@ export default function CvEditor({ id }: { id: string }) {
         dirty={dirty}
         save={save}
       />
-    </>
+    </div>
   );
 }

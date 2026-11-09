@@ -161,7 +161,7 @@ export function ExportDialog({
                     { type: "application/json" },
                   );
                 } else
-                  blob = new Blob([markdown(saved)], {
+                  blob = new Blob([await markdown(saved)], {
                     type: "text/markdown;charset=utf-8",
                   });
                 if (controller.signal.aborted) return;

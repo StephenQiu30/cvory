@@ -112,7 +112,7 @@ export function ImportDialog({
                     setCandidate(parseBackup(text));
                   else if (/\.(md|markdown)$/i.test(file.name)) {
                     setMarkdownText(text);
-                    setCandidate(parseMarkdown(text));
+                    setCandidate(await parseMarkdown(text));
                   } else
                     throw Error(
                       "暂不支持 PDF、Word 或图片，请使用 JSON／Markdown。",
@@ -201,12 +201,13 @@ export function ImportDialog({
           {!candidate && mode === "markdown" ? (
             <Button
               disabled={busy || !markdownText.trim()}
-              onClick={() => {
+              onClick={async () => {
+                setBusy(true);
                 setError("");
                 try {
                   if (new Blob([markdownText]).size > MAX_IMPORT_BYTES)
                     throw Error("正文超过 10 MB，请精简后重试。");
-                  const parsed = parseMarkdown(markdownText);
+                  const parsed = await parseMarkdown(markdownText);
                   requestId.current = crypto.randomUUID();
                   setCandidate(parsed);
                 } catch (cause) {
@@ -215,6 +216,8 @@ export function ImportDialog({
                       ? cause.message
                       : "解析失败，请检查内容。",
                   );
+                } finally {
+                  setBusy(false);
                 }
               }}
             >

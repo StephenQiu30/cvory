@@ -1054,7 +1054,17 @@
       },
       "post": {
         "operationId": "createCv",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "X-Cvory-Owner",
+            "required": false,
+            "in": "header",
+            "description": "Expected current account for a local draft copy; never grants ownership.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {

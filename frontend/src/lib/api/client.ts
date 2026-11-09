@@ -5,7 +5,18 @@ export const cvApi = {
   listCvs: (pageSize = 50, pageToken?: string) =>
     generated.listCvs({ pageSize, pageToken }),
   getCv: (id: string) => generated.getCv({ id }),
-  createCv: (data: CreateCVRequest) => generated.createCv(data),
+  createCv: (data: CreateCVRequest, expectedOwner?: string) =>
+    generated.createCv(
+      data,
+      expectedOwner
+        ? {
+            headers: {
+              "Content-Type": "application/json",
+              "X-Cvory-Owner": expectedOwner,
+            },
+          }
+        : undefined,
+    ),
   updateCv: (id: string, data: UpdateCVRequest, etag?: string) =>
     generated.updateCv({ id }, data, {
       headers: etag ? { "If-Match": `"${etag}"` } : {},

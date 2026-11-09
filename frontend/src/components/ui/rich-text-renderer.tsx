@@ -3,6 +3,7 @@ import { safeLink } from "@/lib/resume/model";
 type Node = {
   type?: string;
   text?: string;
+  attrs?: { start?: number; type?: "1" | "a" | "A" | "i" | "I" | null };
   content?: Node[];
   marks?: { type: string; attrs?: { href?: string } }[];
 };
@@ -33,7 +34,15 @@ function render(node: Node, key: number): ReactNode {
     case "bulletList":
       return <ul key={key}>{children}</ul>;
     case "orderedList":
-      return <ol key={key}>{children}</ol>;
+      return (
+        <ol
+          key={key}
+          start={node.attrs?.start}
+          type={node.attrs?.type ?? undefined}
+        >
+          {children}
+        </ol>
+      );
     case "listItem":
       return <li key={key}>{children}</li>;
     case "hardBreak":

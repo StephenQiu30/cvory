@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 import { getAccount } from "@/lib/api/generated/api/account";
 import { AuthDialog } from "./auth-dialog";
+import { LOGOUT_EVENT } from "@/lib/resume/recovery";
 import { ApiError } from "@/lib/api/request";
 const Context = createContext<{
   account: API.AccountResource | null;
@@ -71,6 +72,20 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     void Promise.resolve().then(refresh);
+  }, [refresh]);
+  useEffect(() => {
+    const recheck = () => {
+      void refresh();
+    };
+    window.addEventListener("focus", recheck);
+    const storage = (event: StorageEvent) => {
+      if (event.key === LOGOUT_EVENT) recheck();
+    };
+    window.addEventListener("storage", storage);
+    return () => {
+      window.removeEventListener("focus", recheck);
+      window.removeEventListener("storage", storage);
+    };
   }, [refresh]);
   return (
     <Context.Provider

@@ -172,7 +172,7 @@ test("save response preserves edits made during the request", async ({
   await page.getByLabel("姓名", { exact: true }).fill("保存期间继续输入");
   release();
   await expect(
-    page.getByRole("status").filter({ hasText: "未保存" }),
+    page.getByRole("status").filter({ hasText: "已保存" }),
   ).toBeVisible();
   await expect(page.getByLabel("姓名", { exact: true })).toHaveValue(
     "保存期间继续输入",
@@ -393,7 +393,7 @@ test("authentication modal keeps context and preserves drafts after session expi
   await page.getByLabel("姓名", { exact: true }).fill("保留的草稿");
   await context.clearCookies();
   await page.getByRole("button", { name: "保存", exact: true }).click();
-  await expect(page.getByText(/登录已过期/)).toBeVisible();
+  await expect(page.getByText(/登录已过期|会话已过期/)).toBeVisible();
   await page.getByRole("button", { name: "重新登录" }).click();
   await page
     .getByRole("dialog")

@@ -3,47 +3,114 @@ import {invalid} from '../../common/errors';
 
 function content(value: unknown): boolean {
   if (value === null || typeof value === 'string') return JSON.stringify(value).length <= 150000;
-  const stack: Array<[unknown, number, boolean]> = [[value, 0, true]];
-  let count = 0;
   if (JSON.stringify(value).length > 150000) return false;
+  const stack: Array<[unknown, number, string | null]> = [[value, 0, null]];
+  const childrenAllowed: Record<string, string[]> = {
+    doc: ['paragraph', 'bulletList', 'orderedList'],
+    paragraph: ['text', 'hardBreak'],
+    bulletList: ['listItem'],
+    orderedList: ['listItem'],
+    listItem: ['paragraph', 'bulletList', 'orderedList'],
+    text: [],
+    hardBreak: [],
+  };
+  const object = (item: unknown): item is Record<string, unknown> =>
+    !!item && typeof item === 'object' && !Array.isArray(item);
+  let count = 0;
   while (stack.length) {
-    const entry = stack.pop();
-    if (!entry) break;
-    const [item, depth, root] = entry;
-    if (++count > 5000 || depth > 20 || !item || typeof item !== 'object' || Array.isArray(item))
-      return false;
-    const node = item as Record<string, unknown>;
+    const [item, depth, parent] = stack.pop()!;
+    if (++count > 5000 || depth > 20 || !object(item)) return false;
+    const node = item;
+    const type = String(node.type);
     if (
-      !['doc', 'paragraph', 'text', 'bulletList', 'orderedList', 'listItem', 'hardBreak'].includes(
-        String(node.type),
-      ) ||
-      (root && node.type !== 'doc')
+      !Object.hasOwn(childrenAllowed, type) ||
+      (parent === null ? type !== 'doc' : !childrenAllowed[parent].includes(type))
     )
       return false;
-    if (node.text !== undefined && typeof node.text !== 'string') return false;
-    if (node.type === 'text' && typeof node.text !== 'string') return false;
+    if (
+      Object.keys(node).some((key) => !['type', 'text', 'content', 'marks', 'attrs'].includes(key))
+    )
+      return false;
+    if (type === 'text' ? typeof node.text !== 'string' || !node.text : node.text !== undefined)
+      return false;
+    if (node.attrs !== undefined && node.attrs !== null) {
+      if (!object(node.attrs)) return false;
+      const attrs = node.attrs;
+      if (type === 'orderedList') {
+        if (Object.keys(attrs).some((key) => !['start', 'type'].includes(key))) return false;
+        if (
+          attrs.start !== undefined &&
+          (typeof attrs.start !== 'number' ||
+            !Number.isSafeInteger(attrs.start) ||
+            attrs.start < 1 ||
+            attrs.start > 1000000)
+        )
+          return false;
+        if (
+          attrs.type !== undefined &&
+          attrs.type !== null &&
+          !['1', 'a', 'A', 'i', 'I'].includes(String(attrs.type))
+        )
+          return false;
+      } else if (Object.keys(attrs).length) return false;
+    }
     if (node.marks !== undefined) {
-      if (!Array.isArray(node.marks)) return false;
-      for (const value of node.marks) {
-        if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-        const mark = value as Record<string, unknown>;
-        if (!['bold', 'italic', 'code', 'link'].includes(String(mark.type))) return false;
+      if (
+        !['text', 'hardBreak'].includes(type) ||
+        !Array.isArray(node.marks) ||
+        node.marks.length > 4
+      )
+        return false;
+      const seen = new Set<string>();
+      for (const mark of node.marks) {
+        if (
+          !object(mark) ||
+          !['bold', 'italic', 'code', 'link'].includes(String(mark.type)) ||
+          seen.has(String(mark.type))
+        )
+          return false;
+        seen.add(String(mark.type));
+        if (Object.keys(mark).some((key) => !['type', 'attrs'].includes(key))) return false;
         if (mark.type === 'link') {
-          const attrs = mark.attrs;
           if (
-            !attrs ||
-            typeof attrs !== 'object' ||
-            !('href' in attrs) ||
-            typeof attrs.href !== 'string' ||
-            !/^(https?:|mailto:|tel:)/i.test(attrs.href)
+            !object(mark.attrs) ||
+            typeof mark.attrs.href !== 'string' ||
+            mark.attrs.href.length > 10000
           )
             return false;
-        }
+          try {
+            if (!['https:', 'http:', 'mailto:', 'tel:'].includes(new URL(mark.attrs.href).protocol))
+              return false;
+          } catch {
+            return false;
+          }
+          if (
+            Object.keys(mark.attrs).some(
+              (key) => !['href', 'target', 'rel', 'class', 'title'].includes(key),
+            )
+          )
+            return false;
+          if (
+            Object.values(mark.attrs).some(
+              (attr) => attr !== null && (typeof attr !== 'string' || attr.length > 10000),
+            )
+          )
+            return false;
+        } else if (
+          mark.attrs !== undefined &&
+          mark.attrs !== null &&
+          (!object(mark.attrs) || Object.keys(mark.attrs).length)
+        )
+          return false;
       }
     }
     const children = node.content ?? [];
     if (!Array.isArray(children)) return false;
-    for (const child of children) stack.push([child, depth + 1, false]);
+    if (['text', 'hardBreak'].includes(type) && children.length) return false;
+    if (['bulletList', 'orderedList', 'listItem'].includes(type) && !children.length) return false;
+    if (type === 'listItem' && (!object(children[0]) || children[0].type !== 'paragraph'))
+      return false;
+    for (const child of children) stack.push([child, depth + 1, type]);
   }
   return true;
 }

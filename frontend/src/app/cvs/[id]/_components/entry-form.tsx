@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import type { SectionItem } from "@/lib/api/types";
@@ -32,11 +32,17 @@ export function EntryForm({
   initial,
   onApply,
   onCancel,
+  onDraftChange,
+  pendingSource,
+  onPendingChange,
 }: {
   type: string;
   initial?: SectionItem;
   onApply: (item: SectionItem) => void;
   onCancel: () => void;
+  onDraftChange?: (item: SectionItem) => void;
+  pendingSource?: string;
+  onPendingChange?: (source: string | undefined) => void;
 }) {
   const labels = LABELS[type] ?? LABELS.custom;
   const [defaults] = useState(() => initial ?? blankItem());
@@ -47,10 +53,23 @@ export function EntryForm({
     setValue,
     formState: { errors },
   } = useForm<SectionItem>({ defaultValues: defaults });
+  const values = useWatch({ control });
+  const draftCallback = useRef(onDraftChange);
+  useEffect(() => {
+    draftCallback.current = onDraftChange;
+  });
+  useEffect(() => {
+    draftCallback.current?.(values as SectionItem);
+  }, [values]);
   const current = useWatch({ control, name: "current" });
   const start = useWatch({ control, name: "startDate" });
   return (
-    <form noValidate onSubmit={handleSubmit(onApply)}>
+    <form
+      noValidate
+      onSubmit={handleSubmit((item) => {
+        if (pendingSource === undefined) onApply(item);
+      })}
+    >
       <FieldGroup>
         <FieldSet>
           <FieldLegend className="text-sm">
@@ -219,7 +238,12 @@ export function EntryForm({
                   "请填写内容与成果",
               }}
               render={({ field }) => (
-                <RichEditor value={field.value} onChange={field.onChange} />
+                <RichEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  pendingSource={pendingSource}
+                  onPendingChange={onPendingChange}
+                />
               )}
             />
           </FormField>
@@ -228,7 +252,9 @@ export function EntryForm({
           <Button variant="ghost" onClick={onCancel}>
             取消
           </Button>
-          <Button type="submit">{initial ? "应用修改" : "添加到简历"}</Button>
+          <Button type="submit" disabled={pendingSource !== undefined}>
+            {initial ? "应用修改" : "添加到简历"}
+          </Button>
         </div>
       </FieldGroup>
     </form>

@@ -2,7 +2,7 @@
 
 面向个人的开源自部署简历与求职工具，许可选定 MIT。前端使用 Next.js、Geist 与 shadcn/Radix，后端仅使用 NestJS + TypeScript + MySQL，代码和目录规则见 [PROJECT](PROJECT.md)。
 
-已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本制作与条件保存、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF 及筛选后的公开简历。Markdown 持续编辑、DOCX/文字 PDF 导入、PNG、站主首页、AI 和 BOSS Chrome 插件仍按 [BACKLOG](BACKLOG.md) 实施。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将选型表述为完整产品验收。
+已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本／Markdown 制作、串行自动保存与条件写入、本机草稿恢复、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF 及筛选后的公开简历。DOCX/文字 PDF 导入、PNG、站主首页、AI 和 BOSS Chrome 插件仍按 [BACKLOG](BACKLOG.md) 实施。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将选型表述为完整产品验收。
 
 [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md) → [产品设计](docs/design/02-CV制作管理与展示设计.md) → [PRD](docs/prd/00-PRD导航.md) → [Plan](docs/plan/00-Plan导航.md)。
 

@@ -11,8 +11,16 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import {ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags} from '@nestjs/swagger';
+import {
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import {OwnerRequest} from '../../common/session.guard';
+import {ApiError} from '../../common/errors';
 import {CvsService} from './cvs.service';
 import {CreateCVRequest, RestoreRequest, UpdateCVRequest} from './cvs.dto';
 import {CvResource, CvList, CvHistory} from './cv_resource.dto';
@@ -31,8 +39,19 @@ export class CvsController {
   }
   @Post()
   @ApiOperation({operationId: 'createCv'})
+  @ApiHeader({
+    name: 'X-Cvory-Owner',
+    required: false,
+    description: 'Expected current account for a local draft copy; never grants ownership.',
+  })
   @ApiCreatedResponse({type: CvResource})
-  create(@Body() body: CreateCVRequest, @Req() req: OwnerRequest) {
+  create(
+    @Body() body: CreateCVRequest,
+    @Req() req: OwnerRequest,
+    @Headers('x-cvory-owner') expectedOwner?: string,
+  ) {
+    if (expectedOwner !== undefined && expectedOwner !== req.owner)
+      throw new ApiError(403, 'PERMISSION_DENIED', 'ACCOUNT_CHANGED');
     return this.cvs.create(body, req.owner);
   }
   @Get(':id')

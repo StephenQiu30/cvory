@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { StatusMessage } from "@/components/ui/status-message";
 import { Skeleton } from "@/components/ui/skeleton";
+import { announceLogout, clearOwnerRecoveries } from "@/lib/resume/recovery";
 import { logoutAccount } from "@/lib/api/generated/api/account";
 export function AccountMenu() {
   const { account, loading, setAccount, openAuth } = useAccount();
@@ -109,7 +110,9 @@ export function AccountMenu() {
               setBusy(true);
               setError("");
               try {
+                if (account) clearOwnerRecoveries(account.id);
                 await logoutAccount();
+                if (account) announceLogout(account.id);
                 setAccount(null);
                 setOpen(false);
                 router.push("/");

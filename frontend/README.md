@@ -19,9 +19,17 @@ BACKEND_INTERNAL_URL=http://127.0.0.1:4321 pnpm dev --port 1234
 - `components/layout/`：共享页面壳、编辑器和设置布局；默认 Server Components。
 - `components/ui/`：现有 shadcn/Radix 与语义颜色；状态用 StatusMessage/LoadingState/StatusBadge，不展示服务端错误原文。
 - `components/resume/`：共用正文、文件和导出；`lib/resume/` 管理纯内容转换、完整表单默认值及候选校验。
-- `app/cvs/[id]/_components/`：编辑与条件保存、修订历史、模块和样式；Tiptap 按需加载，不另建全局编辑状态。
+- `app/cvs/[id]/_components/`：编辑、串行自动保存及条件写入、修订历史、模块和样式；Tiptap 按需加载，不另建全局编辑状态。
 - `components/account/`：共用账户状态、登录和图片选择；GitHub 授权在新标签页完成后，返回原标签继续，保护编辑中的输入。
 - `/settings/github` 仅提供安全绑定与显式读取本人公开仓库；选入简历/主页按 BACKLOG 实施。邮箱恢复和注销关闭入口，保留路由说明；存量账户可以修改密码。
+
+## 制作与本机恢复
+
+正文提供富文本、Markdown 源码和预览，共用受限 JSON。Markdown 文件交换复用相同转换器，保留强调、行内代码、嵌套列表与编号；不支持的格式先保留原输入并提示。转换器随编辑器或文件操作按需加载。
+
+停止输入后自动保存，组合输入期间暂停；失败、过期和冲突由手动重试恢复。保存并返回会等待后续新修改。经历表单与样式在明确应用前仅保留本机，不当作已保存内容。
+
+恢复候选按账户、CV、格式和标签隔离，显示时间及服务器版本；过时草稿只另存，不自动覆盖。存储不可用或超限会提示，当前内存仍保留；显式退出清理原账户候选并通知其他标签。技术预算和服务端原账户核对见[设计 §7.1](../docs/design/02-CV制作管理与展示设计.md#71-草稿保存与恢复)。本机恢复不能替代跨设备备份。
 
 ## 真实浏览器验证
 
@@ -34,4 +42,4 @@ CV_TEST_NEST=true CV_TEST_URL=http://127.0.0.1:3123 pnpm exec playwright test
 
 先运行 `pnpm exec playwright install chromium`。测试只用合成账户，GitHub 外部边界模拟，不连接真实邮件或投递服务；HTML/Cookie/API/MySQL/文件下载实际执行。输出默认 `/tmp/cvory-browser-results`，不入库。
 
-覆盖工作台、模板、保存/恢复、照片、JSON/Markdown、实际 PDF、公开筛选/撤回、状态失败及手机访问。`nest-identity.spec.ts` 未设 `CV_TEST_NEST=true` 时跳过，不计通过；服务不可用测试须另启不可用后端的前端并设置 `CV_TEST_UNAVAILABLE_URL`，否则明确跳过。具体结果与未验收项见 [HANDOVER](../HANDOVER.md)。
+覆盖工作台、模板、自动保存／最新输入离开／组合输入、本机草稿与跨账户竞态、受限粘贴、照片、JSON/Markdown、实际 PDF、公开筛选/撤回、状态失败及手机访问。`nest-identity.spec.ts` 未设 `CV_TEST_NEST=true` 时跳过，不计通过；服务不可用测试须另启不可用后端的前端并设置 `CV_TEST_UNAVAILABLE_URL`，否则明确跳过。具体结果与未验收项见 [HANDOVER](../HANDOVER.md)。

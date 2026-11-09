@@ -10,7 +10,7 @@
 | --- | --- | --- | --- |
 | 个人工具需求与服务设计评审 | NestJS/TypeScript、自部署、AI/Chrome/手工PDF及MIT选择 | 身份/CV 及现有资料/图片/预设/公开/PDF 已迁入 Nest，Python 已清理；完整目标继续按依赖交付 | [需求 04](docs/requirement/04-个人CV制作与管理需求说明.md)、[设计 §9](docs/design/02-CV制作管理与展示设计.md#9-服务整体结构与落地评审) |
 | 全局状态展示与异常处理 | [DESIGN §5.1](DESIGN.md#51-全局状态与异常反馈) | 已统一状态组件与错误恢复，22 项隔离浏览器测试及构建通过；交付分支为 `main` | [交接记录](HANDOVER.md)、[状态设计稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=166-38664) |
-| 简历制作完整链路验证与可靠性收敛 | 独立数据库、合成内容、真实浏览器和生成文件 | 后续实施时需按现行 PRD 01～12 贯穿浏览器、API、真实 MySQL、文件、重开、导出、公开和恢复验证。局部测试不等于完整验收；发现失败先保留数据并在对应能力修复 | [设计 §7.5](docs/design/02-CV制作管理与展示设计.md#75-需求覆盖与验收闭环)、[PRD 导航](docs/prd/00-PRD导航.md) |
+| 简历制作完整链路验证与可靠性收敛 | 独立数据库、合成内容、真实浏览器和生成文件 | 制作／保存／本机恢复已按 PRD 01 贯穿真实浏览器、Nest API 与隔离 MySQL；现有文件／公开回归纳入同一测试。DOCX／文字 PDF／PNG 等新增目标仍须各自完整验收，现有格式通过不代表全部格式完成 | [设计 §7.5](docs/design/02-CV制作管理与展示设计.md#75-需求覆盖与验收闭环)、[PRD 导航](docs/prd/00-PRD导航.md) |
 | 猫步及同类简历制作项目调研 | 当前制作代码与公开上游 | 限定范围调研完成；采用目标已归入需求 04、设计 02 及 PRD／Plan，不以报告替代实施验收 | [调研 04](docs/research/04-猫步简历源码拆解与CVory制作能力接入调研.md) |
 | BOSS 直聘自主投递能力 | 现有简历版本与导出；开源模块许可及适配成本 | 已确认自主实现和开源改造方向；完整目标及验收已细化，Chrome 插件、人工上传 PDF 已明确，首期仅筛选/沟通/招呼；复用模块与分发待选；任务代码、模拟和真实平台验收未启动；增加关键词/可选 AI 与跨任务去重目标 | [PRD 11](docs/prd/11-BOSS直聘自主投递.md)、[Plan 11](docs/plan/11-BOSS直聘自主投递.md) |
 | UIUX 与参考工作台对齐 | 已确认简历管理、模板、Markdown、导入和公开范围 | 已先按 DESIGN 同步 Figma 桌面／手机及状态稿，前端采用黑白灰与少量蓝色点缀；工作台功能已实现，真实网站未发布 | [DESIGN](DESIGN.md)、[调研 02](docs/research/02-老鱼简历功能逆向与CV技术选型.md)、[Figma 草稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-2880) |
@@ -23,7 +23,7 @@
 | 前后端设计与目录规范 | Vercel/Geist、两份 shadcn 技能、Google TypeScript | 已整理到 DESIGN/PROJECT 及设计 02；实际建立 account/cvs/github/config/common/database 模块与配套前端入口；其余目录按需建立，完整迁移仍待完成 | [DESIGN](DESIGN.md)、[PROJECT](PROJECT.md) |
 | 前端技术基线 | — | 已安装并验证 | [设计 4.1](docs/design/02-CV制作管理与展示设计.md#41-已固定的前端基线)（Next.js 16 + React 19 + Tailwind 4 + Tiptap） |
 | 后端与 API 基线 | NestJS + TypeScript；MySQL 与 Google API 合同 | Nest 工程、显式 SQL/TypeScript 迁移、统一客户端及 Node 容器已建立；25 项后端/25 项浏览器与容器验收见 HANDOVER。Python 已删除，Node 容器/单一 OpenAPI；资料、头像、预设、公开与 PDF 已由 Nest 承接；邮箱恢复/注销未完成并关闭入口 | [服务设计](docs/design/02-CV制作管理与展示设计.md#42-已确定的服务与数据边界)、[API 规范](PROJECT.md#33-api-规范)（NestJS + TypeScript + MySQL + AIP 规范） |
-| PLAN-CV-01 制作与保存 | 运行环境、所有者与持久化明确 | 有编辑与条件保存实现及局部证据；持续 Markdown 编辑/富文本往返切换须补齐；自动保存、意外关闭恢复、最新输入离开屏障及有界校验按现行验收补齐，完整结果待验证 | [Plan 01](docs/plan/01-CV制作与保存.md) |
+| PLAN-CV-01 制作与保存 | 运行环境、所有者与持久化明确 | 已实现富文本／持续 Markdown／预览、串行自动保存、最新输入离开屏障、按账户与标签隔离的本机恢复及有界正文校验；未应用表单／样式／不兼容源码可恢复，副本创建在服务端核对原账户。隔离生产构建及完整回归证据见 HANDOVER；实际部署与跨格式扩展独立验收 | [Plan 01](docs/plan/01-CV制作与保存.md) |
 | 我的简历卡片工作区与共享页面壳 | PLAN-CV-01 | 已实现并通过真实本地 API／浏览器验收 | [设计 02 §2.5](docs/design/02-CV制作管理与展示设计.md#25-管理工作区与共享页面壳)、[PRD 01](docs/prd/01-CV制作与保存.md)、[Plan 01](docs/plan/01-CV制作与保存.md) |
 | PLAN-CV-02 版本管理 | PLAN-CV-01 | 已有副本、名称及删除实现和局部证据；Nest 历史快照/有界保留/幂等恢复副本及前端入口已实现；公开来源删除保护有代码，完整发布并发、资源兼容及历史预览待验证；公开来源删除保护已在 Nest 验证 | [Plan 02](docs/plan/02-CV版本管理.md) |
 | PLAN-CV-03 模板与样式 | PLAN-CV-01 | 已有三模板、配色及预设和局部证据；兼容模板、预览边界及跨输出验收待完成 | [Plan 03](docs/plan/03-模板与样式管理.md) |

@@ -122,6 +122,81 @@ test('invalid rich text and cross-origin writes do not alter persisted CVs', asy
   assert.equal(crossOrigin.status, 403);
 });
 
+test('rich text rejects invalid hierarchy, attributes and mark shapes without changing the saved version', async () => {
+  const cv = await (await request('/cvs', 'POST', {displayName: '结构边界'})).json();
+  const paragraph = {type: 'paragraph', content: [{type: 'text', text: '保留'}]};
+  for (const content of [
+    {type: {toString: null}},
+    {type: 'text', text: '错误根'},
+    {type: 'doc', content: [{type: 'text', text: '根下不能直接是文字'}]},
+    {type: 'doc', content: [{type: 'paragraph', content: [{type: 'paragraph'}]}]},
+    {type: 'doc', content: [{type: 'bulletList', content: [paragraph]}]},
+    {type: 'doc', content: [{...paragraph, attrs: {onclick: 'run()'}}]},
+    {
+      type: 'doc',
+      content: [
+        {
+          type: 'orderedList',
+          attrs: {start: -1},
+          content: [{type: 'listItem', content: [paragraph]}],
+        },
+      ],
+    },
+    {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {type: 'text', text: '标记', marks: [{type: 'bold', attrs: {style: 'color:red'}}]},
+          ],
+        },
+      ],
+    },
+    {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: '链接',
+              marks: [{type: 'link', attrs: {href: 'javascript:alert(1)'}}],
+            },
+          ],
+        },
+      ],
+    },
+    {type: 'doc', content: [{...paragraph, extra: 'unknown'}]},
+  ]) {
+    const response = await request(`/cvs/${cv.id}`, 'PATCH', {
+      etag: cv.etag,
+      sections: [{id: 's', type: 'summary', title: '简介', content}],
+    });
+    assert.equal(response.status, 400, JSON.stringify(content));
+    assert.equal((await response.json()).error.status, 'INVALID_ARGUMENT');
+    assert.equal((await (await request(`/cvs/${cv.id}`)).json()).etag, cv.etag);
+  }
+});
+
+test('draft copies are bound to the expected signed-in owner in the create request', async () => {
+  const before = await (await request('/cvs')).json();
+  const response = await fetch(`${url}/api/cvs`, {
+    method: 'POST',
+    headers: {
+      Origin: origin,
+      Cookie: cookie,
+      'Content-Type': 'application/json',
+      'X-Cvory-Owner': 'another-owner',
+    },
+    body: JSON.stringify({displayName: 'private draft must not cross accounts'}),
+  });
+  assert.equal(response.status, 403);
+  assert.equal((await response.json()).error.details[0].reason, 'ACCOUNT_CHANGED');
+  assert.deepEqual((await (await request('/cvs')).json()).cvs, before.cvs);
+});
+
 test('simultaneous saves commit one revision; restore retries are idempotent and migration reruns preserve data', async () => {
   const cv = await (await request('/cvs', 'POST', {displayName: '并发保存'})).json();
   const results = await Promise.all(
