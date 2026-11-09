@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,7 +38,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+import { LoadingState } from "@/components/ui/loading-state";
 import {
   Empty,
   EmptyHeader,
@@ -192,18 +193,6 @@ function ResumeCard({
     </article>
   );
 }
-function ResumeListSkeleton({ label }: { label: string }) {
-  return (
-    <div role="status" aria-label={label} className="flex gap-4 py-5">
-      <Skeleton className="aspect-[.707] w-[42%]" />
-      <div className="flex flex-1 flex-col gap-3">
-        <span className="sr-only">{label}</span>
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-3 w-2/3" />
-      </div>
-    </div>
-  );
-}
 
 export default function Library() {
   const {
@@ -251,6 +240,8 @@ export default function Library() {
       if (!ownerId) return;
       const generation = loadGeneration.current;
       setLoading(true);
+      setError("");
+      setMessage("");
       try {
         const data = await cvApi.listCvs(24, token);
         if (generation !== loadGeneration.current) return;
@@ -268,9 +259,9 @@ export default function Library() {
         setTotal(data.totalSize ?? 0);
         setNext(data.nextPageToken ?? "");
         setError("");
-      } catch {
+      } catch (cause) {
         if (generation === loadGeneration.current)
-          setError("无法读取简历列表，请重试。");
+          setError(errorMessage(cause, "无法读取简历列表，请重试。"));
       } finally {
         if (generation === loadGeneration.current) setLoading(false);
       }
@@ -291,9 +282,11 @@ export default function Library() {
         const document = await getPublicResume({ public_id: status.publicId });
         if (generation === loadGeneration.current) setPublicDocument(document);
       }
-    } catch {
+    } catch (cause) {
       if (generation === loadGeneration.current)
-        setPublicationError("无法读取公开状态，请重试或进入公开管理。");
+        setPublicationError(
+          errorMessage(cause, "无法读取公开状态，请重试或进入公开管理。"),
+        );
     } finally {
       if (generation === loadGeneration.current) setPublicationLoading(false);
     }
@@ -378,7 +371,17 @@ export default function Library() {
             <Separator />
             <CardContent>
               {accountLoading ? (
-                <ResumeListSkeleton label="正在读取工作区…" />
+                <LoadingState>正在读取工作区…</LoadingState>
+              ) : !account && accountError ? (
+                <StatusMessage
+                  action={
+                    <Button variant="secondary" onClick={() => void refresh()}>
+                      重试连接
+                    </Button>
+                  }
+                >
+                  {accountError}
+                </StatusMessage>
               ) : !account ? (
                 <Empty className="min-h-72">
                   <EmptyHeader>
@@ -401,6 +404,16 @@ export default function Library() {
               ) : (
                 <>
                   <TabsContent value="private" className="mt-5">
+                    {loading && currentCvs.length > 0 ? (
+                      <StatusMessage loading className="mb-4">
+                        正在更新简历列表…
+                      </StatusMessage>
+                    ) : null}
+                    {busy && !create && !renaming && !target ? (
+                      <StatusMessage loading className="mb-4">
+                        正在处理简历…
+                      </StatusMessage>
+                    ) : null}
                     {error ? (
                       <div className="mb-4 flex flex-col gap-2">
                         <StatusMessage>{error}</StatusMessage>
@@ -415,19 +428,12 @@ export default function Library() {
                       </div>
                     ) : null}
                     {message ? (
-                      <p role="status" className="mb-4 text-sm text-primary">
+                      <StatusMessage tone="success" className="mb-4">
                         {message}
-                      </p>
+                      </StatusMessage>
                     ) : null}
                     {loading && !currentCvs.length ? (
-                      <div
-                        className="flex gap-4 py-1"
-                        aria-label="正在加载简历"
-                        role="status"
-                      >
-                        <Skeleton className="aspect-[.707] w-[42%]" />
-                        <Skeleton className="h-6 w-[45%]" />
-                      </div>
+                      <LoadingState>正在加载简历…</LoadingState>
                     ) : currentCvs.length ? (
                       currentCvs.map((cv) => (
                         <ResumeCard
@@ -453,6 +459,7 @@ export default function Library() {
                             if (busy) return;
                             setBusy(true);
                             setError("");
+                            setMessage("");
                             try {
                               const saved = await cvApi.getCv(cv.id);
                               const created = await cvApi.createCv({
@@ -461,8 +468,13 @@ export default function Library() {
                                 requestId: crypto.randomUUID(),
                               });
                               router.push(`/cvs/${created.id}`);
-                            } catch {
-                              setError("复制失败，请检查登录后重试。");
+                            } catch (cause) {
+                              setError(
+                                errorMessage(
+                                  cause,
+                                  "复制失败，请检查登录后重试。",
+                                ),
+                              );
                             } finally {
                               setBusy(false);
                             }
@@ -518,7 +530,7 @@ export default function Library() {
                   </TabsContent>
                   <TabsContent value="public" className="mt-5">
                     {publicationLoading ? (
-                      <ResumeListSkeleton label="正在读取公开简历…" />
+                      <LoadingState>正在读取公开简历…</LoadingState>
                     ) : publicationError ? (
                       <div className="flex flex-col gap-3">
                         <StatusMessage>{publicationError}</StatusMessage>
@@ -664,8 +676,10 @@ export default function Library() {
               });
               setCreate(false);
               router.push(`/cvs/${cv.id}`);
-            } catch {
-              setActionError("创建失败，请检查登录后重试。");
+            } catch (cause) {
+              setActionError(
+                errorMessage(cause, "创建失败，请检查登录后重试。"),
+              );
             } finally {
               setBusy(false);
             }
@@ -699,6 +713,7 @@ export default function Library() {
                 ))}
               </RadioGroup>
             </fieldset>
+            {busy ? <StatusMessage loading>正在处理简历…</StatusMessage> : null}
             {actionError ? <StatusMessage>{actionError}</StatusMessage> : null}
             <div className="flex justify-end gap-2">
               <Button
@@ -760,6 +775,7 @@ export default function Library() {
               onChange={setTitle}
               required
             />
+            {busy ? <StatusMessage loading>正在处理简历…</StatusMessage> : null}
             {actionError ? <StatusMessage>{actionError}</StatusMessage> : null}
             <div className="flex justify-end gap-2">
               <Button

@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useState } from "react";
 import { useAccount } from "@/components/account/account-provider";
 import { updateAccount } from "@/lib/api/generated/api/account";
@@ -20,6 +21,7 @@ function ProfileForm({ account }: { account: API.AccountResource }) {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
+        setMessage("");
         if (!displayName.trim()) {
           setError("请输入显示名称。");
           return;
@@ -31,8 +33,10 @@ function ProfileForm({ account }: { account: API.AccountResource }) {
             await updateAccount({ displayName: displayName.trim(), avatar }),
           );
           setMessage("资料已保存");
-        } catch {
-          setError("保存失败，输入已保留。请重试或重新登录。");
+        } catch (cause) {
+          setError(
+            errorMessage(cause, "保存失败，输入已保留。请重试或重新登录。"),
+          );
         } finally {
           setBusy(false);
         }
@@ -75,9 +79,7 @@ function ProfileForm({ account }: { account: API.AccountResource }) {
           <StatusMessage>{error}</StatusMessage>
         ) : null}
         {message ? (
-          <p role="status" className="text-xs">
-            {message}
-          </p>
+          <StatusMessage tone="success">{message}</StatusMessage>
         ) : null}
         <div className="flex justify-end gap-2">
           <Button
@@ -86,6 +88,7 @@ function ProfileForm({ account }: { account: API.AccountResource }) {
               setName(account.displayName);
               setAvatar(account.avatar);
               setError("");
+              setMessage("");
             }}
           >
             取消

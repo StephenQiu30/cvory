@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { StatusMessage } from "@/components/ui/status-message";
+import { errorMessage } from "@/lib/api/error-message";
 import { download, markdown, hasContent } from "@/lib/resume/files";
 import { cvApi, ApiError } from "@/lib/api/client";
 import { exportCvPdf } from "@/lib/api/generated/api/files";
@@ -88,11 +89,10 @@ export function ExportDialog({
             有未保存修改，将先保存。
           </p>
         ) : null}
+        {busy ? <StatusMessage loading>正在生成文件…</StatusMessage> : null}
         {error ? <StatusMessage>{error}</StatusMessage> : null}
         {message ? (
-          <p role="status" className="text-sm">
-            {message}
-          </p>
+          <StatusMessage tone="success">{message}</StatusMessage>
         ) : null}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={close}>
@@ -178,8 +178,16 @@ export function ExportDialog({
                         ? "登录已过期，请登录后重试。"
                         : e.code === 409
                           ? "简历已有更新，请返回编辑重新保存后导出。"
-                          : "暂时无法生成文件，请重试或选择 JSON 备份。"
-                      : e instanceof Error
+                          : errorMessage(
+                              e,
+                              "暂时无法生成文件，请重试或选择 JSON 备份。",
+                            )
+                      : e instanceof Error &&
+                          [
+                            "保存未成功，请返回编辑处理后重试。",
+                            "请先填写姓名和至少一段内容。",
+                            "照片读取失败，请重试。",
+                          ].includes(e.message)
                         ? e.message
                         : "生成失败，请重试。",
                   );

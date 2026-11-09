@@ -1,10 +1,10 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useDeferredValue, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
-  Check,
   Save,
   Download,
   Palette,
@@ -27,7 +27,8 @@ import { PaperPreview } from "@/components/ui/paper-preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog } from "@/components/shared/app-dialog";
-import { StatusMessage } from "@/components/ui/status-message";
+import { LoadingState } from "@/components/ui/loading-state";
+import { StatusMessage, StatusBadge } from "@/components/ui/status-message";
 import { ProfileForm } from "./profile-form";
 import { EntryForm } from "./entry-form";
 import { ModuleManager } from "./module-manager";
@@ -54,8 +55,19 @@ export default function CvEditor({ id }: { id: string }) {
   const [style, setStyle] = useState<CVResource["styleSettings"] | null>(null);
   const [folded, setFolded] = useState<string[]>([]);
   const formRef = useRef<HTMLElement>(null);
-  const { draft, busy, error, setError, loadError, dirty, patch, load, save } =
-    useCvDocument(id, () => setModal("conflict"));
+  const {
+    draft,
+    busy,
+    error,
+    setError,
+    loadError,
+    authRequired,
+    loadAuthRequired,
+    dirty,
+    patch,
+    load,
+    save,
+  } = useCvDocument(id, () => setModal("conflict"));
   const deferred = useDeferredValue(draft);
   const section = draft?.sections.find((s) => s.id === active);
   const updateSection = (next: Section) =>
@@ -76,14 +88,21 @@ export default function CvEditor({ id }: { id: string }) {
             <StatusMessage>{loadError}</StatusMessage>
             <div className="mt-5 flex gap-3">
               <Button onClick={() => void load()}>重试</Button>
-              <Button variant="ghost" onClick={() => openAuth(() => void load())}>登录</Button>
+              {loadAuthRequired ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => openAuth(() => void load())}
+                >
+                  登录
+                </Button>
+              ) : null}
               <Button variant="ghost" onClick={() => router.push("/")}>
                 返回简历库
               </Button>
             </div>
           </>
         ) : (
-          <p role="status">正在读取简历…</p>
+          <LoadingState>正在读取简历…</LoadingState>
         )}
       </div>
     );
@@ -115,21 +134,9 @@ export default function CvEditor({ id }: { id: string }) {
               value={draft.displayName}
               onChange={(e) => patch({ displayName: e.target.value })}
             />
-            <span
-              role="status"
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground"
-            >
-              {busy ? (
-                "保存中"
-              ) : dirty ? (
-                "未保存"
-              ) : (
-                <>
-                  <Check aria-hidden className="size-3" />
-                  已保存
-                </>
-              )}
-            </span>
+            <StatusBadge loading={busy} success={!dirty && !busy}>
+              {busy ? "保存中" : dirty ? "未保存" : "已保存"}
+            </StatusBadge>
             <div className="ml-auto flex gap-1">
               <Button
                 variant="ghost"
@@ -244,8 +251,14 @@ export default function CvEditor({ id }: { id: string }) {
             {error ? (
               <div className="mb-5">
                 <StatusMessage>{error}</StatusMessage>
-                {error.includes("登录") ? (
-                  <Button variant="ghost" className="mt-2" onClick={() => openAuth(() => setError(""))}>重新登录</Button>
+                {authRequired ? (
+                  <Button
+                    variant="ghost"
+                    className="mt-2"
+                    onClick={() => openAuth(() => setError(""))}
+                  >
+                    重新登录
+                  </Button>
                 ) : null}
               </div>
             ) : null}
@@ -533,8 +546,8 @@ export default function CvEditor({ id }: { id: string }) {
                   displayName: `${draft.displayName} · 副本`,
                 });
                 router.push(`/cvs/${created.id}`);
-              } catch {
-                setError("另存失败，本地内容仍保留。");
+              } catch (cause) {
+                setError(errorMessage(cause, "另存失败，本地内容仍保留。"));
               }
             }}
           >

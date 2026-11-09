@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAccount } from "@/components/account/account-provider";
+import { StatusMessage, type StatusTone } from "@/components/ui/status-message";
+import { errorMessage } from "@/lib/api/error-message";
 import { Button } from "@/components/ui/button";
 import { verifyEmail } from "@/lib/api/generated/api/account";
 
@@ -8,9 +10,12 @@ export default function VerifyEmail() {
   const { account, loading, openAuth, setAccount } = useAccount();
   const [token, setToken] = useState("");
   const [message, setMessage] = useState("");
+  const [tone, setTone] = useState<StatusTone>("info");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    const value = new URLSearchParams(window.location.hash.slice(1)).get("token");
+    const value = new URLSearchParams(window.location.hash.slice(1)).get(
+      "token",
+    );
     window.history.replaceState(null, "", window.location.pathname);
     if (value) void Promise.resolve().then(() => setToken(value));
   }, []);
@@ -20,10 +25,20 @@ export default function VerifyEmail() {
       <p className="mt-4 text-sm text-muted-foreground">
         请登录接收邮件的账户，再确认验证。链接只能使用一次。
       </p>
+      {loading ? (
+        <StatusMessage loading className="mt-4">
+          正在读取账户…
+        </StatusMessage>
+      ) : null}
+      {busy ? (
+        <StatusMessage loading className="mt-4">
+          正在验证邮箱…
+        </StatusMessage>
+      ) : null}
       {message ? (
-        <p role="status" className="mt-4 text-sm">
+        <StatusMessage tone={tone} className="mt-4">
           {message}
-        </p>
+        </StatusMessage>
       ) : null}
       {!loading && !account ? (
         <Button className="mt-6" onClick={() => openAuth()}>
@@ -38,13 +53,19 @@ export default function VerifyEmail() {
             disabled={!token || busy || account.emailVerified}
             onClick={async () => {
               setBusy(true);
+              setMessage("");
               try {
                 setAccount(await verifyEmail({ token }));
+                setTone("success");
                 setMessage("邮箱验证成功。");
                 setToken("");
-              } catch {
+              } catch (cause) {
+                setTone("error");
                 setMessage(
-                  "链接无效、已过期，或与当前账户不匹配。请重新申请。",
+                  errorMessage(
+                    cause,
+                    "链接无效、已过期，或与当前账户不匹配。请重新申请。",
+                  ),
                 );
               } finally {
                 setBusy(false);

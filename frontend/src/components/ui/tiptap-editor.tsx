@@ -18,6 +18,7 @@ import { Button } from "./button";
 import { Dialog } from "@/components/shared/app-dialog";
 import { FormField } from "./form-field";
 import { safeLink } from "@/lib/resume/model";
+import { StatusMessage } from "./status-message";
 import { cn } from "@/lib/utils";
 function normalize(value: unknown): JSONContent {
   if (typeof value === "string")
@@ -83,13 +84,7 @@ export function TiptapEditor({
       editor.commands.setContent(next, { emitUpdate: false });
   }, [editor, value]);
   if (!editor)
-    return (
-      <div
-        role="status"
-        className="h-36 animate-pulse rounded-md bg-surface-subtle"
-        aria-label="加载正文编辑器"
-      />
-    );
+    return <StatusMessage loading>正在加载正文编辑器…</StatusMessage>;
   const actions = [
     {
       label: "加粗",

@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { StatusMessage, type StatusTone } from "@/components/ui/status-message";
+import { errorMessage } from "@/lib/api/error-message";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
@@ -11,6 +13,7 @@ export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [message, setMessage] = useState("");
+  const [tone, setTone] = useState<StatusTone>("info");
   const [busy, setBusy] = useState(false);
   const { openAuth, setAccount } = useAccount();
   useEffect(() => {
@@ -29,19 +32,23 @@ export default function ResetPassword() {
         onSubmit={async (e) => {
           e.preventDefault();
           if (password !== confirmation) {
+            setTone("error");
             setMessage("两次输入的密码不一致。");
             return;
           }
           setBusy(true);
+          setMessage("");
           try {
             await resetPassword({ token, password });
             setAccount(null);
             setToken("");
             setPassword("");
             setConfirmation("");
+            setTone("success");
             setMessage("密码已重置，请重新登录。");
-          } catch {
-            setMessage("链接无效或已过期，请重新申请。");
+          } catch (cause) {
+            setTone("error");
+            setMessage(errorMessage(cause, "链接无效或已过期，请重新申请。"));
           } finally {
             setBusy(false);
           }
@@ -73,11 +80,8 @@ export default function ResetPassword() {
             onChange={(e) => setConfirmation(e.target.value)}
           />
         </FormField>
-        {message ? (
-          <p role="status" className="text-sm">
-            {message}
-          </p>
-        ) : null}
+        {busy ? <StatusMessage loading>正在重置密码…</StatusMessage> : null}
+        {message ? <StatusMessage tone={tone}>{message}</StatusMessage> : null}
         <Button type="submit" disabled={!token || busy}>
           重置密码
         </Button>

@@ -20,6 +20,7 @@ pnpm dev
 
 - `components/layout/`：BasicLayout、Header、Navbar、Content、Footer、独立 EditorLayout 与 SettingsLayout；路由壳默认使用 Server Components。
 - `components/ui/`：项目内 shadcn/Radix 基础控件与统一表单、状态反馈，Lucide 矢量图标。
+- 状态反馈：`StatusMessage` 区分错误、成功、说明与处理中，`LoadingState` 组合状态文字与 Skeleton，`StatusBadge` 展示保存／发布状态；页面异常与不可用结果复用 `StatusPage`。API 状态码的中文提示集中在 `lib/api/error-message.ts`，不展示服务端错误原文。
 - `components/resume/`：ResumeDocument、文件入口；正文渲染器供封面、预览、公开页与打印复用。
 - `app/cvs/[id]/_components/`：页面内编辑表单、模块管理、样式工作台和 useCvDocument 保存状态；不引入全局编辑状态框架。
 - `components/account/`：共用账户状态、账户菜单、独立图片选择与外观控制。账户头像与证件照不共用数据源。
@@ -37,3 +38,5 @@ pnpm exec playwright test
 ```
 
 覆盖完整制作、模板、公开隔离与撤回、保存期间继续输入、手机上下文、照片独立、真实 JSON/PDF 下载及文件合同。文件输出在 `/tmp/cvory-browser-results`，不进入仓库。后端、MySQL 与生产部署验证分别记录于 [HANDOVER](../HANDOVER.md)。
+
+全局状态测试覆盖网络失败后重试、成功提示被失败替换、输入保留、密码校验、退出及复制失败、深色窄屏和页面异常。服务端异常边界用例需要另一个前端进程指向不可用后端：在已有生产构建下运行 `BACKEND_INTERNAL_URL=http://127.0.0.1:1 pnpm start --hostname 127.0.0.1 --port 3101`，测试时加 `CV_TEST_UNAVAILABLE_URL=http://127.0.0.1:3101`；不设置时该用例跳过，不计为通过。

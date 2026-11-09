@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { errorMessage } from "@/lib/api/error-message";
 import { cvApi, ApiError } from "@/lib/api/client";
 import type { CVResource } from "@/lib/api/types";
 import { editable } from "@/lib/resume/model";
@@ -10,22 +11,30 @@ export function useCvDocument(id: string, onConflict: () => void) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
+  const [authRequired, setAuthRequired] = useState(false);
+  const [loadAuthRequired, setLoadAuthRequired] = useState(false);
   const inFlight = useRef(false);
   const dirty =
     !!draft &&
     !!saved &&
     JSON.stringify(editable(draft)) !== JSON.stringify(editable(saved));
   const load = useCallback(async () => {
+    setLoadError("");
+    setLoadAuthRequired(false);
     try {
       const data = await cvApi.getCv(id);
       setSaved(data);
       setDraft(data);
       setLoadError("");
     } catch (e) {
+      setLoadAuthRequired(e instanceof ApiError && e.code === 401);
       setLoadError(
-        e instanceof ApiError && e.code === 401
-          ? "登录已过期，请先登录。"
-          : "无法读取此份简历，请重试。",
+        errorMessage(
+          e,
+          e instanceof ApiError && e.isNotFound
+            ? "这份简历不存在或已被删除。"
+            : "无法读取此份简历，请重试。",
+        ),
       );
     }
   }, [id]);
@@ -45,6 +54,7 @@ export function useCvDocument(id: string, onConflict: () => void) {
     setDraft((current) => (current ? { ...current, ...next } : current));
   async function save() {
     if (!draft || !saved || inFlight.current) return false;
+    setAuthRequired(false);
     if (
       draft.profile.email &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draft.profile.email)
@@ -80,12 +90,11 @@ export function useCvDocument(id: string, onConflict: () => void) {
       );
       return true;
     } catch (e) {
+      setAuthRequired(e instanceof ApiError && e.code === 401);
       setError(
         e instanceof ApiError && e.isConcurrencyConflict
           ? "服务器已有更新。本地内容已保留，请选择下一步。"
-          : e instanceof ApiError && e.code === 401
-            ? "登录已过期。请重新登录后重试保存，输入会保留。"
-            : "保存失败，输入已保留，请重试。",
+          : errorMessage(e, "保存失败，输入已保留，请重试。"),
       );
       if (e instanceof ApiError && e.isConcurrencyConflict) onConflict();
       return false;
@@ -101,6 +110,8 @@ export function useCvDocument(id: string, onConflict: () => void) {
     error,
     setError,
     loadError,
+    authRequired,
+    loadAuthRequired,
     dirty,
     patch,
     load,

@@ -1,5 +1,6 @@
 "use client";
 
+import { errorMessage } from "@/lib/api/error-message";
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import {
@@ -84,6 +85,7 @@ export function AuthDialog({
             if (busy) return;
             setBusy(true);
             setError("");
+            setNotice("");
             try {
               if (mode === "forgot") {
                 await requestPasswordReset({ email });
@@ -100,14 +102,14 @@ export function AuthDialog({
                 )({ email, password, displayName: name });
                 onSuccess(account);
               }
-            } catch {
-              setError(
+            } catch (cause) {
+              const fallback =
                 mode === "login"
-                  ? "邮箱或密码不正确，或当前无法连接，请检查后重试。"
+                  ? "邮箱或密码不正确，请检查后重试。"
                   : mode === "register"
                     ? "注册失败，邮箱可能已被使用，请尝试登录。"
-                    : "操作未完成，请稍后重试。",
-              );
+                    : "操作未完成，请稍后重试。";
+              setError(errorMessage(cause, fallback, fallback));
             } finally {
               setBusy(false);
             }
@@ -180,9 +182,7 @@ export function AuthDialog({
               </Field>
             ) : null}
             {notice ? (
-              <p role="status" className="text-sm text-muted-foreground">
-                {notice}
-              </p>
+              <StatusMessage tone="success">{notice}</StatusMessage>
             ) : null}
             {error ? <StatusMessage>{error}</StatusMessage> : null}
             <Button type="submit" className="h-11 w-full" disabled={busy}>
@@ -212,6 +212,7 @@ export function AuthDialog({
             disabled={busy}
             onClick={() => {
               setMode(mode === "login" ? "register" : "login");
+              setNotice("");
               setError("");
               setPassword("");
             }}

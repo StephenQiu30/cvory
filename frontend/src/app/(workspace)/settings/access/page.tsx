@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAccount } from "@/components/account/account-provider";
@@ -14,6 +15,13 @@ import {
   requestAccountDeletion,
 } from "@/lib/api/generated/api/account";
 
+import {
+  StatusMessage,
+  StatusBadge,
+  type StatusTone,
+} from "@/components/ui/status-message";
+
+type Feedback = { message: string; tone: StatusTone } | null;
 export default function Access() {
   const { account, setAccount } = useAccount();
   const router = useRouter();
@@ -23,7 +31,11 @@ export default function Access() {
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirmation, setConfirmation] = useState("");
-  const [notice, setNotice] = useState("");
+  const [notice, setNotice] = useState<Feedback>(null);
+  const [verification, setVerification] = useState<Feedback>(null);
+  const [operation, setOperation] = useState<
+    "verify" | "password" | "delete" | null
+  >(null);
   const [busy, setBusy] = useState(false);
   return (
     <>
@@ -36,7 +48,9 @@ export default function Access() {
         <div>
           <dt className="text-xs text-muted-foreground">邮箱状态</dt>
           <dd className="mt-2">
-            {account?.emailVerified ? "已验证" : "尚未验证"}
+            <StatusBadge success={account?.emailVerified}>
+              {account?.emailVerified ? "已验证" : "尚未验证"}
+            </StatusBadge>
           </dd>
         </div>
       </dl>
@@ -51,11 +65,22 @@ export default function Access() {
             disabled={busy}
             onClick={async () => {
               setBusy(true);
+              setOperation("verify");
+              setVerification(null);
               try {
                 await requestEmailVerification();
-                setNotice("如果邮箱符合条件，验证说明将发送到你的邮箱。");
-              } catch {
-                setNotice("暂时无法发送验证邮件，请稍后重试。");
+                setVerification({
+                  tone: "success",
+                  message: "如果邮箱符合条件，验证说明将发送到你的邮箱。",
+                });
+              } catch (cause) {
+                setVerification({
+                  tone: "error",
+                  message: errorMessage(
+                    cause,
+                    "暂时无法发送验证邮件，请稍后重试。",
+                  ),
+                });
               } finally {
                 setBusy(false);
               }
@@ -65,6 +90,15 @@ export default function Access() {
           </Button>
         </>
       ) : null}
+      {busy && operation === "verify" ? (
+        <StatusMessage loading className="mt-4">
+          正在发送验证邮件…
+        </StatusMessage>
+      ) : verification ? (
+        <StatusMessage tone={verification.tone} className="mt-4">
+          {verification.message}
+        </StatusMessage>
+      ) : null}
       <h2 className="mt-10 text-lg font-medium">修改密码</h2>
       <p className="mt-2 text-sm text-muted-foreground">
         修改后其他设备需要重新登录。
@@ -73,11 +107,13 @@ export default function Access() {
         className="mt-5 grid max-w-md gap-4"
         onSubmit={async (e) => {
           e.preventDefault();
+          setNotice(null);
           if (next !== confirmation) {
-            setNotice("两次输入的密码不一致。");
+            setNotice({ tone: "error", message: "两次输入的密码不一致。" });
             return;
           }
           setBusy(true);
+          setOperation("password");
           try {
             setAccount(
               await changeAccountPassword({
@@ -88,9 +124,16 @@ export default function Access() {
             setCurrent("");
             setNext("");
             setConfirmation("");
-            setNotice("密码已修改。");
-          } catch {
-            setNotice("密码修改失败，请检查当前密码后重试。");
+            setNotice({ tone: "success", message: "密码已修改。" });
+          } catch (cause) {
+            setNotice({
+              tone: "error",
+              message: errorMessage(
+                cause,
+                "密码修改失败，请检查当前密码后重试。",
+                "密码修改失败，请检查当前密码后重试。",
+              ),
+            });
           } finally {
             setBusy(false);
           }
@@ -136,10 +179,15 @@ export default function Access() {
           修改密码
         </Button>
       </form>
+      {busy && operation === "password" ? (
+        <StatusMessage loading className="mt-4">
+          正在修改密码…
+        </StatusMessage>
+      ) : null}
       {notice ? (
-        <p role="status" className="mt-4 text-sm">
-          {notice}
-        </p>
+        <StatusMessage tone={notice.tone} className="mt-4">
+          {notice.message}
+        </StatusMessage>
       ) : null}
       <h2 className="mt-10 text-lg font-medium">注销账户</h2>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -169,13 +217,16 @@ export default function Access() {
             event.preventDefault();
             setBusy(true);
             setDeleteError("");
+            setOperation("delete");
             try {
               await requestAccountDeletion({ password: deletePassword });
               setAccount(null);
               setDeleting(false);
               router.push("/");
-            } catch {
-              setDeleteError("无法提交注销，请检查密码或稍后重试。");
+            } catch (cause) {
+              setDeleteError(
+                errorMessage(cause, "无法提交注销，请检查密码或稍后重试。"),
+              );
             } finally {
               setBusy(false);
             }
@@ -192,11 +243,10 @@ export default function Access() {
                 onChange={(event) => setDeletePassword(event.target.value)}
               />
             </FormField>
-            {deleteError ? (
-              <p role="alert" className="text-sm">
-                {deleteError}
-              </p>
+            {busy && operation === "delete" ? (
+              <StatusMessage loading>正在提交注销…</StatusMessage>
             ) : null}
+            {deleteError ? <StatusMessage>{deleteError}</StatusMessage> : null}
             <Button type="submit" variant="destructive" disabled={busy}>
               {busy ? "正在提交…" : "确认注销"}
             </Button>

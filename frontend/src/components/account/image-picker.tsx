@@ -97,6 +97,7 @@ export function ImagePicker({
               e.target.value = "";
               if (!file) return;
               const version = ++request.current;
+              setLoading(false);
               if (
                 !["image/png", "image/jpeg", "image/webp"].includes(
                   file.type,
@@ -173,6 +174,9 @@ export function ImagePicker({
                 />
               </FormField>
             </>
+          ) : null}
+          {loading ? (
+            <StatusMessage loading>正在读取图片…</StatusMessage>
           ) : null}
           {error ? <StatusMessage>{error}</StatusMessage> : null}
           <div className="flex justify-end gap-2">

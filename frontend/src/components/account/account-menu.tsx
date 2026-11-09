@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -16,6 +17,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { StatusMessage } from "@/components/ui/status-message";
+import { Skeleton } from "@/components/ui/skeleton";
 import { logoutAccount } from "@/lib/api/generated/api/account";
 export function AccountMenu() {
   const { account, loading, setAccount, openAuth } = useAccount();
@@ -24,10 +27,14 @@ export function AccountMenu() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   if (loading)
-    return <span className="size-8 animate-pulse rounded-full bg-muted" />;
+    return (
+      <Skeleton className="size-8 rounded-full" aria-label="正在读取账户" />
+    );
   if (!account)
     return (
-      <Button variant="ghost" onClick={() => openAuth()}>登录</Button>
+      <Button variant="ghost" onClick={() => openAuth()}>
+        登录
+      </Button>
     );
   return (
     <>
@@ -73,7 +80,12 @@ export function AccountMenu() {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setOpen(true)}>
+          <DropdownMenuItem
+            onSelect={() => {
+              setError("");
+              setOpen(true);
+            }}
+          >
             <LogOut />
             退出登录
           </DropdownMenuItem>
@@ -85,7 +97,8 @@ export function AccountMenu() {
         title="退出当前账户？"
         description="已保存的简历和公开页会保留。请先保存正在编辑的内容。"
       >
-        {error ? <p role="alert">{error}</p> : null}
+        {error ? <StatusMessage>{error}</StatusMessage> : null}
+        {busy ? <StatusMessage loading>正在退出…</StatusMessage> : null}
         <div className="flex justify-end gap-2">
           <Button variant="ghost" onClick={() => setOpen(false)}>
             取消
@@ -94,13 +107,14 @@ export function AccountMenu() {
             disabled={busy}
             onClick={async () => {
               setBusy(true);
+              setError("");
               try {
                 await logoutAccount();
                 setAccount(null);
                 setOpen(false);
                 router.push("/");
-              } catch {
-                setError("退出失败，请重试。");
+              } catch (cause) {
+                setError(errorMessage(cause, "退出失败，请重试。"));
               } finally {
                 setBusy(false);
               }

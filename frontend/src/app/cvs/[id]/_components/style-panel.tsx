@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useEffect, useState } from "react";
 import { Trash2, Check, Pencil } from "lucide-react";
 import { Dialog } from "@/components/shared/app-dialog";
@@ -34,7 +35,9 @@ export function StylePanel({
   useEffect(() => {
     void listPresets()
       .then(setPresets)
-      .catch(() => setError("无法读取个人样式，请重试。"));
+      .catch((cause) =>
+        setError(errorMessage(cause, "无法读取个人样式，请重试。")),
+      );
   }, []);
   return (
     <FieldGroup>
@@ -118,6 +121,7 @@ export function StylePanel({
         disabled={!name.trim() || busy}
         onClick={async () => {
           setBusy(true);
+          setError("");
           try {
             const p = await savePreset({
               id: "",
@@ -126,8 +130,8 @@ export function StylePanel({
             });
             setPresets([...presets, p]);
             setName("");
-          } catch {
-            setError("样式保存失败，请重试。");
+          } catch (cause) {
+            setError(errorMessage(cause, "样式保存失败，请重试。"));
           } finally {
             setBusy(false);
           }
@@ -148,7 +152,10 @@ export function StylePanel({
             variant="ghost"
             size="icon"
             aria-label={`改名样式${p.displayName}`}
-            onClick={() => setRename({ ...p })}
+            onClick={() => {
+              setError("");
+              setRename({ ...p });
+            }}
           >
             <Pencil aria-hidden className="size-4" />
           </Button>
@@ -156,19 +163,34 @@ export function StylePanel({
             variant="ghost"
             size="icon"
             aria-label={`删除样式${p.displayName}`}
-            onClick={() => setRemove(p)}
+            onClick={() => {
+              setError("");
+              setRemove(p);
+            }}
           >
             <Trash2 aria-hidden className="size-4" />
           </Button>
         </div>
       ))}
-      {error ? <StatusMessage>{error}</StatusMessage> : null}
+      {busy && !rename && !remove ? (
+        <StatusMessage loading>正在更新个人样式…</StatusMessage>
+      ) : null}
+      {error && !rename && !remove ? (
+        <StatusMessage>{error}</StatusMessage>
+      ) : null}
       <Dialog
         open={!!rename}
-        onOpenChange={(v) => !v && setRename(null)}
+        onOpenChange={(v) => {
+          if (!v && !busy) {
+            setRename(null);
+            setError("");
+          }
+        }}
         title="修改样式名称"
         description="名称变更不修改已经应用此样式的简历。"
       >
+        {busy ? <StatusMessage loading>正在修改样式名称…</StatusMessage> : null}
+        {error ? <StatusMessage>{error}</StatusMessage> : null}
         <FormField
           id="rename-preset"
           label="样式名称"
@@ -181,14 +203,15 @@ export function StylePanel({
           onClick={async () => {
             if (!rename) return;
             setBusy(true);
+            setError("");
             try {
               const updated = await savePreset(rename);
               setPresets(
                 presets.map((p) => (p.id === updated.id ? updated : p)),
               );
               setRename(null);
-            } catch {
-              setError("改名失败，名称已保留，请重试。");
+            } catch (cause) {
+              setError(errorMessage(cause, "改名失败，名称已保留，请重试。"));
             } finally {
               setBusy(false);
             }
@@ -199,12 +222,25 @@ export function StylePanel({
       </Dialog>
       <Dialog
         open={!!remove}
-        onOpenChange={(v) => !v && setRemove(null)}
+        onOpenChange={(v) => {
+          if (!v && !busy) {
+            setRemove(null);
+            setError("");
+          }
+        }}
         title="删除个人样式？"
         description="只删除预设，不改变已有简历的样式。"
       >
+        {busy ? <StatusMessage loading>正在删除样式…</StatusMessage> : null}
+        {error ? <StatusMessage>{error}</StatusMessage> : null}
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={() => setRemove(null)}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              setRemove(null);
+              setError("");
+            }}
+          >
             保留
           </Button>
           <Button
@@ -212,12 +248,13 @@ export function StylePanel({
             onClick={async () => {
               if (!remove) return;
               setBusy(true);
+              setError("");
               try {
                 await deletePreset({ preset_id: remove.id });
                 setPresets(presets.filter((p) => p.id !== remove.id));
                 setRemove(null);
-              } catch {
-                setError("删除失败，请重试。");
+              } catch (cause) {
+                setError(errorMessage(cause, "删除失败，请重试。"));
               } finally {
                 setBusy(false);
               }

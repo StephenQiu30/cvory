@@ -9,15 +9,12 @@ import { FieldGroup, FieldSet, FieldLegend } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { StatusMessage } from "@/components/ui/status-message";
 const RichEditor = dynamic(
   () => import("@/components/ui/tiptap-editor").then((m) => m.TiptapEditor),
   {
     ssr: false,
-    loading: () => (
-      <p role="status" className="text-xs text-muted-foreground">
-        正在加载编辑器…
-      </p>
-    ),
+    loading: () => <StatusMessage loading>正在加载编辑器…</StatusMessage>,
   },
 );
 const LABELS: Record<

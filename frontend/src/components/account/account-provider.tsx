@@ -36,24 +36,24 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     onSuccess?: () => void;
   }>({});
   const returnFocusRef = useRef<HTMLElement | null>(null);
-  const openAuth = useCallback(
-    (onSuccess?: () => void) => {
-      returnFocusRef.current =
-        document.activeElement instanceof HTMLElement
-          ? document.activeElement
-          : null;
-      authCallbacks.current = { onSuccess };
-      setAuthOpen(true);
-    },
-    [],
-  );
+  const openAuth = useCallback((onSuccess?: () => void) => {
+    returnFocusRef.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    authCallbacks.current = { onSuccess };
+    setAuthOpen(true);
+  }, []);
   const setAccount = useCallback((value: API.AccountResource | null) => {
     revision.current++;
     storeAccount(value);
     setLoading(false);
+    setError("");
   }, []);
   const refresh = useCallback(async () => {
     const request = ++revision.current;
+    setLoading(true);
+    setError("");
     try {
       const result = await getAccount();
       if (request !== revision.current) return;

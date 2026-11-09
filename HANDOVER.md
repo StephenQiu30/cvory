@@ -2,19 +2,16 @@
 
 任务调度只在 [BACKLOG](BACKLOG.md)。
 
-## 工作台 shadcn 信息展示
+## 全局状态展示与异常处理
 
-视觉规则见 [DESIGN](DESIGN.md)。顶栏和工作台标签页原先自行绘制的黑色选中下划线已移除，改用 NavigationMenu 与 Tabs 的柔和填充选中态，蓝色只点缀选中文字。键盘焦点轮廓继续保留。
+修复分支为 `codex/unify-global-status`。视觉合同见 [DESIGN §5.1](DESIGN.md#51-全局状态与异常反馈)；[桌面](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=166-38664)和[手机](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=166-38699)状态稿先于代码同步，保留可编辑图层。
 
-[Figma 桌面稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-2880)、[手机稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-3644)及相关状态稿先于页面同步，保留可编辑图层。数量使用 Badge；工作区、模板、Markdown 和导入入口使用 Card 的标题、说明、内容与操作组合；空状态使用 Empty，加载使用 Skeleton，必要的内容分隔使用低对比 Separator。模板封面悬停和键盘预览采用中性表面；空白简历封面显示“待填写”，并适配深色主题。
+StatusMessage 统一错误、成功、说明与处理中；LoadingState 统一读取占位，StatusBadge 展示保存、邮箱及发布状态；StatusPage 统一页面异常、404 和未公开结果。API 状态码的中文提示集中处理，不展示服务端错误原文；登录过期依据错误码决定入口。新操作清除旧结果，重试保留输入并展示进度。样式改名／删除的错误留在对应弹窗内，复制失败提供手动复制提示。
 
-业务范围仍为简历管理、模板、Markdown、导入和公开展示。模板创建保留空白正文，示例只用于预览；导入仍限 CVory v1 JSON／Markdown，校对后另存。分享进入公开管理，公开内容仍为固定快照。
+验证使用独立临时 SQLite、模拟邮件与 example.com 合成账户；生产构建下完整 Playwright 套件 22 项通过，无跳过。新增 6 项覆盖网络失败重试、成功被错误替换及输入保留、密码校验与退出失败、复制失败手动恢复、404／未公开／服务端异常、样式弹窗内的失败反馈。故障通过浏览器拦截及指向不可用后端的第二个前端进程注入。检查了桌面、手机及深色反馈，无页面横向溢出。
 
-### 验证与运行边界
+`pnpm lint`、生产构建及构建内类型检查通过，lint 仅保留 `postcss.config.mjs` 的既有匿名默认导出警告；文档相对链接与空白检查通过。生产数据和部署未修改，后端代码未改、后端单测未重跑。这些检查不替代 MySQL 持久化、部署与恢复的完整链路验收。
 
-- 前端类型检查、`pnpm lint`、`pnpm build` 通过；lint 保留 `postcss.config.mjs` 的既有匿名默认导出警告。Docker 前端生产构建通过。
-- 独立临时 SQLite、模拟邮件与 example.com 合成账户下，完整 Playwright 套件 16 项通过。新增选中态无下划线、标签页方向键切换的回归断言，覆盖桌面与手机；原有模板空白创建、改名、副本独立、删除取消、Markdown 校对、文件合同、账户流程、公开快照和编辑保存用例通过。
-- 桌面、手机、浅色及深色展示已检查，手机没有页面横向溢出。本地 1234 前端已同步；没有修改真实账户、简历或公开数据，也没有数据库迁移或初始化。后端代码未改，后端单测未重跑。
-- 交付分支为 `main`，提交和推送结果以 Git 记录为准。仓库未配置远端 CI；公网部署、完整跨浏览器与无障碍验收仍待完成。
+交付目标为 `main`；提交、合并和推送结果以 Git 记录为准。
 
 工程规则见 [PROJECT](PROJECT.md)，业务合同见 [产品设计 02](docs/design/02-CV制作管理与展示设计.md)。

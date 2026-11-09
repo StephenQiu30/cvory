@@ -1,7 +1,8 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Globe, Copy, Eye } from "lucide-react";
+import { Copy, Eye } from "lucide-react";
 import { cvApi } from "@/lib/api/client";
 import type { CVResource } from "@/lib/api/types";
 import {
@@ -25,7 +26,12 @@ import {
   SelectItem,
   SelectGroup,
 } from "@/components/ui/select";
-import { StatusMessage } from "@/components/ui/status-message";
+import { LoadingState } from "@/components/ui/loading-state";
+import {
+  StatusBadge,
+  type StatusTone,
+  StatusMessage,
+} from "@/components/ui/status-message";
 import { ResumeDocument } from "@/components/resume/resume-document";
 import { useAccount } from "@/components/account/account-provider";
 const FIELDS = [
@@ -55,11 +61,14 @@ export default function Publication() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [messageTone, setMessageTone] = useState<StatusTone>("success");
   const [url, setUrl] = useState("");
   const [copyFailed, setCopyFailed] = useState(false);
   const current = cvs.find((c) => c.id === source);
   async function load() {
     setLoading(true);
+    setError("");
+    setMessage("");
     try {
       const [list, pub] = await Promise.all([
         cvApi.listCvs(100),
@@ -76,8 +85,8 @@ export default function Publication() {
         );
       }
       setError("");
-    } catch {
-      setError("无法读取公开设置，请重试。");
+    } catch (cause) {
+      setError(errorMessage(cause, "无法读取公开设置，请重试。"));
     } finally {
       setLoading(false);
     }
@@ -89,6 +98,7 @@ export default function Publication() {
     if (!current) return;
     setBusy(true);
     setError("");
+    setMessage("");
     try {
       const saved = await cvApi.getCv(current.id);
       const frozen = await previewPublication({
@@ -98,8 +108,13 @@ export default function Publication() {
         sectionIds: modules,
       });
       setReview(frozen);
-    } catch {
-      setError("无法预览，请确认已保存姓名、来源仍可访问且登录有效。");
+    } catch (cause) {
+      setError(
+        errorMessage(
+          cause,
+          "无法预览，请确认已保存姓名、来源仍可访问且登录有效。",
+        ),
+      );
     } finally {
       setBusy(false);
     }
@@ -108,11 +123,13 @@ export default function Publication() {
     if (!review) return;
     setBusy(true);
     setError("");
+    setMessage("");
     const request = { reviewId: review.id };
     try {
       setStatus(await publishPublication(request));
       setConfirm(false);
       setReview(null);
+      setMessageTone("success");
       setMessage("公开内容已更新");
     } catch {
       setError(
@@ -146,12 +163,19 @@ export default function Publication() {
               >
                 刷新预览
               </Button>
-              <Button disabled={busy} onClick={() => setConfirm(true)}>
+              <Button
+                disabled={busy}
+                onClick={() => {
+                  setError("");
+                  setConfirm(true);
+                }}
+              >
                 确认发布
               </Button>
             </>
           }
         />
+        {busy ? <StatusMessage loading>正在处理公开内容…</StatusMessage> : null}
         {error ? <StatusMessage>{error}</StatusMessage> : null}
         <div className="rounded-md bg-white p-5 sm:p-8">
           <ResumeDocument web document={review.document} />
@@ -165,19 +189,22 @@ export default function Publication() {
         description="选择一份已保存简历，核对后发布到固定网址。保存简历不会自动更新公开页。"
       />
       {account && !account.emailVerified ? (
-        <p className="mb-5 text-sm text-muted-foreground">
+        <StatusMessage tone="info" className="mb-5">
           发布或更新公开简历前请先
           <Link className="underline" href="/settings/access">
             验证邮箱
           </Link>
           。已有公开内容保持不变。
-        </p>
+        </StatusMessage>
       ) : null}
       {loading ? (
-        <p role="status">正在读取公开设置…</p>
+        <LoadingState>正在读取公开设置…</LoadingState>
       ) : (
         <FieldGroup>
-          {error ? (
+          {busy && !confirm && !withdrawing ? (
+            <StatusMessage loading>正在处理公开内容…</StatusMessage>
+          ) : null}
+          {error && !confirm && !withdrawing ? (
             <>
               <StatusMessage>{error}</StatusMessage>
               <Button variant="ghost" onClick={() => void load()}>
@@ -186,13 +213,14 @@ export default function Publication() {
             </>
           ) : null}
           {message ? (
-            <p role="status" className="text-sm">
-              {message}
-            </p>
+            <StatusMessage tone={messageTone}>{message}</StatusMessage>
           ) : null}
           <div className="flex items-center gap-2 text-sm">
-            <Globe aria-hidden className="size-4" />
-            {status?.published ? "已发布" : "尚未发布"}
+            {status ? (
+              <StatusBadge success={status.published}>
+                {status.published ? "已发布" : "尚未发布"}
+              </StatusBadge>
+            ) : null}
             {status?.sourceName ? (
               <span className="text-xs text-muted-foreground">
                 来源：{status.sourceName}
@@ -220,16 +248,21 @@ export default function Publication() {
             <Button
               variant="ghost"
               onClick={async () => {
+                setMessage("");
+                setCopyFailed(false);
                 if (!status?.published) {
+                  setMessageTone("info");
                   setMessage("请先预览并发布内容，再分享公开链接。");
                   return;
                 }
                 try {
                   await navigator.clipboard.writeText(url);
+                  setMessageTone("success");
                   setMessage("链接已复制");
                   setCopyFailed(false);
                 } catch {
                   setCopyFailed(true);
+                  setMessageTone("error");
                   setMessage("复制失败，请在上方网址中全选并手动复制。");
                 }
               }}
@@ -238,7 +271,14 @@ export default function Publication() {
               复制链接
             </Button>
             {status?.published ? (
-              <Button variant="ghost" onClick={() => setWithdrawing(true)}>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setError("");
+                  setMessage("");
+                  setWithdrawing(true);
+                }}
+              >
                 撤回公开内容
               </Button>
             ) : null}
@@ -349,6 +389,7 @@ export default function Publication() {
         title="发布本次预览？"
         description={`即将公开「${review?.document.profile.fullName ?? ""}」的选定信息。来源：${review?.sourceName ?? ""}。后续编辑需重新预览并发布。`}
       >
+        {busy ? <StatusMessage loading>正在处理公开内容…</StatusMessage> : null}
         {error ? <StatusMessage>{error}</StatusMessage> : null}
         <div className="mt-5 flex flex-wrap justify-end gap-2">
           <Button
@@ -369,6 +410,7 @@ export default function Publication() {
         title="撤回公开简历？"
         description="本站公开页将停止展示。私有简历保留，已被访客保存的副本无法召回。"
       >
+        {busy ? <StatusMessage loading>正在处理公开内容…</StatusMessage> : null}
         {error ? <StatusMessage>{error}</StatusMessage> : null}
         <div className="mt-5 flex justify-end gap-2">
           <Button
@@ -383,15 +425,19 @@ export default function Publication() {
             onClick={async () => {
               setBusy(true);
               setError("");
+              setMessage("");
               try {
                 await withdrawPublication();
                 setStatus((s) =>
                   s ? { ...s, published: false, sourceName: "" } : s,
                 );
                 setWithdrawing(false);
+                setMessageTone("success");
                 setMessage("公开内容已撤回");
-              } catch {
-                setError("撤回失败，公开页仍保留。请重试。");
+              } catch (cause) {
+                setError(
+                  errorMessage(cause, "撤回失败，公开页仍保留。请重试。"),
+                );
               } finally {
                 setBusy(false);
               }

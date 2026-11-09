@@ -6,6 +6,16 @@ import type { ReactNode } from "react";
 import { Content } from "./content";
 import { useAccount } from "@/components/account/account-provider";
 import { Button } from "@/components/ui/button";
+import { LoadingState } from "@/components/ui/loading-state";
+import { StatusMessage } from "@/components/ui/status-message";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
 export function SettingsLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { account, loading, error, refresh, openAuth } = useAccount();
@@ -43,30 +53,34 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
         </aside>
         <div className="min-w-0">
           {loading ? (
-            <p role="status">正在读取账户…</p>
+            <LoadingState>正在读取账户…</LoadingState>
           ) : account ? (
             children
-          ) : (
-            <div>
-              <p>{error || "登录后管理个人资料与公开简历。"}</p>
-              {error ? (
-                <Button
-                  variant="link"
-                  className="mt-3 text-link"
-                  onClick={() => void refresh()}
-                >
+          ) : error ? (
+            <StatusMessage
+              action={
+                <Button variant="secondary" onClick={() => void refresh()}>
                   重新连接
                 </Button>
-              ) : (
-                <Button
-                  variant="link"
-                  className="mt-4 h-auto p-0 underline"
-                  onClick={() => openAuth()}
-                >
-                  登录账户
-                </Button>
-              )}
-            </div>
+              }
+            >
+              {error}
+            </StatusMessage>
+          ) : (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <UserRound aria-hidden />
+                </EmptyMedia>
+                <EmptyTitle>登录后管理账户</EmptyTitle>
+                <EmptyDescription>
+                  登录后管理个人资料与公开简历。
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <Button onClick={() => openAuth()}>登录账户</Button>
+              </EmptyContent>
+            </Empty>
           )}
         </div>
       </div>

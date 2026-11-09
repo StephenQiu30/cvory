@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { FileQuestion } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { StatusPage } from "@/components/shared/status-page";
 export default function NotFound() {
   return (
-    <main className="mx-auto max-w-lg px-6 py-20">
-      <h1 className="text-xl font-medium">找不到这个页面</h1>
-      <Link className="mt-5 inline-block text-link" href="/">
-        返回我的简历
-      </Link>
-    </main>
+    <StatusPage
+      title="找不到这个页面"
+      description="页面不存在，或地址已失效。"
+      icon={FileQuestion}
+    >
+      <Button asChild>
+        <Link href="/">返回我的简历</Link>
+      </Button>
+    </StatusPage>
   );
 }

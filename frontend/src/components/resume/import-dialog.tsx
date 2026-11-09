@@ -1,4 +1,5 @@
 "use client";
+import { errorMessage } from "@/lib/api/error-message";
 import { useState, useRef, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@/components/shared/app-dialog";
@@ -183,6 +184,7 @@ export function ImportDialog({
             ))}
           </>
         )}
+        {busy ? <StatusMessage loading>正在处理导入内容…</StatusMessage> : null}
         {error ? <StatusMessage>{error}</StatusMessage> : null}
         <div className="flex justify-end gap-2">
           <Button
@@ -243,8 +245,13 @@ export function ImportDialog({
                   });
                   onOpenChange(false);
                   router.push(`/cvs/${created.id}`);
-                } catch {
-                  setError("另存失败，候选已保留，请检查格式或登录后重试。");
+                } catch (cause) {
+                  setError(
+                    errorMessage(
+                      cause,
+                      "另存失败，候选已保留，请检查格式或登录后重试。",
+                    ),
+                  );
                 } finally {
                   setBusy(false);
                 }

@@ -4,6 +4,7 @@
 
 | 任务 | 依赖 | 状态 | 工作入口 |
 | --- | --- | --- | --- |
+| 全局状态展示与异常处理 | [DESIGN §5.1](DESIGN.md#51-全局状态与异常反馈) | 已统一状态组件与错误恢复，22 项隔离浏览器测试及构建通过；交付分支为 `main` | [交接记录](HANDOVER.md)、[状态设计稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=166-38664) |
 | UIUX 与参考工作台对齐 | 已确认简历管理、模板、Markdown、导入和公开范围 | 已先按 DESIGN 同步 Figma 桌面／手机及状态稿，前端采用黑白灰与少量蓝色点缀；工作台功能已实现，真实网站未发布 | [DESIGN](DESIGN.md)、[调研 02](docs/research/02-老鱼简历功能逆向与CV技术选型.md)、[Figma 草稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-2880) |
 | 登录注册弹窗 | 邮箱密码账户与共享页面壳 | 已实现桌面／手机弹窗，会话过期保留草稿已验证 | [DESIGN](DESIGN.md)、[交接记录](HANDOVER.md) |
 | PLAN-CV-08 账户访问与资料 | 现有邮箱密码账户；公网目标及策略 | 修改密码及会话轮换已实现并隔离验证；公网防护与完整验收待完成 | [PRD 08](docs/prd/08-账户访问与资料.md)、[Plan 08](docs/plan/08-账户访问与资料.md) |
