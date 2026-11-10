@@ -1,6 +1,7 @@
 import * as generated from "./generated/api/cvs";
 import * as filesGenerated from "./generated/api/files";
 import * as aiGenerated from "./generated/api/ai";
+import * as deliveryGenerated from "./generated/api/delivery";
 import type { CreateCVRequest, UpdateCVRequest } from "./types";
 export { ApiError, type GoogleApiError } from "./request";
 export const cvApi = {
@@ -58,4 +59,19 @@ export const aiApi = {
   listReports: (pageSize = 20, pageToken?: string) =>
     aiGenerated.listAiReports({ pageSize, pageToken }),
   getReport: (id: string) => aiGenerated.getAiReport({ id }),
+};
+export const deliveryApi = {
+  getPreferences: () => deliveryGenerated.getDeliveryPreferences(),
+  updatePreferences: (data: API.DeliveryPreferencesRequest) =>
+    deliveryGenerated.updateDeliveryPreferences(data),
+  listJobs: () => deliveryGenerated.listDeliveryJobs(),
+  createJob: (data: API.CreateDeliveryJobRequest) =>
+    deliveryGenerated.createDeliveryJob(data),
+  deleteJob: (id: string) => deliveryGenerated.deleteDeliveryJob({ id }),
+  listTasks: (pageSize = 50, pageToken?: string) =>
+    deliveryGenerated.listDeliveryTasks({ pageSize, pageToken }),
+  createTask: (data: API.CreateDeliveryTaskRequest) =>
+    deliveryGenerated.createDeliveryTask(data),
+  simulateTask: (id: string) => deliveryGenerated.simulateDeliveryTask({ id }),
+  deleteTask: (id: string) => deliveryGenerated.deleteDeliveryTask({ id }),
 };

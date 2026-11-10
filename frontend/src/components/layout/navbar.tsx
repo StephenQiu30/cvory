@@ -23,6 +23,11 @@ export function Navbar() {
       label: "公开展示",
       active: path === "/settings/publication",
     },
+    {
+      href: "/delivery",
+      label: "求职准备",
+      active: path.startsWith("/delivery"),
+    },
   ];
 
   return (

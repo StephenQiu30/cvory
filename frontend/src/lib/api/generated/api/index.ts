@@ -9,6 +9,7 @@ import * as presets from "./presets";
 import * as publication from "./publication";
 import * as files from "./files";
 import * as ai from "./ai";
+import * as delivery from "./delivery";
 import * as github from "./github";
 export default {
   health,
@@ -18,5 +19,6 @@ export default {
   publication,
   files,
   ai,
+  delivery,
   github,
 };

@@ -78,6 +78,20 @@ jitou [MIT](https://github.com/impengpong/jitou/blob/4a6c77174949baae5fa0ae0df0b
 
 本地保存不代表远程 AI 调用不传数据：送给远程模型的简历与 JD 会离开本机。MIT／Apache 源码许可也不代表取得平台数据或自动化业务授权。文档和源码核查不等于完整安全审计。
 
+### 4.1 平台规则与授权门槛（2026-11-10）
+
+通过 GitHub 插件复核的固定版本中，jitou `4a6c77174949baae5fa0ae0df0bf945591798344` 的 `LICENSE` 为 MIT，`NOTICE` 明确说明页面分类数据和第三方商标不随 MIT 授权；CVory 当前只将它作为实现模式参考，不复制其源码。boss-helper `5845c1d4c37361caf37737c1a76fd6d9c3741a2b` 虽含 MIT `LICENSE`，同版本 README 写有禁止商业使用，授权范围冲突未澄清，因此不复制其代码或依赖。
+
+BOSS 官方旧版[用户协议页面](https://www.zhipin.com/web/common/protocol/protocol-2019-09-30.html)的检索索引包含“未经许可，不得通过其他第三方工具或运营平台获取 BOSS 直聘服务”的约定，并将第三方软件登录、浏览职位、收发简历列为例子。该页面当前抓取返回 404；通过官方[协议中心](https://about.zhipin.com/agreement?id=personalinfopro)只能取得脚本加载页面，未能核实当前求职者协议的生效版本或条文。因此这条证据不能代表已核实的 2026 年现行协议，也不能据此判断法律结论。公开检索未找到可据以接入的官方求职自动化 API 文档。
+
+负责人确认目前没有或不确定具备覆盖 Chrome 插件岗位读取/筛选/招呼的 BOSS 书面授权。因此当前可交付范围限定为 CVory 内的手工岗位录入、硬条件筛选、招呼草稿、简历材料准备及明确标记的模拟任务；实现不得申请 `zhipin.com` 主机权限，不得向该站注入脚本、读取页面或调用其接口，不得访问 Cookie，也不得发送真实消息。真实页面适配保持未开放；只有重新核对现行官方条款并取得适用授权、完成单独评审后，才能调整该边界。此状态不改写原始需求中的目标，也不算真实 BOSS 链路验收。
+
+### 4.2 Chrome Manifest V3 生命周期与权限
+
+Chrome 官方[扩展 service worker 生命周期文档](https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle/)说明 Manifest V3 service worker 可能因空闲停止并在事件到达时重启；Chrome 120 起 alarm 的最小周期为 30 秒。不能把内存循环或闹钟当作持续执行保证。需要保留的任务状态必须落在持久存储；中断时恢复为待核实/未知，不自动重发。
+
+Chrome 官方[权限声明指南](https://developer.chrome.com/docs/extensions/develop/concepts/declare-permissions)说明 host permissions 控制扩展可交互的地址范围，新增或更改 host pattern 会触发权限警告，并建议按需采用 optional permissions 或权限较少的 API。由于当前没有平台书面授权，首期尚不声明 BOSS 域名，也不打包 BOSS content script；这里只实现离线规则、手工输入与模拟界面。
+
 ## 5. 减少工作量的接入建议
 
 建议流程：CVory 选择并导出简历 → 浏览器插件按关键词读取/筛选岗位 → 展示匹配依据和草稿 → 用户手工上传 PDF、核对具体目标与招呼范围 → 插件执行沟通/招呼 → 按实际证据回写状态。

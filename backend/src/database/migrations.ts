@@ -144,6 +144,23 @@ export async function migrate(db: Database): Promise<void> {
         connection,
       );
     }
+
+    if (!versions.has('008_delivery_preparation')) {
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS delivery_preferences(owner_id VARCHAR(36) PRIMARY KEY,include_keywords JSON NOT NULL,exclude_keywords JSON NOT NULL,cities JSON NOT NULL,salary_min_k SMALLINT UNSIGNED NULL,salary_max_k SMALLINT UNSIGNED NULL,excluded_companies JSON NOT NULL,greeting_template VARCHAR(2000) NOT NULL,update_time DATETIME(6) NOT NULL)',
+      );
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS delivery_jobs(id VARCHAR(36) PRIMARY KEY,owner_id VARCHAR(36) NOT NULL,title VARCHAR(200) NOT NULL,company VARCHAR(200) NOT NULL,city VARCHAR(120) NOT NULL,salary_min_k SMALLINT UNSIGNED NULL,salary_max_k SMALLINT UNSIGNED NULL,description MEDIUMTEXT NOT NULL,source_url VARCHAR(2048) NULL,create_time DATETIME(6) NOT NULL,INDEX owner_create(owner_id,create_time))',
+      );
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS delivery_tasks(id VARCHAR(36) PRIMARY KEY,owner_id VARCHAR(36) NOT NULL,request_id VARCHAR(36) NOT NULL,request_fingerprint CHAR(64) NOT NULL,cv_id VARCHAR(36) NOT NULL,cv_etag VARCHAR(64) NOT NULL,cv_name VARCHAR(255) NOT NULL,cv_fingerprint CHAR(64) NOT NULL,cv_snapshot MEDIUMTEXT NOT NULL,task_snapshot MEDIUMTEXT NOT NULL,status VARCHAR(16) NOT NULL,create_time DATETIME(6) NOT NULL,simulation_time DATETIME(6) NULL,UNIQUE KEY owner_request(owner_id,request_id),INDEX owner_create(owner_id,create_time))',
+      );
+      await db.run(
+        'INSERT INTO cvory_migrations VALUES (?,UTC_TIMESTAMP(6))',
+        ['008_delivery_preparation'],
+        connection,
+      );
+    }
   } finally {
     await connection.query("DO RELEASE_LOCK(CONCAT(DATABASE(), ':cvory-migrate'))");
     connection.release();

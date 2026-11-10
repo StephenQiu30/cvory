@@ -51,10 +51,11 @@ export class Database implements OnModuleDestroy {
   }
   async assertReady(): Promise<void> {
     try {
-      const migration = await this.rows('SELECT version FROM cvory_migrations WHERE version=?', [
-        '007_ai_resume_analysis',
-      ]);
-      if (!migration.length) throw new Error('Schema upgrade required.');
+      const migrations = await this.rows(
+        'SELECT version FROM cvory_migrations WHERE version IN (?,?)',
+        ['007_ai_resume_analysis', '008_delivery_preparation'],
+      );
+      if (migrations.length !== 2) throw new Error('Schema upgrade required.');
       const pending = await this.rows(
         "SELECT id FROM account_deletion_jobs WHERE status NOT IN ('completed','cancelled','done','succeeded') LIMIT 1",
       );

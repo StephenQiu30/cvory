@@ -4640,6 +4640,1187 @@
         ]
       }
     },
+    "/api/delivery/preferences": {
+      "get": {
+        "operationId": "getDeliveryPreferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryPreferencesResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      },
+      "patch": {
+        "operationId": "updateDeliveryPreferences",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryPreferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryPreferencesResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/delivery/jobs": {
+      "get": {
+        "operationId": "listDeliveryJobs",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryJobList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      },
+      "post": {
+        "operationId": "createDeliveryJob",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeliveryJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryJobResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/delivery/jobs/{id}": {
+      "delete": {
+        "operationId": "deleteDeliveryJob",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/delivery/tasks": {
+      "get": {
+        "operationId": "listDeliveryTasks",
+        "parameters": [
+          {
+            "name": "pageToken",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryTaskList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      },
+      "post": {
+        "operationId": "createDeliveryTask",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDeliveryTaskRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryTaskResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/delivery/tasks/{id}": {
+      "get": {
+        "operationId": "getDeliveryTask",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryTaskResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteDeliveryTask",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
+    "/api/delivery/tasks/{id}:simulate": {
+      "post": {
+        "operationId": "simulateDeliveryTask",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryTaskResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "delivery"
+        ]
+      }
+    },
     "/api/account/github/connection": {
       "get": {
         "operationId": "getGithubConnection",
@@ -6644,6 +7825,447 @@
         "required": [
           "reports",
           "nextPageToken"
+        ]
+      },
+      "DeliveryPreferencesResource": {
+        "type": "object",
+        "properties": {
+          "includeKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "salaryMinK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "salaryMaxK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "excludedCompanies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "greetingTemplate": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "updateTime": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "includeKeywords",
+          "excludeKeywords",
+          "cities",
+          "excludedCompanies",
+          "greetingTemplate",
+          "updateTime"
+        ]
+      },
+      "DeliveryPreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "includeKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excludeKeywords": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cities": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "salaryMinK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "salaryMaxK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "excludedCompanies": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "greetingTemplate": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "includeKeywords",
+          "excludeKeywords",
+          "cities",
+          "excludedCompanies",
+          "greetingTemplate"
+        ]
+      },
+      "DeliveryMatchCondition": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "matched",
+              "mismatched",
+              "unknown",
+              "notConfigured"
+            ]
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "status",
+          "explanation"
+        ]
+      },
+      "DeliveryJobResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "salaryMinK": {
+            "type": "number",
+            "nullable": true
+          },
+          "salaryMaxK": {
+            "type": "number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "createTime": {
+            "type": "string"
+          },
+          "matchStatus": {
+            "type": "string",
+            "enum": [
+              "eligible",
+              "review",
+              "excluded",
+              "unfiltered"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryMatchCondition"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "title",
+          "company",
+          "city",
+          "salaryMinK",
+          "salaryMaxK",
+          "description",
+          "sourceUrl",
+          "createTime",
+          "matchStatus",
+          "conditions"
+        ]
+      },
+      "DeliveryJobList": {
+        "type": "object",
+        "properties": {
+          "jobs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryJobResource"
+            }
+          },
+          "totalSize": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "jobs",
+          "totalSize"
+        ]
+      },
+      "CreateDeliveryJobRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "company": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "salaryMinK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "salaryMaxK": {
+            "type": "number",
+            "nullable": true,
+            "minimum": 0,
+            "maximum": 1000,
+            "description": "Monthly salary in thousands of CNY."
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "sourceUrl": {
+            "type": "string",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "title",
+          "company",
+          "city",
+          "description"
+        ]
+      },
+      "DeliveryTaskItemResource": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "salaryMinK": {
+            "type": "number",
+            "nullable": true
+          },
+          "salaryMaxK": {
+            "type": "number",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "sourceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "jobCreateTime": {
+            "type": "string"
+          },
+          "matchStatus": {
+            "type": "string",
+            "enum": [
+              "eligible",
+              "review",
+              "excluded",
+              "unfiltered"
+            ]
+          },
+          "conditions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryMatchCondition"
+            }
+          },
+          "greeting": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "jobId",
+          "title",
+          "company",
+          "city",
+          "salaryMinK",
+          "salaryMaxK",
+          "description",
+          "sourceUrl",
+          "jobCreateTime",
+          "matchStatus",
+          "conditions",
+          "greeting"
+        ]
+      },
+      "DeliveryTaskResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "simulated"
+            ]
+          },
+          "cvId": {
+            "type": "string"
+          },
+          "cvEtag": {
+            "type": "string"
+          },
+          "cvName": {
+            "type": "string"
+          },
+          "cvFingerprint": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryTaskItemResource"
+            }
+          },
+          "createTime": {
+            "type": "string"
+          },
+          "simulationTime": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "cvId",
+          "cvEtag",
+          "cvName",
+          "cvFingerprint",
+          "items",
+          "createTime",
+          "simulationTime"
+        ]
+      },
+      "DeliveryTaskList": {
+        "type": "object",
+        "properties": {
+          "tasks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeliveryTaskResource"
+            }
+          },
+          "nextPageToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "tasks",
+          "nextPageToken"
+        ]
+      },
+      "CreateDeliveryTaskRequest": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          },
+          "cvId": {
+            "type": "string"
+          },
+          "cvEtag": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "jobIds": {
+            "minItems": 1,
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "requestId",
+          "cvId",
+          "cvEtag",
+          "jobIds"
         ]
       },
       "GithubConnection": {

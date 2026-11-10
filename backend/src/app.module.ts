@@ -10,6 +10,7 @@ import {FilesModule} from './modules/files/files.module';
 import {CvsModule} from './modules/cvs/cvs.module';
 import {GithubClient} from './modules/github/github_client';
 import {AiModule} from './modules/ai/ai.module';
+import {DeliveryModule} from './modules/delivery/delivery.module';
 @Module({})
 export class AppModule {
   static register(
@@ -26,6 +27,7 @@ export class AppModule {
         PublicationModule.register(external),
         FilesModule,
         AiModule,
+        DeliveryModule,
       ],
       providers: [{provide: APP_GUARD, useClass: SessionGuard}],
     };

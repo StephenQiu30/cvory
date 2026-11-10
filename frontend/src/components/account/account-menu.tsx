@@ -3,7 +3,13 @@ import { errorMessage } from "@/lib/api/error-message";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Globe, LogOut, UserRound, Settings } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  Globe,
+  LogOut,
+  UserRound,
+  Settings,
+} from "lucide-react";
 import { useAccount } from "./account-provider";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -77,6 +83,12 @@ export function AccountMenu() {
               <Link href="/settings/publication">
                 <Globe />
                 公开简历
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/delivery">
+                <BriefcaseBusiness />
+                求职准备
               </Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>

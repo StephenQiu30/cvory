@@ -172,6 +172,25 @@ declare namespace API {
     styleSettings?: StyleSettingsInput;
   };
 
+  type CreateDeliveryJobRequest = {
+    title: string;
+    company: string;
+    city: string;
+    /** Monthly salary in thousands of CNY. */
+    salaryMinK?: number | null;
+    /** Monthly salary in thousands of CNY. */
+    salaryMaxK?: number | null;
+    description: string;
+    sourceUrl?: string;
+  };
+
+  type CreateDeliveryTaskRequest = {
+    requestId: string;
+    cvId: string;
+    cvEtag: string;
+    jobIds: string[];
+  };
+
   type Credentials = {
     email: string;
     password: string;
@@ -216,8 +235,100 @@ declare namespace API {
     id: string;
   };
 
+  type deleteDeliveryJobParams = {
+    id: string;
+  };
+
+  type deleteDeliveryTaskParams = {
+    id: string;
+  };
+
   type deletePresetParams = {
     id: string;
+  };
+
+  type DeliveryJobList = {
+    jobs: DeliveryJobResource[];
+    totalSize: number;
+  };
+
+  type DeliveryJobResource = {
+    id: string;
+    source: "manual";
+    title: string;
+    company: string;
+    city: string;
+    salaryMinK: number | null;
+    salaryMaxK: number | null;
+    description: string;
+    sourceUrl: string | null;
+    createTime: string;
+    matchStatus: "eligible" | "review" | "excluded" | "unfiltered";
+    conditions: DeliveryMatchCondition[];
+  };
+
+  type DeliveryMatchCondition = {
+    key: string;
+    label: string;
+    status: "matched" | "mismatched" | "unknown" | "notConfigured";
+    explanation: string;
+  };
+
+  type DeliveryPreferencesRequest = {
+    includeKeywords: string[];
+    excludeKeywords: string[];
+    cities: string[];
+    /** Monthly salary in thousands of CNY. */
+    salaryMinK?: number | null;
+    /** Monthly salary in thousands of CNY. */
+    salaryMaxK?: number | null;
+    excludedCompanies: string[];
+    greetingTemplate: string;
+  };
+
+  type DeliveryPreferencesResource = {
+    includeKeywords: string[];
+    excludeKeywords: string[];
+    cities: string[];
+    /** Monthly salary in thousands of CNY. */
+    salaryMinK?: number | null;
+    /** Monthly salary in thousands of CNY. */
+    salaryMaxK?: number | null;
+    excludedCompanies: string[];
+    greetingTemplate: string;
+    updateTime: string | null;
+  };
+
+  type DeliveryTaskItemResource = {
+    jobId: string;
+    title: string;
+    company: string;
+    city: string;
+    salaryMinK: number | null;
+    salaryMaxK: number | null;
+    description: string;
+    sourceUrl: string | null;
+    jobCreateTime: string;
+    matchStatus: "eligible" | "review" | "excluded" | "unfiltered";
+    conditions: DeliveryMatchCondition[];
+    greeting: string;
+  };
+
+  type DeliveryTaskList = {
+    tasks: DeliveryTaskResource[];
+    nextPageToken: string;
+  };
+
+  type DeliveryTaskResource = {
+    id: string;
+    status: "draft" | "simulated";
+    cvId: string;
+    cvEtag: string;
+    cvName: string;
+    cvFingerprint: string;
+    items: DeliveryTaskItemResource[];
+    createTime: string;
+    simulationTime: string | null;
   };
 
   type ErrorBody = {
@@ -261,6 +372,10 @@ declare namespace API {
   };
 
   type getCvParams = {
+    id: string;
+  };
+
+  type getDeliveryTaskParams = {
     id: string;
   };
 
@@ -352,6 +467,11 @@ declare namespace API {
   type listCvsParams = {
     pageToken?: any;
     pageSize?: any;
+  };
+
+  type listDeliveryTasksParams = {
+    pageToken?: string;
+    pageSize?: number;
   };
 
   type listGithubRepositoriesParams = {
@@ -538,6 +658,10 @@ declare namespace API {
     visible: boolean;
     content: any;
     items: SectionItemSchema[];
+  };
+
+  type simulateDeliveryTaskParams = {
+    id: string;
   };
 
   type StylePreset = {

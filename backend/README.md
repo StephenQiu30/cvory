@@ -1,6 +1,6 @@
 # CVory NestJS 后端
 
-唯一后端运行时为 NestJS + TypeScript、Node.js 24、pnpm 12、MySQL。模块包括账户、CV/历史/预设、GitHub、公开展示、图片、DOCX/文字 PDF 候选解析、PDF/PNG 导出及 AI provider 配置、分析与私有报告，规则见 [PROJECT](../PROJECT.md)。
+唯一后端运行时为 NestJS + TypeScript、Node.js 24、pnpm 12、MySQL。模块包括账户、CV/历史/预设、GitHub、公开展示、图片、DOCX/文字 PDF 候选解析、PDF/PNG 导出、AI provider 配置/分析/私有报告，以及手工岗位筛选与离线任务快照，规则见 [PROJECT](../PROJECT.md)。
 
 ## 开发与运行
 
@@ -21,6 +21,10 @@ pnpm start
 GitHub 由部署者填写 OAuth App Client ID/Secret，回调 `${PUBLIC_APP_ORIGIN}/api/account/github/callback`。只申请 `read:user`，access token 不入库、不读私库。旧 scrypt/会话保留；新 GitHub 账户不创建假邮箱/密码，新增邮箱注册默认关闭。
 
 AI 提供商密钥、模型 ID 由每位用户在私有设置中填写，仅连接火山引擎 Ark、DeepSeek 和 OpenAI 官方服务。部署者须生成 32 字节 `AI_ENCRYPTION_KEY`（例如 `openssl rand -base64 32`），与数据库密文分开备份并保持稳定；更换或丢失后，已有 API Key 和报告正文无法解密。未配置时 AI 功能关闭，其他 CV 功能可用。分析输入和报告正文使用 AES-256-GCM 加密保存 7 天后自动清理，只有所属用户可读取；用量、状态、简历版本等不含正文的索引元数据按账户隔离并同期清理。CVory 不限制调用次数、输入/输出 tokens 或金额；服务商可能收费，费用取决于用户选择的模型和账户。连接测试也可能产生费用。未知结果不会自动重放；中断且超过 3 分钟的在途记录会标记为未知，并保留到原定过期时间。
+
+## BOSS 离线求职准备
+
+迁移 008_delivery_preparation 创建偏好、手工岗位及离线任务表；须由部署者显式运行 pnpm db:migrate 后 API 才就绪。任务保存所选 CV 的固定内容快照和 etag、岗位规则解释及招呼草稿，任务正文存入 MySQL（未单独加密），查询按 owner 隔离；用户可删除任务。CVory 不读取 BOSS 页面、Cookie 或接口，不请求 BOSS 网络资源，也不发送消息。授权边界见 [PRD 11](../docs/prd/11-BOSS直聘自主投递.md)。
 
 ## 数据与处理边界
 
