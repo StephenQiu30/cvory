@@ -21,6 +21,15 @@ import {
   IMPORT_WORKER_HEAP_MB,
   IMPORT_WORKER_TIMEOUT_MS,
 } from './import.constants';
+import {
+  PNG_EXPORT_MAX_BYTES,
+  PNG_EXPORT_MAX_DIMENSION,
+  PNG_EXPORT_MAX_PAGE_PIXELS,
+  PNG_EXPORT_MAX_PAGES,
+  PNG_EXPORT_MAX_TOTAL_PIXELS,
+  PNG_EXPORT_WORKER_HEAP_MB,
+  PNG_EXPORT_WORKER_TIMEOUT_MS,
+} from './png_export.constants';
 
 const importPositionSchema = z
   .object({
@@ -57,9 +66,78 @@ const importCandidateSchema = z
   );
 
 type ImportFormat = 'docx' | 'pdf';
+type PngExportPageSize = {width: number; height: number};
+type PngExportResult = {
+  data: Buffer;
+  contentType: 'image/png' | 'application/zip';
+  pageCount: number;
+  pageSizes: PngExportPageSize[];
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function parsePngWorkerResult(value: unknown): PngExportResult | undefined {
+  if (!isRecord(value) || !isRecord(value.result)) return undefined;
+  const result = value.result;
+  if (
+    !(result.data instanceof Uint8Array) ||
+    result.data.byteLength < 8 ||
+    result.data.byteLength > PNG_EXPORT_MAX_BYTES ||
+    !Number.isInteger(result.pageCount) ||
+    (result.pageCount as number) < 1 ||
+    (result.pageCount as number) > PNG_EXPORT_MAX_PAGES ||
+    !Array.isArray(result.pageSizes) ||
+    result.pageSizes.length !== result.pageCount
+  )
+    return undefined;
+  const pageSizes: PngExportPageSize[] = [];
+  let totalPixels = 0;
+  for (const pageSize of result.pageSizes) {
+    if (
+      !isRecord(pageSize) ||
+      !Number.isInteger(pageSize.width) ||
+      !Number.isInteger(pageSize.height) ||
+      (pageSize.width as number) < 1 ||
+      (pageSize.height as number) < 1 ||
+      (pageSize.width as number) > PNG_EXPORT_MAX_DIMENSION ||
+      (pageSize.height as number) > PNG_EXPORT_MAX_DIMENSION ||
+      (pageSize.width as number) * (pageSize.height as number) > PNG_EXPORT_MAX_PAGE_PIXELS
+    )
+      return undefined;
+    const width = pageSize.width as number;
+    const height = pageSize.height as number;
+    totalPixels += width * height;
+    if (totalPixels > PNG_EXPORT_MAX_TOTAL_PIXELS) return undefined;
+    pageSizes.push({width, height});
+  }
+  const data = Buffer.from(result.data);
+  if (result.contentType === 'image/png') {
+    if (
+      result.pageCount !== 1 ||
+      !data.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    )
+      return undefined;
+  } else if (result.contentType === 'application/zip') {
+    if (
+      result.pageCount === 1 ||
+      !data.subarray(0, 4).equals(Buffer.from([0x50, 0x4b, 0x03, 0x04]))
+    )
+      return undefined;
+  } else return undefined;
+  return {
+    data,
+    contentType: result.contentType,
+    pageCount: result.pageCount as number,
+    pageSizes,
+  };
+}
+
+function pngWorkerFailure(value: unknown): ApiError {
+  if (value === 'PNG_LIMIT_EXCEEDED')
+    return new ApiError(413, 'RESOURCE_EXHAUSTED', 'PNG_LIMIT_EXCEEDED');
+  return new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE');
 }
 
 function workerFailure(value: unknown): ApiError {
@@ -244,6 +322,61 @@ export class FilesService implements OnModuleInit, OnModuleDestroy {
       });
     });
   }
+  private runPngWorker(pdf: Buffer, signal: AbortSignal): Promise<PngExportResult> {
+    if (signal.aborted) throw new ApiError(499, 'CANCELLED', 'PNG_CANCELLED');
+    if (this.children.size >= 2)
+      throw new ApiError(429, 'RESOURCE_EXHAUSTED', 'PNG_PROCESSOR_BUSY');
+    return new Promise((resolveResult, rejectResult) => {
+      const child = fork(join(__dirname, 'workers/png_export.worker.js'), [], {
+        detached: true,
+        serialization: 'advanced',
+        stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
+        execArgv: [`--max-old-space-size=${PNG_EXPORT_WORKER_HEAP_MB}`],
+      });
+      this.children.add(child);
+      let completed = false;
+      const finish = (error?: Error, result?: PngExportResult) => {
+        if (completed) return;
+        completed = true;
+        clearTimeout(timer);
+        signal.removeEventListener('abort', abort);
+        if (error) this.stop(child);
+        if (error) rejectResult(error);
+        else if (result) resolveResult(result);
+        else rejectResult(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+      };
+      const abort = () => finish(new ApiError(499, 'CANCELLED', 'PNG_CANCELLED'));
+      const timer = setTimeout(
+        () => finish(new ApiError(503, 'UNAVAILABLE', 'PNG_TIMEOUT')),
+        PNG_EXPORT_WORKER_TIMEOUT_MS,
+      );
+      timer.unref();
+      child.on('error', () => {
+        this.children.delete(child);
+        finish(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+      });
+      child.on('exit', () => {
+        this.children.delete(child);
+        if (!completed) finish(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+      });
+      child.once('message', (message: unknown) => {
+        if (isRecord(message) && 'result' in message) {
+          const result = parsePngWorkerResult(message);
+          if (result) finish(undefined, result);
+          else finish(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+        } else if (isRecord(message)) finish(pngWorkerFailure(message.error));
+        else finish(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+      });
+      signal.addEventListener('abort', abort, {once: true});
+      if (signal.aborted) {
+        abort();
+        return;
+      }
+      child.send({pdf}, (error) => {
+        if (error) finish(new ApiError(503, 'UNAVAILABLE', 'PNG_UNAVAILABLE'));
+      });
+    });
+  }
   async parseResumeImport(
     file: Express.Multer.File | undefined,
     owner: string,
@@ -342,6 +475,18 @@ export class FilesService implements OnModuleInit, OnModuleDestroy {
     } finally {
       this.tickets.delete(ticket);
     }
+  }
+  async png(
+    id: string,
+    owner: string,
+    etag: string,
+    signal: AbortSignal,
+  ): Promise<PngExportResult> {
+    const pdf = await this.pdf(id, owner, etag, signal);
+    const result = await this.runPngWorker(pdf, signal);
+    await this.accounts.resource(owner);
+    await this.cvs.get(id, owner);
+    return result;
   }
   async onModuleDestroy(): Promise<void> {
     if (this.importCleanupTimer) clearInterval(this.importCleanupTimer);

@@ -35,13 +35,14 @@ const client = axios.create({
 });
 export type RequestOptions = AxiosRequestConfig & {
   requestType?: "form" | "json";
+  returnResponse?: boolean;
 };
 export default async function request<T = unknown>(
   url: string,
   options: RequestOptions = {},
 ): Promise<T> {
   try {
-    const { requestType, ...config } = options;
+    const { requestType, returnResponse, ...config } = options;
     if (
       requestType === "form" &&
       config.data &&
@@ -52,7 +53,8 @@ export default async function request<T = unknown>(
         form.append(key, value as Blob);
       config.data = form;
     }
-    return (await client.request<T>({ url, ...config })).data;
+    const response = await client.request<T>({ url, ...config });
+    return (returnResponse ? response : response.data) as T;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       let data: unknown = error.response?.data;

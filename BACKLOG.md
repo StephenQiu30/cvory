@@ -29,7 +29,7 @@
 | PLAN-CV-03 模板与样式 | PLAN-CV-01 | 已有三模板、配色及预设和局部证据；兼容模板、预览边界及跨输出验收待完成 | [Plan 03](docs/plan/03-模板与样式管理.md) |
 | PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 已实现 DOCX/文字 PDF 子进程解析、来源片段/页码/坐标、明确字段映射、候选校对及幂等另存；10 MiB/解压体积/页数/时间/堆限制和临时清理已写入代码。合成样本、多栏/表格、扫描/加密/损坏/超限、取消清理与真实浏览器流程尚未验收；JSON/Markdown 定点校对保真与往返仍待收敛。扫描 PDF 明确提示不支持，OCR 后续再定 | [Plan 04](docs/plan/04-简历导入.md) |
 | PLAN-CV-05 备份与 Markdown | PLAN-CV-03、04 | 已有含照片 JSON／Markdown 实现及局部证据；原站不可用的完整恢复与故障降级待验收 | [Plan 05](docs/plan/05-简历备份与Markdown导出.md) |
-| PLAN-CV-06 PDF/PNG | PLAN-CV-03 | Nest 独立 Chromium 子进程承接 PDF；实际文件与资源/取消验证按 HANDOVER，精确预览与部署拓扑仍须完整验收；逐页 PNG/ZIP 尚未实现 | [Plan 06](docs/plan/06-PDF导出.md) |
+| PLAN-CV-06 PDF/PNG | PLAN-CV-03 | 已有 Nest 固定快照 PDF 及 PDF.js 逐页 PNG，单页 PNG、多页 ZIP；页数/像素/输出/进程限额已落入代码。真实输出质量、ZIP 页数/顺序、字体图片故障、取消/超限和声明部署拓扑尚未验收 | [Plan 06](docs/plan/06-PDF导出.md) |
 | PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 已有固定预览、发布、撤回及匿名页；并发版本、来源保护与完整匿名隐私链路待验收，站主首页/精选 GitHub 项目尚未实现，真实网站尚未发布 | [Plan 07](docs/plan/07-个人简历展示.md) |
 | PLAN-CV-12 AI 简历分析与岗位匹配 | 已保存版本/岗位；火山引擎/DeepSeek/OpenAI 官方预设；自部署者自填配置 | 三家预设及个人配置已确认，密钥/模型管理与适配为设计稿；尚未建代码或发起调用，数据处理/预算与具体模型启用前核对 | [PRD 12](docs/prd/12-AI简历分析与岗位匹配.md)、[Plan 12](docs/plan/12-AI简历分析与岗位匹配.md) |
 | MIT 许可与自部署交付说明 | 开源自部署、MIT 已确认 | 根 LICENSE 与第三方版权/许可清单待补；仅记录选择，不计为发布完成 | [PROJECT](PROJECT.md)、[README](README.md) |

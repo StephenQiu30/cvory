@@ -117,6 +117,11 @@ declare namespace API {
     etag: string;
   };
 
+  type exportCvPngParams = {
+    id: string;
+    etag: string;
+  };
+
   type FieldViolation = {
     field: string;
     description: string;

@@ -75,6 +75,22 @@ export async function exportCvPdf(
   });
 }
 
+/** 此处后端没有提供注释 GET /api/cvs/${param0}/png */
+export async function exportCvPng(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.exportCvPngParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<string>(`/api/cvs/${param0}/png`, {
+    method: "GET",
+    params: {
+      ...queryParams,
+    },
+    ...(options || {}),
+  });
+}
+
 /** 此处后端没有提供注释 GET /api/print/${param0} */
 export async function getPrintContext(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

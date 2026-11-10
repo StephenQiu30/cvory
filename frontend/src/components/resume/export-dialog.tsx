@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, type RefObject } from "react";
+import type { AxiosResponse } from "axios";
 import { Dialog } from "@/components/shared/app-dialog";
 import { Button } from "@/components/ui/button";
 import { FieldGroup } from "@/components/ui/field";
@@ -8,7 +9,7 @@ import { StatusMessage } from "@/components/ui/status-message";
 import { errorMessage } from "@/lib/api/error-message";
 import { download, markdown, hasContent } from "@/lib/resume/files";
 import { cvApi, ApiError } from "@/lib/api/client";
-import { exportCvPdf } from "@/lib/api/generated/api/files";
+import { exportCvPdf, exportCvPng } from "@/lib/api/generated/api/files";
 import type { CVResource } from "@/lib/api/types";
 export function ExportDialog({
   open,
@@ -59,6 +60,11 @@ export function ExportDialog({
         >
           {[
             ["pdf", "PDF · 用于投递", "可选文字、多页 A4，保留当前样式。"],
+            [
+              "png",
+              "PNG · 图片分享",
+              "单页下载 PNG，多页按顺序打包 ZIP；每页约 144 DPI。",
+            ],
             [
               "json",
               "JSON · 完整备份",
@@ -115,6 +121,8 @@ export function ExportDialog({
                 if (format !== "json" && !hasContent(saved))
                   throw Error("请先填写姓名和至少一段内容。");
                 let blob: Blob;
+                let downloadExtension = format;
+                let successMessage = "文件已生成，已发起下载。";
                 if (format === "pdf") {
                   blob = (await exportCvPdf(
                     { id: saved.id, etag: saved.etag },
@@ -124,6 +132,34 @@ export function ExportDialog({
                       signal: controller.signal,
                     },
                   )) as unknown as Blob;
+                } else if (format === "png") {
+                  const response = (await exportCvPng(
+                    { id: saved.id, etag: saved.etag },
+                    {
+                      responseType: "blob",
+                      timeout: 180000,
+                      signal: controller.signal,
+                      returnResponse: true,
+                    },
+                  )) as unknown as AxiosResponse<Blob>;
+                  if (controller.signal.aborted) return;
+                  blob = response.data;
+                  downloadExtension =
+                    blob.type === "image/png" ? "png" : "zip";
+                  const pageCount = Number(
+                    response.headers["x-export-page-count"],
+                  );
+                  const dimensions =
+                    response.headers["x-export-page-dimensions"];
+                  const dimensionLabel =
+                    typeof dimensions === "string" &&
+                    /^\d+x\d+$/.test(dimensions)
+                      ? `${dimensions.replace("x", " × ")} px`
+                      : "按 PDF 各页尺寸渲染";
+                  successMessage =
+                    Number.isInteger(pageCount) && pageCount > 0
+                      ? `PNG 已生成：共 ${pageCount} 页，每页 ${dimensionLabel}，144 DPI。`
+                      : `PNG 已生成，每页 144 DPI；多页文件已按顺序打包。`;
                 } else if (format === "json") {
                   if (
                     saved.profile.avatarUrl &&
@@ -167,9 +203,9 @@ export function ExportDialog({
                 if (controller.signal.aborted) return;
                 download(
                   blob,
-                  `${saved.displayName.replace(/[\\/:*?"<>|]/g, "-")}.${format}`,
+                  `${saved.displayName.replace(/[\\/:*?"<>|]/g, "-")}.${downloadExtension}`,
                 );
-                setMessage("文件已生成，已发起下载。");
+                setMessage(successMessage);
               } catch (e) {
                 if (!controller.signal.aborted)
                   setError(

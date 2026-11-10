@@ -154,4 +154,45 @@ export class FilesController {
       response.off('close', close);
     }
   }
+  @Get('cvs/:id/png')
+  @ApiOperation({operationId: 'exportCvPng'})
+  @ApiQuery({name: 'etag', required: true})
+  @ApiProduces('image/png', 'application/zip')
+  @ApiOkResponse({schema: {type: 'string', format: 'binary'}})
+  async png(
+    @Param('id') id: string,
+    @Query('etag') etag: string,
+    @Req() req: OwnerRequest,
+    @Res() response: Response,
+  ): Promise<void> {
+    const controller = new AbortController();
+    const close = () => {
+      if (!response.writableEnded) controller.abort();
+    };
+    response.once('close', close);
+    try {
+      const output = await this.files.png(id, req.owner, etag, controller.signal);
+      if (!response.destroyed) {
+        const firstSize = output.pageSizes[0];
+        const sameSize = output.pageSizes.every(
+          (size) => size.width === firstSize?.width && size.height === firstSize?.height,
+        );
+        const extension = output.contentType === 'image/png' ? 'png' : 'zip';
+        response
+          .set({
+            'Content-Type': output.contentType,
+            'Content-Disposition': `attachment; filename="cvory-resume.${extension}"`,
+            'Content-Length': String(output.data.length),
+            'Cache-Control': 'no-store',
+            'X-Export-Page-Count': String(output.pageCount),
+            'X-Export-Page-Dimensions':
+              sameSize && firstSize ? `${firstSize.width}x${firstSize.height}` : 'varied',
+            'Access-Control-Expose-Headers': 'X-Export-Page-Count, X-Export-Page-Dimensions',
+          })
+          .send(output.data);
+      }
+    } finally {
+      response.off('close', close);
+    }
+  }
 }
