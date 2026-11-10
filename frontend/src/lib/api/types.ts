@@ -8,4 +8,5 @@ export type CreateCVRequest = API.CreateCVRequest;
 export type UpdateCVRequest = API.UpdateCVRequest;
 export type ListCVsResponse = API.CvList;
 export type ResumeData = API.ResumeDocument;
+export type ResumeImportCandidate = API.ResumeImportCandidate;
 export type { GoogleApiError } from "./request";

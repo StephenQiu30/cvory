@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { CreateCVRequest, ResumeData, Section } from "@/lib/api/types";
 import { DEFAULT_STYLE, textContent } from "./model";
 export const MAX_IMPORT_BYTES = 10 * 1024 * 1024;
+export const IMPORT_CANDIDATE_TTL_MS = 60 * 60 * 1000;
 export async function parseMarkdown(text: string): Promise<CreateCVRequest> {
   if (!text.trim()) throw Error("文件中没有文字。");
   if (new Blob([text]).size > MAX_IMPORT_BYTES)

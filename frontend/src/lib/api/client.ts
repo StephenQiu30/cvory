@@ -1,4 +1,5 @@
 import * as generated from "./generated/api/cvs";
+import * as filesGenerated from "./generated/api/files";
 import type { CreateCVRequest, UpdateCVRequest } from "./types";
 export { ApiError, type GoogleApiError } from "./request";
 export const cvApi = {
@@ -26,4 +27,8 @@ export const cvApi = {
       { id },
       { headers: etag ? { "If-Match": `"${etag}"` } : {} },
     ),
+};
+export const fileApi = {
+  parseResumeImport: (file: File, signal: AbortSignal) =>
+    filesGenerated.parseResumeImport({}, file, { signal, timeout: 30000 }),
 };

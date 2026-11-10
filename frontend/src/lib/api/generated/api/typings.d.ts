@@ -165,6 +165,19 @@ declare namespace API {
     status: "ok";
   };
 
+  type ImportPosition = {
+    x: number;
+    y: number;
+  };
+
+  type ImportTextBlock = {
+    kind: "heading" | "paragraph" | "list-item" | "table-row" | "line";
+    order: number;
+    text: string;
+    page?: number;
+    position?: ImportPosition;
+  };
+
   type linkGithubParams = {
     returnTo: string;
   };
@@ -264,6 +277,13 @@ declare namespace API {
     profile: ProfileSchema;
     sections: SectionSchema[];
     styleSettings: StyleSettingsSchema;
+  };
+
+  type ResumeImportCandidate = {
+    format: "docx" | "pdf";
+    pageCount?: number;
+    blocks: ImportTextBlock[];
+    warnings: string[];
   };
 
   type SectionInput = {

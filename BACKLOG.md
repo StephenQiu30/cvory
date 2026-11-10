@@ -27,7 +27,7 @@
 | 我的简历卡片工作区与共享页面壳 | PLAN-CV-01 | 已实现并通过真实本地 API／浏览器验收 | [设计 02 §2.5](docs/design/02-CV制作管理与展示设计.md#25-管理工作区与共享页面壳)、[PRD 01](docs/prd/01-CV制作与保存.md)、[Plan 01](docs/plan/01-CV制作与保存.md) |
 | PLAN-CV-02 版本管理 | PLAN-CV-01 | 已有副本、名称及删除实现和局部证据；Nest 历史快照/有界保留/幂等恢复副本及前端入口已实现；公开来源删除保护有代码，完整发布并发、资源兼容及历史预览待验证；公开来源删除保护已在 Nest 验证 | [Plan 02](docs/plan/02-CV版本管理.md) |
 | PLAN-CV-03 模板与样式 | PLAN-CV-01 | 已有三模板、配色及预设和局部证据；兼容模板、预览边界及跨输出验收待完成 | [Plan 03](docs/plan/03-模板与样式管理.md) |
-| PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 已有 JSON v1／Markdown 解析及另存和局部证据；定点校对保真待收敛，完整往返待验收；DOCX/文字 PDF 为必需目标且尚未实现，扫描提示不支持/OCR后续 | [Plan 04](docs/plan/04-简历导入.md) |
+| PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 已实现 DOCX/文字 PDF 子进程解析、来源片段/页码/坐标、明确字段映射、候选校对及幂等另存；10 MiB/解压体积/页数/时间/堆限制和临时清理已写入代码。合成样本、多栏/表格、扫描/加密/损坏/超限、取消清理与真实浏览器流程尚未验收；JSON/Markdown 定点校对保真与往返仍待收敛。扫描 PDF 明确提示不支持，OCR 后续再定 | [Plan 04](docs/plan/04-简历导入.md) |
 | PLAN-CV-05 备份与 Markdown | PLAN-CV-03、04 | 已有含照片 JSON／Markdown 实现及局部证据；原站不可用的完整恢复与故障降级待验收 | [Plan 05](docs/plan/05-简历备份与Markdown导出.md) |
 | PLAN-CV-06 PDF/PNG | PLAN-CV-03 | Nest 独立 Chromium 子进程承接 PDF；实际文件与资源/取消验证按 HANDOVER，精确预览与部署拓扑仍须完整验收；逐页 PNG/ZIP 尚未实现 | [Plan 06](docs/plan/06-PDF导出.md) |
 | PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 已有固定预览、发布、撤回及匿名页；并发版本、来源保护与完整匿名隐私链路待验收，站主首页/精选 GitHub 项目尚未实现，真实网站尚未发布 | [Plan 07](docs/plan/07-个人简历展示.md) |

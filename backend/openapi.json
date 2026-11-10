@@ -2880,6 +2880,137 @@
         ]
       }
     },
+    "/api/resumeImports:parse": {
+      "post": {
+        "operationId": "parseResumeImport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumeImportCandidate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "files"
+        ]
+      }
+    },
     "/api/cvs/{id}/avatar": {
       "post": {
         "operationId": "uploadCvAvatar",
@@ -4450,6 +4581,85 @@
         },
         "required": [
           "reviewId"
+        ]
+      },
+      "ImportPosition": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number"
+          },
+          "y": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ]
+      },
+      "ImportTextBlock": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "heading",
+              "paragraph",
+              "list-item",
+              "table-row",
+              "line"
+            ]
+          },
+          "order": {
+            "type": "number"
+          },
+          "text": {
+            "type": "string"
+          },
+          "page": {
+            "type": "number"
+          },
+          "position": {
+            "$ref": "#/components/schemas/ImportPosition"
+          }
+        },
+        "required": [
+          "kind",
+          "order",
+          "text"
+        ]
+      },
+      "ResumeImportCandidate": {
+        "type": "object",
+        "properties": {
+          "format": {
+            "type": "string",
+            "enum": [
+              "docx",
+              "pdf"
+            ]
+          },
+          "pageCount": {
+            "type": "number"
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImportTextBlock"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "format",
+          "blocks",
+          "warnings"
         ]
       },
       "GithubConnection": {

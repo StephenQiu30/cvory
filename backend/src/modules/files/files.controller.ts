@@ -5,6 +5,8 @@ import {
   UploadedFile,
   UseInterceptors,
   Param,
+  HttpCode,
+  HttpStatus,
   Query,
   Req,
   Res,
@@ -28,6 +30,8 @@ import {CvResource} from '../cvs/cv_resource.dto';
 import {ImageService} from './image.service';
 import {invalid, notFound} from '../../common/errors';
 import {FilesService} from './files.service';
+import {ResumeImportCandidate} from './import.dto';
+import {IMPORT_MAX_BYTES} from './import.constants';
 @ApiTags('files')
 @Controller()
 export class FilesController {
@@ -36,6 +40,37 @@ export class FilesController {
     private readonly cvs: CvsService,
     private readonly images: ImageService,
   ) {}
+  @Post('resumeImports\\:parse')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({operationId: 'parseResumeImport'})
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {file: {type: 'string', format: 'binary'}},
+    },
+  })
+  @ApiOkResponse({type: ResumeImportCandidate})
+  @UseInterceptors(
+    FileInterceptor('file', {limits: {fileSize: IMPORT_MAX_BYTES, files: 1, fields: 0}}),
+  )
+  async parseResumeImport(
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Req() req: OwnerRequest,
+    @Res({passthrough: true}) response: Response,
+  ): Promise<ResumeImportCandidate> {
+    const controller = new AbortController();
+    const close = () => {
+      if (!response.writableEnded) controller.abort();
+    };
+    response.once('close', close);
+    try {
+      return await this.files.parseResumeImport(file, req.owner, controller.signal);
+    } finally {
+      response.off('close', close);
+    }
+  }
   @Post('cvs/:id/avatar')
   @ApiOperation({operationId: 'uploadCvAvatar'})
   @ApiConsumes('multipart/form-data')
