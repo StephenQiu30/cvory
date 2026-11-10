@@ -1,7 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GitFork, Globe, UserRound, ShieldCheck, Palette } from "lucide-react";
+import {
+  GitFork,
+  Globe,
+  UserRound,
+  ShieldCheck,
+  Palette,
+  Sparkles,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { Content } from "./content";
 import { useAccount } from "@/components/account/account-provider";
@@ -34,6 +41,7 @@ export function SettingsLayout({ children }: { children: ReactNode }) {
               ["github", "GitHub 项目", GitFork],
               ["appearance", "外观", Palette],
               ["publication", "公开简历", Globe],
+              ["ai", "AI 服务", Sparkles],
             ].map(([path, label, Icon]) => {
               const I = Icon as typeof Globe;
               return (

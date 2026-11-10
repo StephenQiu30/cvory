@@ -31,7 +31,7 @@
 | PLAN-CV-05 备份与 Markdown | PLAN-CV-03、04 | 已有含照片 JSON／Markdown 实现及局部证据；原站不可用的完整恢复与故障降级待验收 | [Plan 05](docs/plan/05-简历备份与Markdown导出.md) |
 | PLAN-CV-06 PDF/PNG | PLAN-CV-03 | 已有 Nest 固定快照 PDF 及 PDF.js 逐页 PNG，单页 PNG、多页 ZIP；页数/像素/输出/进程限额已落入代码。真实输出质量、ZIP 页数/顺序、字体图片故障、取消/超限和声明部署拓扑尚未验收 | [Plan 06](docs/plan/06-PDF导出.md) |
 | PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 已实现站主显式配置首页、稳定个人页共用发布快照、目录查阅、精选项目公开渲染和 GitHub 项目发布预览复核；并发版本、来源保护、完整匿名隐私与浏览器/真实网站验收仍待完成 | [Plan 07](docs/plan/07-个人简历展示.md) |
-| PLAN-CV-12 AI 简历分析与岗位匹配 | 已保存版本/岗位；火山引擎/DeepSeek/OpenAI 官方预设；自部署者自填配置 | 三家预设及个人配置已确认，密钥/模型管理与适配为设计稿；尚未建代码或发起调用，数据处理/预算与具体模型启用前核对 | [PRD 12](docs/prd/12-AI简历分析与岗位匹配.md)、[Plan 12](docs/plan/12-AI简历分析与岗位匹配.md) |
+| PLAN-CV-12 AI 简历分析与岗位匹配 | 已保存版本/岗位；火山引擎/DeepSeek/OpenAI 官方预设；用户自填 Key 和模型 | 功能代码已接入，落实 7 天私有加密正文、仅本人读取、自动清理且 CVory 不限调用/Token/金额；后端类型/lint/格式/OpenAPI 与前端类型/lint/构建通过。模拟 provider、隔离 MySQL 迁移、浏览器流程和三家真实服务均未验收；未运行测试或真实模型调用 | [PRD 12](docs/prd/12-AI简历分析与岗位匹配.md)、[Plan 12](docs/plan/12-AI简历分析与岗位匹配.md) |
 | MIT 许可与自部署交付说明 | 开源自部署、MIT 已确认 | 根 LICENSE 与第三方版权/许可清单待补；仅记录选择，不计为发布完成 | [PROJECT](PROJECT.md)、[README](README.md) |
 
 后续执行顺序：完成真实 GitHub、生命周期与恢复验收 → GitHub 项目选入简历与发布 → 编辑/版本及 MD/DOCX/文字 PDF → PDF/PNG → 站主首页与项目发布 → AI → BOSS 插件规则和模拟 → 用户指定范围的真实平台验收。已有完整链路验证贯穿对应交付，格式必需项不再按可选扩展调度。

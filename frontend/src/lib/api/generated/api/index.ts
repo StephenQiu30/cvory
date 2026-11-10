@@ -8,6 +8,7 @@ import * as cvs from "./cvs";
 import * as presets from "./presets";
 import * as publication from "./publication";
 import * as files from "./files";
+import * as ai from "./ai";
 import * as github from "./github";
 export default {
   health,
@@ -16,5 +17,6 @@ export default {
   presets,
   publication,
   files,
+  ai,
   github,
 };

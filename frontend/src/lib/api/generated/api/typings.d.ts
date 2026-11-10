@@ -14,6 +14,127 @@ declare namespace API {
     avatar?: string | null;
   };
 
+  type AiAnalysisContent = {
+    summary: string;
+    findings: AiFinding[];
+    suggestions: AiSuggestion[];
+    greeting: string;
+  };
+
+  type AiAnalysisInputField = {
+    fieldId: string;
+    label: string;
+    text: string;
+  };
+
+  type AiAnalysisPreview = {
+    cvId: string;
+    cvEtag: string;
+    provider: "volcengine" | "deepseek" | "openai";
+    modelId: string;
+    providerConfigUpdateTime: string;
+    operation: "diagnose" | "jobMatch" | "improve" | "greeting";
+    inputFields: AiAnalysisInputField[];
+    targetFieldOptions: AiAnalysisInputField[];
+    jobDescription: string;
+    retentionDays: number;
+  };
+
+  type AiConnectionTestRequest = {
+    requestId: string;
+  };
+
+  type AiConnectionTestResult = {
+    provider: "volcengine" | "deepseek" | "openai";
+    modelId: string;
+    connected: boolean;
+    requestId: string;
+    inputTokens: number | null;
+    outputTokens: number | null;
+  };
+
+  type AiFinding = {
+    kind: "strength" | "gap" | "unknown";
+    title: string;
+    status: "supported" | "missing" | "unknown";
+    fieldId: string | null;
+    evidence: string;
+    explanation: string;
+  };
+
+  type AiProviderList = {
+    providers: AiProviderStatus[];
+  };
+
+  type AiProviderStatus = {
+    provider: "volcengine" | "deepseek" | "openai";
+    displayName: string;
+    protocol: string;
+    officialHost: string;
+    configured: boolean;
+    encryptionReady: boolean;
+    modelId: string | null;
+    keySuffix: string | null;
+    updateTime: string | null;
+  };
+
+  type AiReportList = {
+    reports: AiReportSummary[];
+    nextPageToken: string;
+  };
+
+  type AiReportResource = {
+    id: string;
+    cvId: string;
+    cvEtag: string;
+    provider: "volcengine" | "deepseek" | "openai";
+    modelId: string;
+    operation: "diagnose" | "jobMatch" | "improve" | "greeting";
+    promptVersion: string;
+    status: "succeeded" | "failed" | "unknown" | "running";
+    inputFields: AiAnalysisInputField[];
+    jobDescription: string;
+    result: AiAnalysisContent | null;
+    usage: AiUsageResource;
+    createTime: string;
+    expireTime: string;
+  };
+
+  type AiReportSummary = {
+    id: string;
+    cvId: string;
+    cvEtag: string;
+    provider: "volcengine" | "deepseek" | "openai";
+    modelId: string;
+    operation: "diagnose" | "jobMatch" | "improve" | "greeting";
+    status: "succeeded" | "failed" | "unknown" | "running";
+    createTime: string;
+    expireTime: string;
+  };
+
+  type AiSuggestion = {
+    targetFieldId: string;
+    sourceText: string;
+    proposedText: string;
+    explanation: string;
+  };
+
+  type AiUsageResource = {
+    inputTokens: number | null;
+    outputTokens: number | null;
+  };
+
+  type AnalyzeCvRequest = {
+    cvId: string;
+    etag: string;
+    provider: "volcengine" | "deepseek" | "openai";
+    operation: "diagnose" | "jobMatch" | "improve" | "greeting";
+    jobDescription?: string;
+    targetFieldId?: string;
+    requestId: string;
+    providerConfigUpdateTime: string;
+  };
+
   type AuthOptions = {
     githubEnabled: boolean;
     legacyRegistrationEnabled: boolean;
@@ -87,6 +208,10 @@ declare namespace API {
     document: CVResource;
   };
 
+  type deleteAiProviderParams = {
+    provider: string;
+  };
+
   type deleteCvParams = {
     id: string;
   };
@@ -125,6 +250,10 @@ declare namespace API {
   type FieldViolation = {
     field: string;
     description: string;
+  };
+
+  type getAiReportParams = {
+    id: string;
   };
 
   type getCvAvatarParams = {
@@ -211,6 +340,11 @@ declare namespace API {
     returnTo: string;
   };
 
+  type listAiReportsParams = {
+    pageSize?: number;
+    pageToken?: string;
+  };
+
   type listCvRevisionsParams = {
     id: string;
   };
@@ -222,6 +356,15 @@ declare namespace API {
 
   type listGithubRepositoriesParams = {
     pageToken?: any;
+  };
+
+  type PreviewCvRequest = {
+    cvId: string;
+    etag: string;
+    provider: "volcengine" | "deepseek" | "openai";
+    operation: "diagnose" | "jobMatch" | "improve" | "greeting";
+    jobDescription?: string;
+    targetFieldId?: string;
   };
 
   type ProfileInput = {
@@ -417,6 +560,21 @@ declare namespace API {
     fontSize: number;
     lineHeight: number;
     margin: number;
+  };
+
+  type testAiProviderParams = {
+    provider: string;
+  };
+
+  type updateAiProviderParams = {
+    provider: string;
+  };
+
+  type UpdateAiProviderRequest = {
+    /** Provider model or endpoint ID configured by the user. */
+    modelId: string;
+    /** Blank leaves the existing API Key unchanged. */
+    apiKey?: string;
   };
 
   type updateCvParams = {

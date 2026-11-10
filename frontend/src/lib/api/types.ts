@@ -9,4 +9,6 @@ export type UpdateCVRequest = API.UpdateCVRequest;
 export type ListCVsResponse = API.CvList;
 export type ResumeData = API.ResumeDocument;
 export type ResumeImportCandidate = API.ResumeImportCandidate;
+export type AiProvider = API.AiProviderStatus["provider"];
+export type AiOperation = API.AiAnalysisPreview["operation"];
 export type { GoogleApiError } from "./request";

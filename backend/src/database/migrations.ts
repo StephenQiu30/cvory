@@ -127,6 +127,23 @@ export async function migrate(db: Database): Promise<void> {
         connection,
       );
     }
+
+    if (!versions.has('007_ai_resume_analysis')) {
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS ai_provider_configs(owner_id VARCHAR(36) NOT NULL,provider VARCHAR(20) NOT NULL,model_id VARCHAR(200) NOT NULL,key_ciphertext TEXT NOT NULL,key_iv CHAR(16) NOT NULL,key_tag CHAR(24) NOT NULL,key_suffix CHAR(4) NOT NULL,update_time DATETIME(6) NOT NULL,PRIMARY KEY(owner_id,provider))',
+      );
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS ai_usage_records(id VARCHAR(36) PRIMARY KEY,owner_id VARCHAR(36) NOT NULL,request_id VARCHAR(36) NOT NULL,provider VARCHAR(20) NOT NULL,model_id VARCHAR(200) NOT NULL,operation VARCHAR(24) NOT NULL,prompt_version VARCHAR(40) NOT NULL,input_chars INT UNSIGNED NOT NULL,status VARCHAR(16) NOT NULL,input_tokens INT UNSIGNED NULL,output_tokens INT UNSIGNED NULL,provider_request_id VARCHAR(200) NULL,create_time DATETIME(6) NOT NULL,expire_time DATETIME(6) NOT NULL,UNIQUE KEY owner_request(owner_id,request_id),INDEX owner_create(owner_id,create_time),INDEX expire_time(expire_time),INDEX running_create(status,create_time))',
+      );
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS ai_reports(id VARCHAR(36) PRIMARY KEY,owner_id VARCHAR(36) NOT NULL,cv_id VARCHAR(36) NOT NULL,cv_etag VARCHAR(64) NOT NULL,payload_ciphertext MEDIUMTEXT NOT NULL,payload_iv CHAR(16) NOT NULL,payload_tag CHAR(24) NOT NULL,status VARCHAR(16) NOT NULL,create_time DATETIME(6) NOT NULL,expire_time DATETIME(6) NOT NULL,INDEX owner_create(owner_id,create_time),INDEX expire_time(expire_time),INDEX running_create(status,create_time))',
+      );
+      await db.run(
+        'INSERT INTO cvory_migrations VALUES (?,UTC_TIMESTAMP(6))',
+        ['007_ai_resume_analysis'],
+        connection,
+      );
+    }
   } finally {
     await connection.query("DO RELEASE_LOCK(CONCAT(DATABASE(), ':cvory-migrate'))");
     connection.release();

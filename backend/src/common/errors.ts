@@ -79,8 +79,16 @@ export class ApiExceptionFilter implements ExceptionFilter {
     const status =
       error instanceof ApiError
         ? error.status
-        : {400: 'INVALID_ARGUMENT', 404: 'NOT_FOUND', 413: 'RESOURCE_EXHAUSTED'}[code] ||
-          'INTERNAL';
+        : {
+            400: 'INVALID_ARGUMENT',
+            404: 'NOT_FOUND',
+            408: 'DEADLINE_EXCEEDED',
+            413: 'RESOURCE_EXHAUSTED',
+            429: 'RESOURCE_EXHAUSTED',
+            502: 'UNAVAILABLE',
+            503: 'UNAVAILABLE',
+            504: 'DEADLINE_EXCEEDED',
+          }[code] || 'INTERNAL';
     response
       .status(code)
       .set('Cache-Control', 'no-store')

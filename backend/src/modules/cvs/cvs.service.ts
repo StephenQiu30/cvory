@@ -83,6 +83,16 @@ export class CvsService {
     if (!row) throw notFound();
     return this.resource(row);
   }
+  async getVersion(id: string, owner: string, etag: string): Promise<CVResource> {
+    const current = await this.get(id, owner);
+    if (current.etag === etag) return current;
+    const [revision] = await this.db.rows(
+      'SELECT snapshot FROM cv_revisions WHERE cv_id=? AND owner_id=? AND etag=?',
+      [id, owner, etag],
+    );
+    if (!revision) throw notFound();
+    return snapshotResource(parse(revision.snapshot));
+  }
   async list(owner: string, size: number, token: string) {
     if (!Number.isInteger(size) || size < 1 || size > 100) throw invalid('Invalid page size.');
     let offset = 0;

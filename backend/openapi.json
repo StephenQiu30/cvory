@@ -3658,6 +3658,988 @@
         ]
       }
     },
+    "/api/ai/providers": {
+      "get": {
+        "operationId": "listAiProviders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai/providers/{provider}": {
+      "patch": {
+        "operationId": "updateAiProvider",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAiProviderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiProviderList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteAiProvider",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai/providers/{provider}:test": {
+      "post": {
+        "operationId": "testAiProvider",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AiConnectionTestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiConnectionTestResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai:preview": {
+      "post": {
+        "operationId": "previewCvAnalysis",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreviewCvRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiAnalysisPreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai:analyze": {
+      "post": {
+        "operationId": "analyzeCv",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyzeCvRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiReportResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai/reports": {
+      "get": {
+        "operationId": "listAiReports",
+        "parameters": [
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageToken",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiReportList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/ai/reports/{id}": {
+      "get": {
+        "operationId": "getAiReport",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AiReportResource"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
     "/api/account/github/connection": {
       "get": {
         "operationId": "getGithubConnection",
@@ -5083,6 +6065,585 @@
           "format",
           "blocks",
           "warnings"
+        ]
+      },
+      "AiProviderStatus": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "officialHost": {
+            "type": "string"
+          },
+          "configured": {
+            "type": "boolean"
+          },
+          "encryptionReady": {
+            "type": "boolean"
+          },
+          "modelId": {
+            "type": "string",
+            "nullable": true
+          },
+          "keySuffix": {
+            "type": "string",
+            "nullable": true
+          },
+          "updateTime": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "provider",
+          "displayName",
+          "protocol",
+          "officialHost",
+          "configured",
+          "encryptionReady",
+          "modelId",
+          "keySuffix",
+          "updateTime"
+        ]
+      },
+      "AiProviderList": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiProviderStatus"
+            }
+          }
+        },
+        "required": [
+          "providers"
+        ]
+      },
+      "UpdateAiProviderRequest": {
+        "type": "object",
+        "properties": {
+          "modelId": {
+            "type": "string",
+            "description": "Provider model or endpoint ID configured by the user."
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "Blank leaves the existing API Key unchanged."
+          }
+        },
+        "required": [
+          "modelId"
+        ]
+      },
+      "AiConnectionTestRequest": {
+        "type": "object",
+        "properties": {
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requestId"
+        ]
+      },
+      "AiConnectionTestResult": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "connected": {
+            "type": "boolean"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "inputTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "outputTokens": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "provider",
+          "modelId",
+          "connected",
+          "requestId",
+          "inputTokens",
+          "outputTokens"
+        ]
+      },
+      "PreviewCvRequest": {
+        "type": "object",
+        "properties": {
+          "cvId": {
+            "type": "string"
+          },
+          "etag": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "diagnose",
+              "jobMatch",
+              "improve",
+              "greeting"
+            ]
+          },
+          "jobDescription": {
+            "type": "string"
+          },
+          "targetFieldId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cvId",
+          "etag",
+          "provider",
+          "operation"
+        ]
+      },
+      "AiAnalysisInputField": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fieldId",
+          "label",
+          "text"
+        ]
+      },
+      "AiAnalysisPreview": {
+        "type": "object",
+        "properties": {
+          "cvId": {
+            "type": "string"
+          },
+          "cvEtag": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "providerConfigUpdateTime": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "diagnose",
+              "jobMatch",
+              "improve",
+              "greeting"
+            ]
+          },
+          "inputFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiAnalysisInputField"
+            }
+          },
+          "targetFieldOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiAnalysisInputField"
+            }
+          },
+          "jobDescription": {
+            "type": "string"
+          },
+          "retentionDays": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cvId",
+          "cvEtag",
+          "provider",
+          "modelId",
+          "providerConfigUpdateTime",
+          "operation",
+          "inputFields",
+          "targetFieldOptions",
+          "jobDescription",
+          "retentionDays"
+        ]
+      },
+      "AnalyzeCvRequest": {
+        "type": "object",
+        "properties": {
+          "cvId": {
+            "type": "string"
+          },
+          "etag": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "diagnose",
+              "jobMatch",
+              "improve",
+              "greeting"
+            ]
+          },
+          "jobDescription": {
+            "type": "string"
+          },
+          "targetFieldId": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "providerConfigUpdateTime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "cvId",
+          "etag",
+          "provider",
+          "operation",
+          "requestId",
+          "providerConfigUpdateTime"
+        ]
+      },
+      "AiFinding": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "strength",
+              "gap",
+              "unknown"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "missing",
+              "unknown"
+            ]
+          },
+          "fieldId": {
+            "type": "string",
+            "nullable": true
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "status",
+          "fieldId",
+          "evidence",
+          "explanation"
+        ]
+      },
+      "AiSuggestion": {
+        "type": "object",
+        "properties": {
+          "targetFieldId": {
+            "type": "string"
+          },
+          "sourceText": {
+            "type": "string"
+          },
+          "proposedText": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetFieldId",
+          "sourceText",
+          "proposedText",
+          "explanation"
+        ]
+      },
+      "AiAnalysisContent": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiFinding"
+            }
+          },
+          "suggestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiSuggestion"
+            }
+          },
+          "greeting": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "summary",
+          "findings",
+          "suggestions",
+          "greeting"
+        ]
+      },
+      "AiUsageResource": {
+        "type": "object",
+        "properties": {
+          "inputTokens": {
+            "type": "number",
+            "nullable": true
+          },
+          "outputTokens": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "inputTokens",
+          "outputTokens"
+        ]
+      },
+      "AiReportResource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cvId": {
+            "type": "string"
+          },
+          "cvEtag": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "diagnose",
+              "jobMatch",
+              "improve",
+              "greeting"
+            ]
+          },
+          "promptVersion": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed",
+              "unknown",
+              "running"
+            ]
+          },
+          "inputFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiAnalysisInputField"
+            }
+          },
+          "jobDescription": {
+            "type": "string"
+          },
+          "result": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AiAnalysisContent"
+              }
+            ]
+          },
+          "usage": {
+            "$ref": "#/components/schemas/AiUsageResource"
+          },
+          "createTime": {
+            "type": "string"
+          },
+          "expireTime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "cvId",
+          "cvEtag",
+          "provider",
+          "modelId",
+          "operation",
+          "promptVersion",
+          "status",
+          "inputFields",
+          "jobDescription",
+          "result",
+          "usage",
+          "createTime",
+          "expireTime"
+        ]
+      },
+      "AiReportSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "cvId": {
+            "type": "string"
+          },
+          "cvEtag": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "volcengine",
+              "deepseek",
+              "openai"
+            ]
+          },
+          "modelId": {
+            "type": "string"
+          },
+          "operation": {
+            "type": "string",
+            "enum": [
+              "diagnose",
+              "jobMatch",
+              "improve",
+              "greeting"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "failed",
+              "unknown",
+              "running"
+            ]
+          },
+          "createTime": {
+            "type": "string"
+          },
+          "expireTime": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "cvId",
+          "cvEtag",
+          "provider",
+          "modelId",
+          "operation",
+          "status",
+          "createTime",
+          "expireTime"
+        ]
+      },
+      "AiReportList": {
+        "type": "object",
+        "properties": {
+          "reports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AiReportSummary"
+            }
+          },
+          "nextPageToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reports",
+          "nextPageToken"
         ]
       },
       "GithubConnection": {

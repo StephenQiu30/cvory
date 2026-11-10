@@ -1,17 +1,17 @@
 # 项目交接记录
 
-## 站主首页与 GitHub 项目发布
+## AI 简历分析与岗位匹配
 
-- `/` 使用运行环境 `SITE_OWNER_PUBLIC_ID` 读取指定站主的公开快照；未设置或尚未发布时展示空状态，不推断首个登录用户。`/u/{publicId}` 与首页复用相同只读页面和匿名接口；简历目录链接到个人简介、有效简历模块及精选项目。
-- 原简历工作区迁至 `/workspace`；顶部导航、简历编辑返回、公开设置和登录退出后的工作区链接已同步。桌面使用侧边目录，窄屏使用横向目录；链接有明确焦点态和触控高度。
-- 新增显式 SQL 迁移 `006_github_featured_projects`，按账户保存最多 12 个仓库候选、顺序和独立的个人贡献。保存或刷新项目时服务端按已绑定 GitHub 数字 ID 重查仓库公开状态；发布预览再核验并取新元数据。保存候选不改变公开快照，只有确认发布后才更新；项目简介、stars 与个人贡献分开呈现。
-- GitHub API 合同及前端生成客户端已同步。公开接口设置 `no-store`；撤回后站点继续从唯一发布快照读取，不提供旧项目候选给访客。
+- 增加 NestJS AI 模块、owner 隔离的 provider 设置、连接测试、输入预览、已保存 CV/历史版本分析、报告读取和分页。用户分别填写火山引擎 Ark、DeepSeek、OpenAI 官方 API Key 与模型；固定官方地址，服务端禁止重定向。OpenAI 使用 Responses API 且关闭 response storage，另两家使用官方 Chat Completions JSON mode。
+- 迁移 `007_ai_resume_analysis` 创建密钥、用量和报告表；迁移仍需由部署者显式运行。API Key 与分析输入/报告正文使用部署者配置的 AES-256-GCM 密钥加密，正文和索引记录在第 7 天后清理；报告/用量读接口按 owner 隔离。部署者必须备份并保持 `AI_ENCRYPTION_KEY` 稳定，丢失或更换会使既有密文无法读取。
+- 编辑器可先审阅确切发送内容，再选择诊断、岗位匹配、段落改进或招呼草稿。默认排除联系方式、照片、隐藏字段与隐藏模块；服务端核验证据字段和原文。建议只应用于当前且未变化的目标私有草稿，不能直接修改历史、发布快照或投递材料。
+- CVory 不设置请求、输入/输出 token 或金额上限；供应商费用由用户承担。连接测试也可能收费。相同 request ID 不重复调用；超时、断流、5xx 或不完整响应保留可得用量并记为未知，不自动重放。响应中断时前端按 request ID 取回报告；遗留运行记录超过 3 分钟转为未知，仍按 7 天期限清理。
 
 ## 工程检查与验收边界
 
-- 后端 `pnpm openapi`、`pnpm typecheck`、`pnpm lint`、`pnpm format:check` 通过；`openapi` 包含后端构建。
-- 前端 `pnpm openapi`、`pnpm build` 通过；`pnpm lint` 为 0 错误、1 个既有 `postcss.config.mjs` 匿名默认导出警告；首次构建发现并删除了孤立的 `.next/dev/types/validator.ts` 生成缓存，随后生产构建通过。`git diff --check` 通过。
-- 原工作区浏览器流程入口已改为 `/workspace`，但未运行测试套件或真实浏览器；未执行数据库迁移、真实 GitHub 请求、公网部署或匿名隐私端到端检查。因此 PRD 07/08 仍未完成验收。
-- 当前仓库尚未接入远端 CI。推送后应单独核对远端状态；本地检查不代表真实服务或产品验收。
+- 后端 `pnpm typecheck`、`pnpm lint`、`pnpm format:check`、`pnpm openapi` 通过；OpenAPI 由 Nest 构建生成。
+- 前端 `pnpm openapi`、`pnpm exec tsc --noEmit`、`pnpm build` 通过；`pnpm lint` 为 0 个错误、1 条既有 `postcss.config.mjs` 匿名默认导出警告。`git diff --check` 通过。
+- 未添加或运行测试套件，未运行浏览器验收、隔离 MySQL/迁移、真实 AI 提供商请求或部署。AC-AI-01～07 的完整产品验收仍待完成；静态检查不代表模型质量、供应商计费/数据政策或生产恢复已验证。
+- 仓库尚无远端 CI；本地结果不代表远端检查或部署通过。
 
 下一项按 [BACKLOG](BACKLOG.md) 继续。

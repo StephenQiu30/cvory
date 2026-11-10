@@ -2,7 +2,7 @@
 
 面向个人的开源自部署简历与求职工具，许可选定 MIT。前端使用 Next.js、Geist 与 shadcn/Radix，后端仅使用 NestJS + TypeScript + MySQL，代码和目录规则见 [PROJECT](PROJECT.md)。
 
-已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本／Markdown 制作、串行自动保存与条件写入、本机草稿恢复、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF/PNG、筛选后的公开简历及站主个人主页/精选 GitHub 项目。DOCX/文字 PDF 解析、候选校对和逐页 PNG 导出已接入；格式样本、输出质量、站主匿名隐私链路和资源预算尚待完整验收。AI 和 BOSS Chrome 插件仍按 [BACKLOG](BACKLOG.md) 实施。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将代码存在表述为完整产品验收。
+已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本／Markdown 制作、串行自动保存与条件写入、本机草稿恢复、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF/PNG、筛选后的公开简历及站主个人主页/精选 GitHub 项目。DOCX/文字 PDF 解析、候选校对和逐页 PNG 导出已接入；格式样本、输出质量、站主匿名隐私链路和资源预算尚待完整验收。AI 三家官方服务配置、分析和私有报告代码已接入，但浏览器/隔离数据库与模型验收未完成，未发起真实服务调用；BOSS Chrome 插件仍待实施，按 [BACKLOG](BACKLOG.md) 跟踪。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将代码存在表述为完整产品验收。
 
 [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md) → [产品设计](docs/design/02-CV制作管理与展示设计.md) → [PRD](docs/prd/00-PRD导航.md) → [Plan](docs/plan/00-Plan导航.md)。
 

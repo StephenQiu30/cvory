@@ -18,6 +18,7 @@ import {
   ChevronDown,
   Eye,
   EyeOff,
+  Sparkles,
 } from "lucide-react";
 import { cvApi, ApiError } from "@/lib/api/client";
 import type { CVResource, SectionItem, Section } from "@/lib/api/types";
@@ -37,10 +38,27 @@ import { ExportDialog } from "@/components/resume/export-dialog";
 import { useAccount } from "@/components/account/account-provider";
 import { useCvDocument } from "./use-cv-document";
 import { RevisionHistory } from "./revision-history";
+import { AiAnalysisDialog } from "./ai-analysis-dialog";
 const RichEditor = dynamic(
   () => import("@/components/ui/tiptap-editor").then((m) => m.TiptapEditor),
   { ssr: false },
 );
+
+function richTextFromPlainText(value: string) {
+  return {
+    type: "doc",
+    content: value.split(/\n\s*\n/).map((paragraph) => ({
+      type: "paragraph",
+      content: paragraph
+        .split("\n")
+        .flatMap((line, index) => [
+          ...(index ? [{ type: "hardBreak" }] : []),
+          ...(line ? [{ type: "text", text: line }] : []),
+        ]),
+    })),
+  };
+}
+
 export default function CvEditor({ id }: { id: string }) {
   const router = useRouter();
   const { openAuth } = useAccount();
@@ -49,6 +67,7 @@ export default function CvEditor({ id }: { id: string }) {
   const [preview, setPreview] = useState(false);
   const [pageCount, setPageCount] = useState(1);
   const [fullSize, setFullSize] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
   const [modal, setModal] = useState<
     "manage" | "entry" | "remove" | "conflict" | "leave" | "export" | null
   >(null);
@@ -132,6 +151,99 @@ export default function CvEditor({ id }: { id: string }) {
     patch({
       sections: draft!.sections.map((s) => (s.id === next.id ? next : s)),
     });
+  const applyAiSuggestion = (
+    targetFieldId: string,
+    sourceText: string,
+    proposedText: string,
+  ): boolean => {
+    if (dirty || busy || style || !draft) return false;
+    const profileField =
+      /^profile:(headline|location|expectedLocation|experienceYears|jobStatus)$/.exec(
+        targetFieldId,
+      );
+    if (profileField) {
+      const key = profileField[1] as
+        | "headline"
+        | "location"
+        | "expectedLocation"
+        | "experienceYears"
+        | "jobStatus";
+      if (draft.profile[key] !== sourceText) return false;
+      patch({ profile: { ...draft.profile, [key]: proposedText } });
+      return true;
+    }
+    for (const section of draft.sections) {
+      if (targetFieldId === `section:${section.id}:content`) {
+        if (textContent(section.content) !== sourceText) return false;
+        updateSection({
+          ...section,
+          content: richTextFromPlainText(proposedText),
+        });
+        return true;
+      }
+      for (const item of section.items ?? []) {
+        const prefix = `section:${section.id}:item:${item.id}:`;
+        if (
+          [
+            "title",
+            "subtitle",
+            "location",
+            "degree",
+            "educationType",
+            "department",
+          ].some((key) => targetFieldId === `${prefix}${key}`)
+        ) {
+          const key = targetFieldId.slice(prefix.length) as
+            | "title"
+            | "subtitle"
+            | "location"
+            | "degree"
+            | "educationType"
+            | "department";
+          if (item[key] !== sourceText) return false;
+          updateSection({
+            ...section,
+            items: section.items?.map((candidate) =>
+              candidate.id === item.id
+                ? { ...candidate, [key]: proposedText }
+                : candidate,
+            ),
+          });
+          return true;
+        }
+        if (targetFieldId === `${prefix}tags`) {
+          if ((item.tags ?? []).join("、") !== sourceText) return false;
+          const tags = proposedText
+            .split(/[、,，]/)
+            .map((tag) => tag.trim())
+            .filter(Boolean);
+          updateSection({
+            ...section,
+            items: section.items?.map((candidate) =>
+              candidate.id === item.id ? { ...candidate, tags } : candidate,
+            ),
+          });
+          return true;
+        }
+        if (targetFieldId === `${prefix}description`) {
+          if (textContent(item.description) !== sourceText) return false;
+          updateSection({
+            ...section,
+            items: section.items?.map((candidate) =>
+              candidate.id === item.id
+                ? {
+                    ...candidate,
+                    description: richTextFromPlainText(proposedText),
+                  }
+                : candidate,
+            ),
+          });
+          return true;
+        }
+      }
+    }
+    return false;
+  };
   const choose = (id: string) => {
     setStyle(null);
     setActive(id);
@@ -202,6 +314,14 @@ export default function CvEditor({ id }: { id: string }) {
             </StatusBadge>
             <div className="ml-auto flex gap-1">
               <RevisionHistory id={id} />
+              <Button
+                variant="ghost"
+                aria-label="AI 简历分析"
+                onClick={() => setAiOpen(true)}
+              >
+                <Sparkles aria-hidden data-icon="inline-start" />
+                <span className="hidden sm:inline">AI 分析</span>
+              </Button>
               <Button
                 variant="ghost"
                 aria-label="调整样式"
@@ -552,6 +672,13 @@ export default function CvEditor({ id }: { id: string }) {
           预览简历
         </Button>
       </div>
+      <AiAnalysisDialog
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        cv={draft}
+        dirty={dirty || busy || !!style}
+        onApplySuggestion={applyAiSuggestion}
+      />
       <Dialog
         open={modal === "manage"}
         onOpenChange={(v) => !v && setModal(null)}

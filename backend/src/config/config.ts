@@ -12,6 +12,7 @@ export class Config {
   readonly historyLimit: number;
   readonly dataDir: string;
   readonly frontendUrl: string;
+  readonly aiEncryptionKey: Buffer | null;
 
   constructor(env: NodeJS.ProcessEnv = process.env) {
     if (!env.DATABASE_URL) throw new Error('DATABASE_URL is required. Migrations are explicit.');
@@ -35,6 +36,17 @@ export class Config {
     this.historyLimit = Number(env.CV_HISTORY_LIMIT || '50');
     if (!Number.isInteger(this.historyLimit) || this.historyLimit < 1 || this.historyLimit > 500)
       throw new Error('CV_HISTORY_LIMIT must be between 1 and 500.');
+    const encodedAiEncryptionKey = env.AI_ENCRYPTION_KEY?.trim() || '';
+    if (encodedAiEncryptionKey) {
+      if (!/^[A-Za-z0-9+/]{43}=$/.test(encodedAiEncryptionKey))
+        throw new Error('AI_ENCRYPTION_KEY must be a base64-encoded 32-byte key.');
+      const decodedAiEncryptionKey = Buffer.from(encodedAiEncryptionKey, 'base64');
+      if (decodedAiEncryptionKey.length !== 32)
+        throw new Error('AI_ENCRYPTION_KEY must be a base64-encoded 32-byte key.');
+      this.aiEncryptionKey = decodedAiEncryptionKey;
+    } else {
+      this.aiEncryptionKey = null;
+    }
     if (!Number.isInteger(this.port) || this.port < 1 || this.port > 65535)
       throw new Error('Invalid PORT.');
     if (env.DELETION_ENABLED === 'true')
