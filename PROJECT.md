@@ -25,7 +25,7 @@
 
 ### 3.1 后端 TypeScript 与 NestJS 规范
 
-后端代码以 [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)为规范基线，采用 NestJS + TypeScript strict；模块组织、依赖注入与生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。旧数据兼容由 SQL/TypeScript 显式迁移及固定 scrypt 测试向量维护，不保留第二套运行时。
+后端代码以 [Google TypeScript Style Guide](https://google.github.io/styleguide/tsguide.html)为规范基线，采用 NestJS + TypeScript strict；模块组织、依赖注入与生命周期参照 [NestJS 官方文档](https://docs.nestjs.com/)；HTTP 接口继续遵循 [Google API Design Guide](https://docs.cloud.google.com/apis/design)。框架更换不改变资源、所有权、etag 和错误语义。数据库结构以 `backend/schema.sql` 作为唯一完整定义，由显式 `pnpm db:schema` 应用；不维护版本化迁移文件或迁移记录，API 启动不改写数据库。
 
 - 按实际业务使用 Module、Controller 和可注入 Service；Controller 只处理 HTTP，Service 负责业务与事务，Guard/Pipe/Filter 分别处理权限、输入和错误；不为每个动作新增独立模块或通用 repository 框架。
 - 类型/类使用 PascalCase，字段/方法使用 lowerCamelCase，不给接口加 I 前缀；后端文件按 Google 风格使用 snake_case，保留 Nest 职责后缀，如 `cv_version.service.ts`、`create_cv.dto.ts`。前端文件命名继续按 §3.2，不混用两端约定。
@@ -104,7 +104,7 @@ CV/
 │   │   ├── app.module.ts              # 模块组合与生命周期
 │   │   ├── config/                    # 配置读取和启动校验
 │   │   ├── common/                    # 复用 Guard/Filter/请求上下文
-│   │   ├── database/                  # mysql2 provider、连接/事务与显式迁移
+│   │   ├── database/                  # mysql2 provider、连接/事务与 schema 就绪检查
 │   │   └── modules/
 │   │       ├── account/               # 身份、会话、资料与生命周期
 │   │       ├── cvs/                   # CV、用途副本、修订历史与样式
@@ -120,7 +120,7 @@ CV/
 │   │       ├── ai/                    # 私有配置、三家 provider 与分析报告
 │   │       │   └── providers/         # 统一接口和官方适配
 │   │       └── delivery/              # owner 私有筛选偏好、手工岗位与离线任务
-│   ├── migrations/                    # 版本化 SQL/旧迁移；不在 API 启动时执行
+│   ├── schema.sql                     # 当前完整数据库结构，唯一 SQL 定义
 │   ├── test/                          # API/真实 MySQL 集成验证
 │   ├── package.json
 │   ├── pnpm-lock.yaml
@@ -157,7 +157,7 @@ CV/
   - 目录 `backend/`，Node.js 24 + pnpm 12，NestJS 12、TypeScript 5.9、mysql2 3，精确版本见锁文件。
   - `pnpm typecheck`、`pnpm lint`、`pnpm format:check`、`pnpm build`、`pnpm openapi`。
   - `CVORY_TEST_MYSQL_URL` 通过环境提供后运行 `pnpm test`，使用随机隔离 MySQL 库。
-  - `pnpm db:migrate` 显式建表/迁移，`pnpm start` 启动首切片；完整迁移边界与配置见 [backend/README](backend/README.md)。
+  - `pnpm db:schema` 显式应用唯一完整 schema，`pnpm start` 只检查就绪并启动；数据库操作边界与配置见 [backend/README](backend/README.md)。
 - **前端 (`frontend/`)**
   - 依赖安装：`cd frontend && pnpm install`
   - OpenAPI 客户端生成：`cd frontend && pnpm run openapi`（基于后端 Swagger/OpenAPI 生成类型与服务）

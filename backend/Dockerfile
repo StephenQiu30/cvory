@@ -28,7 +28,7 @@ RUN node -e "const fs=require('node:fs');fs.mkdirSync('/etc/ssl/certs',{recursiv
     && sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources \
     && node node_modules/playwright/cli.js install --with-deps chromium
 COPY --from=build /app/dist ./dist
-COPY migrations ./migrations
+COPY schema.sql ./schema.sql
 COPY --from=dependencies /root/.cache/node/corepack /root/.cache/node/corepack
 ENV PORT=4321
 EXPOSE 4321

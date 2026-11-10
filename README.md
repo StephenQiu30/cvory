@@ -16,7 +16,7 @@
 cd backend
 pnpm install --frozen-lockfile
 pnpm build
-pnpm db:migrate
+pnpm db:schema
 pnpm exec playwright install chromium
 pnpm start
 ```
@@ -40,19 +40,19 @@ GitHub OAuth App 的回调地址为 `${PUBLIC_APP_ORIGIN}/api/account/github/cal
 
 ```bash
 docker compose build
-docker compose run --rm --no-deps backend pnpm db:migrate
+docker compose run --rm --no-deps backend pnpm db:schema
 docker compose up -d
 docker compose ps
 ```
 
-前端默认 `http://localhost:1234`，后端 `/api/health` 检查数据库/schema 就绪。启动不自动迁移；前端容器等待后端就绪。PDF 使用独立 Node/Chromium 子进程与受控打印页，`FRONTEND_INTERNAL_URL`/`BACKEND_INTERNAL_URL` 必须可互通；照片和字体失败会明确返回失败，不生成缺失资源的文件。
+前端默认 `http://localhost:1234`，后端 `/api/health` 检查数据库/schema 就绪。`backend/schema.sql` 是唯一完整数据库定义，启动不自动执行 DDL；首次安装或更新结构时由部署者显式运行 `pnpm db:schema`。前端容器等待后端就绪。PDF 使用独立 Node/Chromium 子进程与受控打印页，`FRONTEND_INTERNAL_URL`/`BACKEND_INTERNAL_URL` 必须可互通；照片和字体失败会明确返回失败，不生成缺失资源的文件。
 
 ## 存量数据与公开边界
 
-SQL/TypeScript 显式迁移承接旧 owner/lifecycle schema，保留账户、会话、CV、公开地址、预设和私有文件；旧 CV 保持 `legacy`，不会分配给首位注册者。备份并在副本验证后，管理者可显式运行 `cd backend && pnpm db:migrate --assign-legacy-to <账户ID或邮箱>` 认领自己的存量 CV。
+单一完整 schema 显式补齐兼容存量结构，保留账户、会话、CV、公开地址、预设和私有文件；旧 CV 保持 `legacy`，不会分配给首位注册者。先备份 MySQL 和私有文件，再运行 `cd backend && pnpm db:schema`；该命令不删除表、行或字段。只有在确认目标归属后，才由后续受支持的账户流程处理 `legacy` CV。
 
 GitHub 绑定同时要求原本站会话和 GitHub 授权，不按邮箱合并。PDF、私有资料与修订历史按 owner 隔离；公开端只读取显式筛选后的快照。保存不会发布，撤回不会删除私有 CV；当前公开来源不能直接删除。
 
-MySQL DDL 不整批回滚。切换前备份数据库、私有 `data/`、独立删除墓碑和密钥；恢复备份时先按原删除记录处理账户状态。有未完成注销任务时 Nest 拒绝就绪，不静默丢弃任务。已启用的删除流程/墓碑恢复尚未移植，不应直接将其业务库交给此版本。回退须停止写入并恢复迁移前数据库和私有文件备份。
+MySQL DDL 不整批回滚。应用 schema 前备份数据库、私有 `data/`、独立删除墓碑和密钥；恢复备份时先按原删除记录处理账户状态。有未完成注销任务时 Nest 拒绝就绪，不静默丢弃任务。已启用的删除流程/墓碑恢复尚未移植，不应直接将其业务库交给此版本。回退须停止写入并恢复 schema 应用前数据库和私有文件备份。
 
 本仓库不保留 Python 运行时；历史代码由 Git 历史承载。删除源码不删除数据库、私有文件或 Docker 卷。未获授权不部署、不调用付费模型、不执行真实 BOSS 发送。

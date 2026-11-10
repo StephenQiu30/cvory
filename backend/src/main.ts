@@ -13,12 +13,12 @@ async function main(): Promise<void> {
     throw error;
   }
   process.stdout.write(
-    `CVory Nest API listening on port ${config.port}. Schema migration is explicit.\n`,
+    `CVory Nest API listening on port ${config.port}. Schema application is explicit.\n`,
   );
 }
 void main().catch(() => {
   process.stderr.write(
-    'CVory startup failed. Check configuration, database connectivity and explicit migrations.\n',
+    'CVory startup failed. Check configuration, database connectivity and the applied schema.\n',
   );
   process.exitCode = 1;
 });

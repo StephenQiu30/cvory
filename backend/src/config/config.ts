@@ -15,7 +15,8 @@ export class Config {
   readonly aiEncryptionKey: Buffer | null;
 
   constructor(env: NodeJS.ProcessEnv = process.env) {
-    if (!env.DATABASE_URL) throw new Error('DATABASE_URL is required. Migrations are explicit.');
+    if (!env.DATABASE_URL)
+      throw new Error('DATABASE_URL is required. Schema application is explicit.');
     this.databaseUrl = env.DATABASE_URL.replace(/^mysql\+pymysql:/, 'mysql:');
     if (new URL(this.databaseUrl).protocol !== 'mysql:')
       throw new Error('Only MySQL is supported.');

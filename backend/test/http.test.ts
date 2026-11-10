@@ -5,7 +5,7 @@ import {createConnection} from 'mysql2/promise';
 import {createApp} from '../src/app';
 import {Config} from '../src/config/config';
 import {Database} from '../src/database/database';
-import {migrate} from '../src/database/migrations';
+import {applySchema} from '../src/database/schema';
 
 const base = process.env.CVORY_TEST_MYSQL_URL;
 if (!base)
@@ -41,7 +41,7 @@ before(async () => {
     }),
   );
   db = app.get(Database);
-  await migrate(db);
+  await applySchema(db.pool);
   await app.listen(0, '127.0.0.1');
   url = await app.getUrl();
 });
@@ -197,7 +197,7 @@ test('draft copies are bound to the expected signed-in owner in the create reque
   assert.deepEqual((await (await request('/cvs')).json()).cvs, before.cvs);
 });
 
-test('simultaneous saves commit one revision; restore retries are idempotent and migration reruns preserve data', async () => {
+test('simultaneous saves commit one revision; restore retries and repeated schema application preserve data', async () => {
   const cv = await (await request('/cvs', 'POST', {displayName: '并发保存'})).json();
   const results = await Promise.all(
     ['A', 'B'].map((displayName) =>
@@ -217,19 +217,19 @@ test('simultaneous saves commit one revision; restore retries are idempotent and
     await request(`/cvs/${cv.id}/revisions/${revision}:restore`, 'POST', body)
   ).json();
   assert.equal(first.id, second.id);
-  await migrate(db);
+  await applySchema(db.pool);
   assert.equal((await request(`/cvs/${cv.id}`)).status, 200);
 });
 
-test('the first Nest save of an existing legacy CV retains the pre-migration version', async () => {
-  const cv = await (await request('/cvs', 'POST', {displayName: '迁移前正文'})).json();
+test('the first Nest save of an existing legacy CV retains its previous version', async () => {
+  const cv = await (await request('/cvs', 'POST', {displayName: '原有正文'})).json();
   await db.run('DELETE FROM cv_revisions WHERE cv_id=?', [cv.id]);
-  const saved = await request(`/cvs/${cv.id}`, 'PATCH', {displayName: '迁移后正文', etag: cv.etag});
+  const saved = await request(`/cvs/${cv.id}`, 'PATCH', {displayName: '更新正文', etag: cv.etag});
   assert.equal(saved.status, 200);
   const history = await (await request(`/cvs/${cv.id}/revisions`)).json();
   assert.deepEqual(
     history.revisions.map((item: {document: {displayName: string}}) => item.document.displayName),
-    ['迁移后正文', '迁移前正文'],
+    ['更新正文', '原有正文'],
   );
   const invalid = await request(`/cvs/${cv.id}`, 'PATCH', {
     displayName: null,
@@ -249,7 +249,7 @@ test('concurrent retries with one requestId return the same CV rather than a mis
   assert.equal(new Set(cvs.map((cv) => cv.id)).size, 1);
 });
 
-test('a partially initialized baseline finishes every table before recording migration success', async () => {
+test('schema application completes a partially initialized database and is idempotent', async () => {
   const partialName = `cvory_nest_test_${randomUUID().replaceAll('-', '')}`;
   await admin.query(`CREATE DATABASE \`${partialName}\``);
   const partialUrl = new URL(base!);
@@ -257,12 +257,12 @@ test('a partially initialized baseline finishes every table before recording mig
   const partial = new Database(new Config({DATABASE_URL: partialUrl.toString()}));
   try {
     await partial.run(`CREATE TABLE accounts LIKE \`${databaseName}\`.accounts`);
-    await migrate(partial);
+    await applySchema(partial.pool);
     const tables = await partial.rows(
       "SELECT TABLE_NAME AS name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN ('cvs','publications','account_sessions')",
     );
     assert.equal(tables.length, 3);
-    await migrate(partial);
+    await applySchema(partial.pool);
   } finally {
     await partial.onModuleDestroy();
     await admin.query(`DROP DATABASE IF EXISTS \`${partialName}\``);
@@ -613,7 +613,7 @@ test('readiness refuses pending legacy deletion work instead of silently abandon
   assert.equal((await request('/health', 'GET', undefined, '')).status, 200);
 });
 
-test('pre-account CV schema upgrades in TypeScript and preserves unclaimed ownership', async () => {
+test('the complete schema adds owner to a legacy CV without claiming it', async () => {
   const name = `cvory_nest_test_${randomUUID().replaceAll('-', '')}`;
   await admin.query(`CREATE DATABASE \`${name}\``);
   const databaseUrl = new URL(base!);
@@ -627,8 +627,8 @@ test('pre-account CV schema upgrades in TypeScript and preserves unclaimed owner
       "INSERT INTO cvs(id,display_name,etag,profile,sections,style_settings,create_time,update_time) VALUES (?,?,?,'{}','[]','{}',UTC_TIMESTAMP(),UTC_TIMESTAMP())",
       [id, '旧schema', 'legacy-etag'],
     );
-    await migrate(older);
-    await migrate(older);
+    await applySchema(older.pool);
+    await applySchema(older.pool);
     const [row] = await older.rows('SELECT owner_id,etag FROM cvs WHERE id=?', [id]);
     assert.equal(row.owner_id, 'legacy');
     assert.equal(row.etag, 'legacy-etag');

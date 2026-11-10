@@ -2,6 +2,7 @@ import {Injectable, OnModuleDestroy} from '@nestjs/common';
 import {createPool, Pool, PoolConnection, RowDataPacket, ResultSetHeader} from 'mysql2/promise';
 import {ApiError} from '../common/errors';
 import {Config} from '../config/config';
+import {schemaColumns, schemaTables} from './schema_contract';
 
 export type Row = RowDataPacket & Record<string, unknown>;
 export type SqlValue = string | number | boolean | Date | Buffer | null;
@@ -51,11 +52,18 @@ export class Database implements OnModuleDestroy {
   }
   async assertReady(): Promise<void> {
     try {
-      const migrations = await this.rows(
-        'SELECT version FROM cvory_migrations WHERE version IN (?,?)',
-        ['007_ai_resume_analysis', '008_delivery_preparation'],
+      const tables = await this.rows(
+        `SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name IN (${schemaTables.map(() => '?').join(',')})`,
+        [...schemaTables],
       );
-      if (migrations.length !== 2) throw new Error('Schema upgrade required.');
+      if (tables.length !== schemaTables.length) throw new Error('Schema is incomplete.');
+      for (const [table, column] of schemaColumns) {
+        const columns = await this.rows(
+          'SELECT 1 FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name=? AND column_name=?',
+          [table, column],
+        );
+        if (columns.length !== 1) throw new Error('Schema is incomplete.');
+      }
       const pending = await this.rows(
         "SELECT id FROM account_deletion_jobs WHERE status NOT IN ('completed','cancelled','done','succeeded') LIMIT 1",
       );

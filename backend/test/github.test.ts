@@ -5,7 +5,7 @@ import {createConnection} from 'mysql2/promise';
 import {createApp} from '../src/app';
 import {Config} from '../src/config/config';
 import {Database} from '../src/database/database';
-import {migrate} from '../src/database/migrations';
+import {applySchema} from '../src/database/schema';
 
 const base = process.env.CVORY_TEST_MYSQL_URL!;
 const name = `cvory_nest_test_${randomUUID().replaceAll('-', '')}`;
@@ -64,7 +64,7 @@ before(async () => {
     external,
   );
   db = app.get(Database);
-  await migrate(db);
+  await applySchema(db.pool);
   await app.listen(0, '127.0.0.1');
   url = await app.getUrl();
 });

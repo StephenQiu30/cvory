@@ -9,14 +9,14 @@
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
-pnpm db:migrate
+pnpm db:schema
 pnpm exec playwright install chromium
 pnpm start
 ```
 
-默认端口 `4321`。`PUBLIC_APP_ORIGIN` 与浏览器公开入口一致，HTTPS 时启用 Secure Cookie；`FRONTEND_INTERNAL_URL` 是 PDF 子进程访问的受控前端来源。反向代理不自动信任任意转发地址。API 前缀 `/api`，`/api/health` 校验显式迁移及数据库就绪，不替代应用完整验收。
+默认端口 `4321`。`PUBLIC_APP_ORIGIN` 与浏览器公开入口一致，HTTPS 时启用 Secure Cookie；`FRONTEND_INTERNAL_URL` 是 PDF 子进程访问的受控前端来源。反向代理不自动信任任意转发地址。API 前缀 `/api`，`/api/health` 校验 schema 和数据库就绪，不替代应用完整验收。
 
-`pnpm db:migrate` 运行已编译的迁移入口，可在只有生产依赖的镜像执行。开发修改迁移源码后先 `pnpm build`，或使用 `pnpm db:migrate:dev`；启动 API 不建表或修改 schema。
+`schema.sql` 是当前完整 MySQL schema 的唯一 DDL 来源，包含所有应用表、列和索引。需要改结构时直接更新该文件，不新增 migration 文件或迁移记录表。`pnpm db:schema` 通过已编译的显式执行器创建缺失结构，并兼容性地补齐存量 owner/lifecycle 与发布校验字段；该过程不删除表、字段或行。新环境在空数据库执行；存量数据库执行前先备份 MySQL、私有文件和密钥。API 启动只校验，不建表、不改列。
 
 GitHub 由部署者填写 OAuth App Client ID/Secret，回调 `${PUBLIC_APP_ORIGIN}/api/account/github/callback`。只申请 `read:user`，access token 不入库、不读私库。旧 scrypt/会话保留；新 GitHub 账户不创建假邮箱/密码，新增邮箱注册默认关闭。
 
@@ -24,12 +24,12 @@ AI 提供商密钥、模型 ID 由每位用户在私有设置中填写，仅连�
 
 ## BOSS 离线求职准备
 
-迁移 008_delivery_preparation 创建偏好、手工岗位及离线任务表；须由部署者显式运行 pnpm db:migrate 后 API 才就绪。任务保存所选 CV 的固定内容快照和 etag、岗位规则解释及招呼草稿，任务正文存入 MySQL（未单独加密），查询按 owner 隔离；用户可删除任务。CVory 不读取 BOSS 页面、Cookie 或接口，不请求 BOSS 网络资源，也不发送消息。授权边界见 [PRD 11](../docs/prd/11-BOSS直聘自主投递.md)。
+schema.sql 包含偏好、手工岗位及离线任务表；须由部署者显式运行 `pnpm db:schema` 后 API 才就绪。任务保存所选 CV 的固定内容快照和 etag、岗位规则解释及招呼草稿，任务正文存入 MySQL（未单独加密），查询按 owner 隔离；用户可删除任务。CVory 不读取 BOSS 页面、Cookie 或接口，不请求 BOSS 网络资源，也不发送消息。授权边界见 [PRD 11](../docs/prd/11-BOSS直聘自主投递.md)。
 
 ## 数据与处理边界
 
-- 显式迁移建立兼容 SQL 基线、补齐旧 owner/lifecycle 字段、创建身份/历史及公开版本约束，并扩大账户照片字段。保留已有表、owner、publicId 和 JSON snake_case，DDL 中断可重入；备份后在副本演练。
-- `pnpm db:migrate --assign-legacy-to <账户ID或邮箱>` 是管理员显式认领命令，目标必须唯一且活跃；平常迁移不认领 `legacy` CV。
+- `schema.sql` 建立完整兼容结构、补齐旧 owner/lifecycle 字段、创建身份/历史及公开版本约束，并扩大账户照片字段。保留已有表、owner、publicId 和 JSON snake_case；备份后执行，出错时保留现场并核对结构。
+- `legacy` CV 保持未归属，不会在 schema 应用时认领或改 owner。
 - `CV_HISTORY_LIMIT` 默认 50、范围 1～500，包含当前版本；保存时裁剪超限历史，没有按天过期。首次修改存量 CV 保留旧版，空保存不追加；恢复幂等另建私有 CV。
 - 图片限 JPEG/PNG/WebP、2 MiB、20M 像素；受限子进程解码、去元数据并规范化，照片随 JSON/历史保存。旧 `data/avatars/{cvId}.*` 仅读取本 CV 本地文件，不远程抓取；资源缺失明确失败，不擦掉旧引用。
 - DOCX/文字 PDF 单文件限 10 MiB；签名核验后写入 `DATA_DIR/imports/` 的权限受限临时目录，由有时间和 V8 堆限额的独立 Node 子进程解析。成功、失败和客户端取消后清理，进程异常遗留项按 TTL 清除；扫描 PDF 不调用 OCR。具体预算和候选契约见[产品设计 02 §3、§4.3](../docs/design/02-CV制作管理与展示设计.md#43-内容文件与-pdf-的协作)，完整样本验收状态见 [HANDOVER](../HANDOVER.md)。

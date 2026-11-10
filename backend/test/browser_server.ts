@@ -4,7 +4,7 @@ import {createConnection} from 'mysql2/promise';
 import {createApp} from '../src/app';
 import {Config} from '../src/config/config';
 import {Database} from '../src/database/database';
-import {migrate} from '../src/database/migrations';
+import {applySchema} from '../src/database/schema';
 
 async function main(): Promise<void> {
   const base = process.env.CVORY_TEST_MYSQL_URL;
@@ -48,7 +48,7 @@ async function main(): Promise<void> {
       nextPageToken: '',
     }),
   });
-  await migrate(app.get(Database));
+  await applySchema(app.get(Database).pool);
   await app.listen(config.port, '127.0.0.1');
   let closing = false;
   const stop = async () => {
