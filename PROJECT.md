@@ -15,7 +15,7 @@
 
 ## 2. 仓库现状
 
-仓库包含 Next.js 前端与唯一 NestJS/TypeScript 后端，均使用 pnpm 锁定依赖，数据库为 MySQL。现有模块包括账户/会话/GitHub、CV/历史/预设、照片、DOCX/文字 PDF 候选解析、公开快照及 PDF/PNG 导出。导入格式样本、字段映射、输出质量、资源限制和完整浏览器流程仍待验收；邮箱恢复/注销、AI、Chrome 插件及站主首页仍按 BACKLOG 实施。历史 Python 源码、测试和 uv 清单已移除，历史由 Git 承载；不以源码删除或局部验证代表完整产品验收。尚未接入远端 CI。
+仓库包含 Next.js 前端与唯一 NestJS/TypeScript 后端，均使用 pnpm 锁定依赖，数据库为 MySQL。现有模块包括账户/会话/GitHub、CV/历史/预设、照片、DOCX/文字 PDF 候选解析、公开快照、站主首页/精选 GitHub 项目及 PDF/PNG 导出。导入格式样本、字段映射、输出质量、资源限制、完整浏览器流程和真实公开目标验收仍待验收；邮箱恢复/注销、AI 与 Chrome 插件仍按 BACKLOG 实施。历史 Python 源码、测试和 uv 清单已移除，历史由 Git 承载；不以源码删除或局部验证代表完整产品验收。尚未接入远端 CI。
 
 ## 3. 技术选型
 
@@ -76,8 +76,10 @@ CV/
 │   │   ├── app/
 │   │   │   ├── layout.tsx              # 根壳、字体和全局样式入口
 │   │   │   ├── globals.css             # 唯一全局主题 token 入口
-│   │   │   ├── (public)/               # 目标：首页和 /u/{publicId}
-│   │   │   ├── (workspace)/            # 目标：/workspace、账户与配置页面
+│   │   │   ├── page.tsx                # 部署指定站主的公开首页
+│   │   │   ├── u/[publicId]/           # 固定个人公开页，读取同一发布快照
+│   │   │   ├── (workspace)/workspace/  # 简历管理工作区
+│   │   │   ├── (workspace)/settings/  # 账户与配置页面
 │   │   │   ├── cvs/[id]/               # 编辑路由和 _components，独立页面壳
 │   │   │   └── print/[ticket]/         # 受控固定快照打印视图
 │   │   ├── components/
@@ -171,6 +173,6 @@ CV/
 
 ## 9. 当前边界
 
-现有 NestJS 实现覆盖身份、资料、CV 条件保存/历史、副本、样式、照片、DOCX/文字 PDF 受限候选解析、PDF/PNG 导出与公开快照；制作端提供富文本／Markdown 切换、串行自动保存与账户隔离的本机恢复，Markdown/JSON 交换由前端和统一 API 协作。DOCX/PDF 样本、扫描提示、导入限额、PDF/PNG 文件质量、取消清理和实际浏览器流程尚待完整验收。Python 源码删除，部署入口统一 Node；仍须区分代码、隔离验收与实际部署。邮箱恢复和注销入口关闭，不处理旧任务；未完成注销任务阻止就绪，业务库恢复需独立检查墓碑及账户状态。其余完整目标与未完成范围以 BACKLOG/HANDOVER 为准。数据库迁移显式执行，旧 CV 不自动归给首个注册者。
+现有 NestJS 实现覆盖身份、资料、CV 条件保存/历史、副本、样式、照片、DOCX/文字 PDF 受限候选解析、PDF/PNG 导出、公开快照及 GitHub 项目候选；前端提供富文本／Markdown 切换、串行自动保存、账户隔离的本机恢复、显式配置站主的公开首页和稳定个人页，Markdown/JSON 交换由前端和统一 API 协作。DOCX/PDF 样本、扫描提示、导入限额、PDF/PNG 文件质量、GitHub/匿名隐私链路、取消清理和实际浏览器流程尚待完整验收。Python 源码删除，部署入口统一 Node；仍须区分代码、隔离验收与实际部署。邮箱恢复和注销入口关闭，不处理旧任务；未完成注销任务阻止就绪，业务库恢复需独立检查墓碑及账户状态。其余完整目标与未完成范围以 BACKLOG/HANDOVER 为准。数据库迁移显式执行，旧 CV 不自动归给首个注册者。
 
 未要求时不提交、推送或发布。仓库尚未接入 CI；后续获授权推送须单独核对远端必需检查，不以本地结果代替。代码提交标题严格遵循 [CONTRIBUTING](CONTRIBUTING.md) 的 `type(scope): description` 规范。

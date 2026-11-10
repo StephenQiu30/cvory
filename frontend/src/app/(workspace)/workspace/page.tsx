@@ -48,7 +48,7 @@ import {
   EmptyContent,
 } from "@/components/ui/empty";
 import { hasContent } from "@/lib/resume/files";
-import { CreationCard } from "./_components/creation-card";
+import { CreationCard } from "../_components/creation-card";
 import { PaperPreview } from "@/components/ui/paper-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusMessage } from "@/components/ui/status-message";
@@ -58,7 +58,7 @@ import {
   TemplateGallery,
   templateExample,
   templateStyle,
-} from "./_components/template-gallery";
+} from "../_components/template-gallery";
 
 type TemplateId = NonNullable<StyleSettings["templateId"]>;
 function updatedAt(value: string) {

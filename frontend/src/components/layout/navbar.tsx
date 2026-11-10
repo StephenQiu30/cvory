@@ -12,8 +12,12 @@ import {
 export function Navbar() {
   const path = usePathname();
   const links = [
-    { href: "/", label: "我的简历", active: path === "/" },
-    { href: "/#resume-templates", label: "简历模板", active: false },
+    {
+      href: "/workspace",
+      label: "我的简历",
+      active: path.startsWith("/workspace"),
+    },
+    { href: "/workspace#resume-templates", label: "简历模板", active: false },
     {
       href: "/settings/publication",
       label: "公开展示",

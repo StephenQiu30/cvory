@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function signup(page: Page) {
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "登录或注册", exact: true }).click();
   await page.getByRole("button", { name: "还没有账户？注册" }).click();
   await page.getByLabel("显示名称").fill("状态验收");
@@ -110,7 +110,7 @@ test("password validation and logout failures use the shared error presentation"
       font: getComputedStyle(n).fontSize,
       color: getComputedStyle(n).color,
     }));
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.route("**/api/account%3Alogout", (route) =>
     route.fulfill({ status: 503, json: failure }),
   );

@@ -72,7 +72,7 @@ export function openapi(app: Awaited<ReturnType<typeof createApp>>) {
     schemas: {...document.components?.schemas, ...documentSchemas()},
   };
   for (const path of Object.values(document.paths)) {
-    for (const method of ['get', 'post', 'patch', 'delete'] as const) {
+    for (const method of ['get', 'post', 'patch', 'delete', 'put'] as const) {
       const operation = path[method];
       if (!operation) continue;
       for (const code of [400, 401, 403, 404, 409, 413, 429, 500, 503]) {

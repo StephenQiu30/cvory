@@ -4238,6 +4238,238 @@
           "github"
         ]
       }
+    },
+    "/api/account/github/featured-projects": {
+      "get": {
+        "operationId": "getGithubFeaturedProjects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubFeaturedProjects"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "github"
+        ]
+      },
+      "put": {
+        "operationId": "saveGithubFeaturedProjects",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveGithubFeaturedProjects"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubFeaturedProjects"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Google HTTP/JSON error with a stable ErrorInfo reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "github"
+        ]
+      }
     }
   },
   "info": {
@@ -4659,6 +4891,55 @@
           "sectionIds"
         ]
       },
+      "PublicGithubProject": {
+        "type": "object",
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "stars": {
+            "type": "number"
+          },
+          "fork": {
+            "type": "boolean"
+          },
+          "updateTime": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "name",
+          "fullName",
+          "url",
+          "description",
+          "language",
+          "stars",
+          "fork",
+          "updateTime",
+          "contribution"
+        ]
+      },
       "ResumeDocument": {
         "type": "object",
         "properties": {
@@ -4681,6 +4962,12 @@
                 "$ref": "#/components/schemas/StyleSettingsSchema"
               }
             ]
+          },
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicGithubProject"
+            }
           }
         },
         "required": [
@@ -4878,6 +5165,107 @@
           "repositories",
           "nextPageToken",
           "syncTime"
+        ]
+      },
+      "GithubFeaturedProject": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "language": {
+            "type": "string",
+            "nullable": true
+          },
+          "stars": {
+            "type": "number"
+          },
+          "fork": {
+            "type": "boolean"
+          },
+          "updateTime": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "fullName",
+          "url",
+          "description",
+          "language",
+          "stars",
+          "fork",
+          "updateTime",
+          "repositoryId",
+          "contribution",
+          "displayOrder"
+        ]
+      },
+      "GithubFeaturedProjects": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GithubFeaturedProject"
+            }
+          }
+        },
+        "required": [
+          "projects"
+        ]
+      },
+      "GithubFeaturedProjectInput": {
+        "type": "object",
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          },
+          "contribution": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "contribution"
+        ]
+      },
+      "SaveGithubFeaturedProjects": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GithubFeaturedProjectInput"
+            }
+          }
+        },
+        "required": [
+          "projects"
         ]
       },
       "ErrorBody": {

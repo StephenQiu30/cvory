@@ -1,4 +1,16 @@
-import {Body, Controller, Delete, Get, HttpCode, Param, Post, Query, Req} from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
+import type {Response} from 'express';
 import {ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags} from '@nestjs/swagger';
 import {OwnerRequest, Public} from '../../common/session.guard';
 import {PublicationService} from './publication.service';
@@ -42,7 +54,11 @@ export class PublicationController {
   @Get('public/:publicId')
   @ApiOperation({operationId: 'getPublicResume'})
   @ApiOkResponse({type: ResumeDocument})
-  publicResume(@Param('publicId') id: string): Promise<ResumeDocument> {
+  publicResume(
+    @Param('publicId') id: string,
+    @Res({passthrough: true}) response: Response,
+  ): Promise<ResumeDocument> {
+    response.setHeader('Cache-Control', 'no-store, max-age=0');
     return this.publications.publicResume(id);
   }
 }

@@ -14,6 +14,7 @@ export class GithubModule {
         GithubService,
         ...(external ? [{provide: GithubClient, useValue: external}] : [GithubClient]),
       ],
+      exports: [GithubClient, GithubService],
     };
   }
 }

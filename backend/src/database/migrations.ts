@@ -116,6 +116,17 @@ export async function migrate(db: Database): Promise<void> {
         connection,
       );
     }
+
+    if (!versions.has('006_github_featured_projects')) {
+      await connection.query(
+        'CREATE TABLE IF NOT EXISTS github_featured_projects(owner_id VARCHAR(36) NOT NULL,repository_id VARCHAR(20) NOT NULL,repository JSON NOT NULL,contribution VARCHAR(2000) NOT NULL,display_order TINYINT UNSIGNED NOT NULL,update_time DATETIME(6) NOT NULL,PRIMARY KEY(owner_id,repository_id),INDEX owner_order(owner_id,display_order))',
+      );
+      await db.run(
+        'INSERT INTO cvory_migrations VALUES (?,UTC_TIMESTAMP(6))',
+        ['006_github_featured_projects'],
+        connection,
+      );
+    }
   } finally {
     await connection.query("DO RELEASE_LOCK(CONCAT(DATABASE(), ':cvory-migrate'))");
     connection.release();

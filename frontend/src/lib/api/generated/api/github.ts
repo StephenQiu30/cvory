@@ -40,6 +40,37 @@ export async function getGithubConnection(options?: { [key: string]: any }) {
   });
 }
 
+/** 此处后端没有提供注释 GET /api/account/github/featured-projects */
+export async function getGithubFeaturedProjects(options?: {
+  [key: string]: any;
+}) {
+  return request<API.GithubFeaturedProjects>(
+    "/api/account/github/featured-projects",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
+/** 此处后端没有提供注释 PUT /api/account/github/featured-projects */
+export async function saveGithubFeaturedProjects(
+  body: API.SaveGithubFeaturedProjects,
+  options?: { [key: string]: any }
+) {
+  return request<API.GithubFeaturedProjects>(
+    "/api/account/github/featured-projects",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** 此处后端没有提供注释 POST /api/account/github/link */
 export async function linkGithub(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

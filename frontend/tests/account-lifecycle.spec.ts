@@ -7,7 +7,7 @@ for (const [name, width] of [
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/workspace");
     await page.getByRole("button", { name: "登录或注册", exact: true }).click();
     await page.getByRole("button", { name: "还没有账户？注册" }).click();
     await page

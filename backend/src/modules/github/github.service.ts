@@ -1,11 +1,32 @@
 import {Injectable} from '@nestjs/common';
 import {randomUUID} from 'node:crypto';
+import {z} from 'zod';
 import {Config} from '../../config/config';
 import {Database} from '../../database/database';
 import {AccountService} from '../account/account.service';
 import {digest, safeReturnPath, secret} from '../../common/credentials';
 import {ApiError, invalid, unauthenticated} from '../../common/errors';
 import {GithubClient} from './github_client';
+import {GithubFeaturedProjects, SaveGithubFeaturedProjects} from './github.dto';
+
+const repositoryResourceSchema = z.object({
+  id: z.string().regex(/^\d{1,20}$/),
+  name: z.string().max(100),
+  fullName: z.string().max(200),
+  url: z
+    .string()
+    .url()
+    .refine((value) => new URL(value).origin === 'https://github.com'),
+  description: z.string().max(500).nullable(),
+  language: z.string().max(100).nullable(),
+  stars: z.number().int().nonnegative().safe(),
+  fork: z.boolean(),
+  updateTime: z.string().max(40),
+});
+
+function parse(value: unknown): unknown {
+  return typeof value === 'string' ? JSON.parse(value) : value;
+}
 
 @Injectable()
 export class GithubService {
@@ -169,6 +190,88 @@ export class GithubService {
       syncTime: new Date().toISOString(),
     };
   }
+
+  async featuredProjects(owner: string): Promise<GithubFeaturedProjects> {
+    const rows = await this.db.rows(
+      'SELECT repository_id,repository,contribution,display_order FROM github_featured_projects WHERE owner_id=? ORDER BY display_order,repository_id',
+      [owner],
+    );
+    return {
+      projects: rows.map((row) => ({
+        ...repositoryResourceSchema.parse({
+          ...(parse(row.repository) as Record<string, unknown>),
+          id: String(row.repository_id),
+        }),
+        repositoryId: String(row.repository_id),
+        contribution: String(row.contribution),
+        displayOrder: Number(row.display_order),
+      })),
+    };
+  }
+
+  async saveFeaturedProjects(
+    owner: string,
+    input: SaveGithubFeaturedProjects,
+  ): Promise<GithubFeaturedProjects> {
+    const [identity] = await this.db.rows(
+      'SELECT provider_user_id FROM account_identities WHERE owner_id=? AND provider=?',
+      [owner, 'github'],
+    );
+    if (!identity) throw new ApiError(409, 'FAILED_PRECONDITION', 'GITHUB_NOT_LINKED');
+    const projects = await Promise.all(
+      input.projects.map(async (selected, displayOrder) => {
+        const repository = await this.client.repositoryById(
+          selected.repositoryId,
+          String(identity.provider_user_id),
+        );
+        return {
+          ...repository,
+          repositoryId: repository.id,
+          contribution: selected.contribution,
+          displayOrder,
+        };
+      }),
+    );
+    await this.db.transaction(async (tx) => {
+      await this.accounts.resource(owner, tx);
+      const [currentIdentity] = await this.db.rows(
+        'SELECT provider_user_id FROM account_identities WHERE owner_id=? AND provider=? FOR UPDATE',
+        [owner, 'github'],
+        tx,
+      );
+      if (
+        !currentIdentity ||
+        String(currentIdentity.provider_user_id) !== String(identity.provider_user_id)
+      )
+        throw new ApiError(409, 'FAILED_PRECONDITION', 'GITHUB_NOT_LINKED');
+      await this.db.run('DELETE FROM github_featured_projects WHERE owner_id=?', [owner], tx);
+      for (const project of projects) {
+        const repository = {
+          name: project.name,
+          fullName: project.fullName,
+          url: project.url,
+          description: project.description,
+          language: project.language,
+          stars: project.stars,
+          fork: project.fork,
+          updateTime: project.updateTime,
+        };
+        await this.db.run(
+          'INSERT INTO github_featured_projects(owner_id,repository_id,repository,contribution,display_order,update_time) VALUES (?,?,?,?,?,UTC_TIMESTAMP(6))',
+          [
+            owner,
+            project.repositoryId,
+            JSON.stringify(repository),
+            project.contribution,
+            project.displayOrder,
+          ],
+          tx,
+        );
+      }
+    });
+    return {projects};
+  }
+
   async connection(owner: string) {
     const [row] = await this.db.rows(
       'SELECT login FROM account_identities WHERE owner_id=? AND provider=?',

@@ -154,7 +154,7 @@ export default function CvEditor({ id }: { id: string }) {
                   登录
                 </Button>
               ) : null}
-              <Button variant="ghost" onClick={() => router.push("/")}>
+              <Button variant="ghost" onClick={() => router.push("/workspace")}>
                 返回简历库
               </Button>
             </div>
@@ -186,7 +186,7 @@ export default function CvEditor({ id }: { id: string }) {
               size="icon"
               aria-label="返回我的简历"
               onClick={() =>
-                dirty || busy ? setModal("leave") : router.push("/")
+                dirty || busy ? setModal("leave") : router.push("/workspace")
               }
             >
               <ArrowLeft aria-hidden className="size-4" />
@@ -704,14 +704,14 @@ export default function CvEditor({ id }: { id: string }) {
             variant="secondary"
             disabled={busy}
             onClick={() => {
-              if (discard()) router.push("/");
+              if (discard()) router.push("/workspace");
             }}
           >
             放弃修改并离开
           </Button>
           <Button
             onClick={async () => {
-              if (await save()) router.push("/");
+              if (await save()) router.push("/workspace");
             }}
           >
             保存并返回
@@ -721,7 +721,7 @@ export default function CvEditor({ id }: { id: string }) {
       <Dialog
         open={candidates.length > 0}
         onOpenChange={(open) => {
-          if (!open && !copyBusy) router.push("/");
+          if (!open && !copyBusy) router.push("/workspace");
         }}
         title="发现本机未保存草稿"
         description="核对时间与服务器版本后恢复。仅原账户可见；关闭会返回简历库并保留候选。本机草稿不是跨设备备份。"

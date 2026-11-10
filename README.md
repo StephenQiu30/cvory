@@ -2,7 +2,7 @@
 
 面向个人的开源自部署简历与求职工具，许可选定 MIT。前端使用 Next.js、Geist 与 shadcn/Radix，后端仅使用 NestJS + TypeScript + MySQL，代码和目录规则见 [PROJECT](PROJECT.md)。
 
-已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本／Markdown 制作、串行自动保存与条件写入、本机草稿恢复、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF/PNG 及筛选后的公开简历。DOCX/文字 PDF 解析、候选校对和逐页 PNG 导出已接入；格式样本、输出质量和资源预算尚待完整验收。站主首页、AI 和 BOSS Chrome 插件仍按 [BACKLOG](BACKLOG.md) 实施。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将代码存在表述为完整产品验收。
+已有 GitHub 登录/安全绑定、存量邮箱密码兼容、富文本／Markdown 制作、串行自动保存与条件写入、本机草稿恢复、历史恢复副本、三套模板与个人样式、JSON/Markdown 交换、照片、PDF/PNG、筛选后的公开简历及站主个人主页/精选 GitHub 项目。DOCX/文字 PDF 解析、候选校对和逐页 PNG 导出已接入；格式样本、输出质量、站主匿名隐私链路和资源预算尚待完整验收。AI 和 BOSS Chrome 插件仍按 [BACKLOG](BACKLOG.md) 实施。邮箱恢复和账户注销暂未开放，界面明确说明。MIT 根 LICENSE 与第三方声明待补，不将代码存在表述为完整产品验收。
 
 [业务需求](docs/requirement/04-个人CV制作与管理需求说明.md) → [产品设计](docs/design/02-CV制作管理与展示设计.md) → [PRD](docs/prd/00-PRD导航.md) → [Plan](docs/plan/00-Plan导航.md)。
 
@@ -35,6 +35,8 @@ GitHub OAuth App 的回调地址为 `${PUBLIC_APP_ORIGIN}/api/account/github/cal
 ## Docker Compose
 
 使用宿主机 MySQL；创建专用数据库/用户，并将 [.env.example](.env.example) 中的配置写入本机 `.env`。密码中的 URL 保留字符须做百分号编码，真实值不提交。
+
+站主发布简历后，将公开网址 `/u/{publicId}` 中的 ID 配置到 `SITE_OWNER_PUBLIC_ID`；未设置时 `/` 显示未配置状态。`/workspace` 为登录后的简历管理入口。
 
 ```bash
 docker compose build

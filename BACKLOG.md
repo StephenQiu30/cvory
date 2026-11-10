@@ -15,7 +15,7 @@
 | BOSS 直聘自主投递能力 | 现有简历版本与导出；开源模块许可及适配成本 | 已确认自主实现和开源改造方向；完整目标及验收已细化，Chrome 插件、人工上传 PDF 已明确，首期仅筛选/沟通/招呼；复用模块与分发待选；任务代码、模拟和真实平台验收未启动；增加关键词/可选 AI 与跨任务去重目标 | [PRD 11](docs/prd/11-BOSS直聘自主投递.md)、[Plan 11](docs/plan/11-BOSS直聘自主投递.md) |
 | UIUX 与参考工作台对齐 | 已确认简历管理、模板、Markdown、导入和公开范围 | 已先按 DESIGN 同步 Figma 桌面／手机及状态稿，前端采用黑白灰与少量蓝色点缀；工作台功能已实现，真实网站未发布 | [DESIGN](DESIGN.md)、[调研 02](docs/research/02-老鱼简历功能逆向与CV技术选型.md)、[Figma 草稿](https://www.figma.com/design/sLNuFRPH0Zg6gF8YfNNCsR?node-id=7-2880) |
 | 登录注册弹窗 | 邮箱密码账户与共享页面壳 | 已实现桌面／手机弹窗，会话过期保留草稿已验证 | [DESIGN](DESIGN.md)、[交接记录](HANDOVER.md) |
-| PLAN-CV-08 GitHub 账户与项目素材 | GitHub OAuth 应用、双身份绑定与迁移方案 | Nest GitHub 登录/无邮箱账户/双身份绑定及公开仓库分页已实现，模拟 OAuth/真实 MySQL 与浏览器局部验证；仓库选入简历/发布、真实 GitHub 和公网完整验收待做 | [PRD 08](docs/prd/08-账户访问与资料.md)、[Plan 08](docs/plan/08-账户访问与资料.md) |
+| PLAN-CV-08 GitHub 账户与项目素材 | GitHub OAuth 应用、双身份绑定与迁移方案 | Nest GitHub 登录/无邮箱账户/双身份绑定及公开仓库分页已实现；精选仓库候选、排序/贡献维护和发布预览复核已实现；模拟 OAuth、真实 GitHub 和公网完整验收待做 | [PRD 08](docs/prd/08-账户访问与资料.md)、[Plan 08](docs/plan/08-账户访问与资料.md) |
 | PLAN-CV-09 存量邮箱验证与恢复 | 账户基础、发信渠道与验证政策 | 仅服务存量邮箱兼容，不作为 GitHub-only 发布前置；历史实现已从仓库移除；Nest 邮件验证/恢复尚未实现，入口关闭，需求和旧任务保留，按独立能力验收 | [PRD 09](docs/prd/09-邮箱验证与账户恢复.md)、[Plan 09](docs/plan/09-邮箱验证与账户恢复.md) |
 | PLAN-CV-10 账户注销与数据处理 | 账户基础、注销及保留政策 | 历史 Python 已移除；Nest 注销/撤销/墓碑重放未实现并关闭入口，未完成注销任务阻止就绪；上线前需独立持久存储、密钥、备份及恢复验收 | [PRD 10](docs/prd/10-账户注销与数据处理.md)、[Plan 10](docs/plan/10-账户注销与数据处理.md) |
 | 视觉基线同步 | [DESIGN](DESIGN.md) | Figma 先于页面同步；移除顶栏／标签页黑色选中线，采用 shadcn 填充选中态及 Card、Badge、Empty、Skeleton 信息组合；桌面／手机浏览器回归通过 | [交接记录](HANDOVER.md)；公网部署及跨浏览器验收未执行 |
@@ -30,7 +30,7 @@
 | PLAN-CV-04 导入 | PLAN-CV-01；本能力支持格式及限额 | 已实现 DOCX/文字 PDF 子进程解析、来源片段/页码/坐标、明确字段映射、候选校对及幂等另存；10 MiB/解压体积/页数/时间/堆限制和临时清理已写入代码。合成样本、多栏/表格、扫描/加密/损坏/超限、取消清理与真实浏览器流程尚未验收；JSON/Markdown 定点校对保真与往返仍待收敛。扫描 PDF 明确提示不支持，OCR 后续再定 | [Plan 04](docs/plan/04-简历导入.md) |
 | PLAN-CV-05 备份与 Markdown | PLAN-CV-03、04 | 已有含照片 JSON／Markdown 实现及局部证据；原站不可用的完整恢复与故障降级待验收 | [Plan 05](docs/plan/05-简历备份与Markdown导出.md) |
 | PLAN-CV-06 PDF/PNG | PLAN-CV-03 | 已有 Nest 固定快照 PDF 及 PDF.js 逐页 PNG，单页 PNG、多页 ZIP；页数/像素/输出/进程限额已落入代码。真实输出质量、ZIP 页数/顺序、字体图片故障、取消/超限和声明部署拓扑尚未验收 | [Plan 06](docs/plan/06-PDF导出.md) |
-| PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 已有固定预览、发布、撤回及匿名页；并发版本、来源保护与完整匿名隐私链路待验收，站主首页/精选 GitHub 项目尚未实现，真实网站尚未发布 | [Plan 07](docs/plan/07-个人简历展示.md) |
+| PLAN-CV-07 公开展示 | PLAN-CV-01；本能力公开规则 | 已实现站主显式配置首页、稳定个人页共用发布快照、目录查阅、精选项目公开渲染和 GitHub 项目发布预览复核；并发版本、来源保护、完整匿名隐私与浏览器/真实网站验收仍待完成 | [Plan 07](docs/plan/07-个人简历展示.md) |
 | PLAN-CV-12 AI 简历分析与岗位匹配 | 已保存版本/岗位；火山引擎/DeepSeek/OpenAI 官方预设；自部署者自填配置 | 三家预设及个人配置已确认，密钥/模型管理与适配为设计稿；尚未建代码或发起调用，数据处理/预算与具体模型启用前核对 | [PRD 12](docs/prd/12-AI简历分析与岗位匹配.md)、[Plan 12](docs/plan/12-AI简历分析与岗位匹配.md) |
 | MIT 许可与自部署交付说明 | 开源自部署、MIT 已确认 | 根 LICENSE 与第三方版权/许可清单待补；仅记录选择，不计为发布完成 | [PROJECT](PROJECT.md)、[README](README.md) |
 

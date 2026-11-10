@@ -8,6 +8,8 @@ export function errorMessage(
 ) {
   if (!(error instanceof ApiError)) return fallback;
   const reason = error.details.find((detail) => detail.reason)?.reason;
+  if (reason === "GITHUB_REPOSITORY_NOT_AVAILABLE")
+    return "所选 GitHub 项目已删除、设为私有或不再属于当前账户。请在 GitHub 项目设置中移除后重新预览。";
   if (reason === "IMPORT_NO_TEXT_LAYER")
     return "PDF 中没有检测到可选文字，可能是扫描件。首期不支持 OCR；请从原文件导出可选择、可复制文字的 PDF 后重试。";
   if (reason === "IMPORT_ENCRYPTED_FILE")
@@ -26,16 +28,14 @@ export function errorMessage(
     return "文件解析超时，临时文件已清理。请稍后重试或拆分文件。";
   if (reason === "IMPORT_FILE_REQUIRED")
     return "请选择一个 DOCX 或 PDF 文件后重试。";
-  if (reason === "PDF_BUSY")
-    return "PDF/PNG 导出任务较多，请稍后重试。";
+  if (reason === "PDF_BUSY") return "PDF/PNG 导出任务较多，请稍后重试。";
   if (reason === "PDF_TIMEOUT")
     return "PDF 页面生成超时，临时浏览器资源已清理。请重试或导出 JSON 备份。";
   if (reason === "PDF_UNAVAILABLE")
     return "PDF 页面或字体、照片资源暂时无法渲染。请核对简历资源后重试，已保存内容不受影响。";
   if (reason === "PNG_LIMIT_EXCEEDED")
     return "简历超过 PNG 导出限制：最多 30 页、单页边长 4,096 px、总像素 64,000,000、输出 50 MiB。可先减少内容后重试，已保存内容不受影响。";
-  if (reason === "PNG_PROCESSOR_BUSY")
-    return "图片导出任务较多，请稍后重试。";
+  if (reason === "PNG_PROCESSOR_BUSY") return "图片导出任务较多，请稍后重试。";
   if (reason === "PNG_TIMEOUT")
     return "PNG 导出超时，临时渲染资源已清理。请稍后重试或下载 PDF。";
   if (reason === "PNG_UNAVAILABLE")

@@ -148,6 +148,30 @@ declare namespace API {
     login: string;
   };
 
+  type GithubFeaturedProject = {
+    id: string;
+    name: string;
+    fullName: string;
+    url: string;
+    description: string | null;
+    language: string | null;
+    stars: number;
+    fork: boolean;
+    updateTime: string;
+    repositoryId: string;
+    contribution: string;
+    displayOrder: number;
+  };
+
+  type GithubFeaturedProjectInput = {
+    repositoryId: string;
+    contribution: string;
+  };
+
+  type GithubFeaturedProjects = {
+    projects: GithubFeaturedProject[];
+  };
+
   type GithubRepositories = {
     repositories: GithubRepository[];
     nextPageToken: string;
@@ -258,6 +282,19 @@ declare namespace API {
     etag: string;
   };
 
+  type PublicGithubProject = {
+    repositoryId: string;
+    name: string;
+    fullName: string;
+    url: string;
+    description: string | null;
+    language: string | null;
+    stars: number;
+    fork: boolean;
+    updateTime: string;
+    contribution: string;
+  };
+
   type PublicSelection = {
     sourceId: string;
     etag: string;
@@ -282,6 +319,7 @@ declare namespace API {
     profile: ProfileSchema;
     sections: SectionSchema[];
     styleSettings: StyleSettingsSchema;
+    projects?: PublicGithubProject[];
   };
 
   type ResumeImportCandidate = {
@@ -289,6 +327,10 @@ declare namespace API {
     pageCount?: number;
     blocks: ImportTextBlock[];
     warnings: string[];
+  };
+
+  type SaveGithubFeaturedProjects = {
+    projects: GithubFeaturedProjectInput[];
   };
 
   type SectionInput = {

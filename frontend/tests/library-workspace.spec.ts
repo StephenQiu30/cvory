@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function signup(page: Page) {
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "登录或注册", exact: true }).click();
   await page.getByRole("button", { name: "还没有账户？注册" }).click();
   await page.getByLabel("显示名称").fill("工作台验收");
@@ -63,7 +63,7 @@ test("template creation stays blank; rename persists; copies are independent; ca
   expect(JSON.stringify(source)).not.toContain("林知夏");
   expect(JSON.stringify(source)).not.toContain("示例科技");
 
-  await page.goto("/");
+  await page.goto("/workspace");
   await page
     .getByRole("button", { name: "修改工作台原件的名称", exact: true })
     .click();
@@ -93,7 +93,7 @@ test("template creation stays blank; rename persists; copies are independent; ca
   expect((await readCv(page, copyId)).profile.fullName).toBe("只修改副本");
   expect((await readCv(page, sourceId)).profile.fullName).toBe("");
 
-  await page.goto("/");
+  await page.goto("/workspace");
   const deleteButton = page.getByRole("button", {
     name: "删除工作台重命名 · 副本",
     exact: true,
@@ -151,7 +151,7 @@ test("mobile Markdown creation requires review and preserves content; template p
   expect(content).toContain('"type":"bold"');
   expect(content).toContain("https://example.com");
 
-  await page.goto("/");
+  await page.goto("/workspace");
   await expect(page.locator("a a")).toHaveCount(0);
   const preview = page.getByRole("button", {
     name: "查看标准单栏预览",

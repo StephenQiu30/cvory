@@ -4,16 +4,47 @@ import {PoolConnection} from 'mysql2/promise';
 import {Database, Row} from '../../database/database';
 import {AccountService} from '../account/account.service';
 import {CvsService} from '../cvs/cvs.service';
+import {GithubClient} from '../github/github_client';
 import {Document, profileSchema, validateDocument} from '../cvs/document';
 import {ApiError, conflict, invalid, notFound} from '../../common/errors';
+import {z} from 'zod';
 import {
   PUBLIC_FIELDS,
   PublicationReview,
   PublicationStatus,
+  PublicGithubProject,
   PublicSelection,
   ResumeDocument,
 } from './publication.dto';
 const parse = (value: unknown): unknown => (typeof value === 'string' ? JSON.parse(value) : value);
+const publicProjectSchema = z.strictObject({
+  repositoryId: z.string().regex(/^\d{1,20}$/),
+  name: z.string().min(1).max(100),
+  fullName: z.string().min(1).max(200),
+  url: z
+    .string()
+    .url()
+    .refine((value) => new URL(value).origin === 'https://github.com'),
+  description: z.string().max(500).nullable(),
+  language: z.string().max(100).nullable(),
+  stars: z.number().int().nonnegative().safe(),
+  fork: z.boolean(),
+  updateTime: z.string().max(40),
+  contribution: z.string().max(2000),
+});
+const publicProjectsSchema = z.array(publicProjectSchema).max(12);
+
+function validatePublishedDocument(value: unknown): ResumeDocument {
+  const source = parse(value);
+  if (!source || typeof source !== 'object' || Array.isArray(source))
+    throw invalid('Invalid public resume snapshot.');
+  const record = source as Record<string, unknown>;
+  const document = validateDocument(record);
+  const projects = publicProjectsSchema.safeParse(record.projects ?? []);
+  if (!projects.success) throw invalid('Invalid public project snapshot.');
+  return {...document, projects: projects.data as PublicGithubProject[]};
+}
+
 function hasText(value: unknown): boolean {
   if (typeof value === 'string') return Boolean(value.trim());
   if (!value || typeof value !== 'object') return false;
@@ -29,6 +60,7 @@ export class PublicationService {
     private readonly db: Database,
     private readonly accounts: AccountService,
     private readonly cvs: CvsService,
+    private readonly github: GithubClient,
   ) {}
   private async ownerLock(owner: string, tx: PoolConnection): Promise<Row> {
     const [row] = await this.db.rows(
@@ -106,6 +138,45 @@ export class PublicationService {
         sections,
         styleSettings: cv.styleSettings,
       });
+      const projectRows = await this.db.rows(
+        'SELECT repository_id,contribution FROM github_featured_projects WHERE owner_id=? ORDER BY display_order,repository_id',
+        [owner],
+        tx,
+      );
+      const projects: PublicGithubProject[] = [];
+      if (projectRows.length) {
+        const [identity] = await this.db.rows(
+          'SELECT provider_user_id FROM account_identities WHERE owner_id=? AND provider=?',
+          [owner, 'github'],
+          tx,
+        );
+        if (!identity) throw invalid('GitHub connection is required for projects.');
+        projects.push(
+          ...(await Promise.all(
+            projectRows.map(async (row) => {
+              const repository = await this.github.repositoryById(
+                String(row.repository_id),
+                String(identity.provider_user_id),
+              );
+              const parsed = publicProjectSchema.safeParse({
+                repositoryId: String(row.repository_id),
+                name: repository.name,
+                fullName: repository.fullName,
+                url: repository.url,
+                description: repository.description,
+                language: repository.language,
+                stars: repository.stars,
+                fork: repository.fork,
+                updateTime: repository.updateTime,
+                contribution: String(row.contribution),
+              });
+              if (!parsed.success) throw invalid('Invalid featured project.');
+              return parsed.data;
+            }),
+          )),
+        );
+      }
+      const publishedDocument = validatePublishedDocument({...document, projects});
       const id = randomUUID();
       await this.db.run(
         'DELETE FROM publication_reviews WHERE owner_id=? AND expires_at<=UTC_TIMESTAMP()',
@@ -119,13 +190,13 @@ export class PublicationService {
           owner,
           cv.id,
           cv.displayName,
-          JSON.stringify(document),
+          JSON.stringify(publishedDocument),
           cv.etag,
           Number(head.revision),
         ],
         tx,
       );
-      return {id, sourceName: cv.displayName, document};
+      return {id, sourceName: cv.displayName, document: publishedDocument};
     });
   }
   async publish(owner: string, reviewId: string): Promise<PublicationStatus> {
@@ -144,7 +215,7 @@ export class PublicationService {
         throw conflict();
       const cv = await this.cvs.get(String(review.source_id), owner, tx, true);
       if (cv.etag !== review.source_etag) throw conflict();
-      const document = validateDocument(parse(review.document));
+      const document = validatePublishedDocument(review.document);
       await this.db.run(
         'INSERT INTO publications(owner_id,source_id,source_name,document,update_time) VALUES (?,?,?,?,UTC_TIMESTAMP()) ON DUPLICATE KEY UPDATE source_id=VALUES(source_id),source_name=VALUES(source_name),document=VALUES(document),update_time=UTC_TIMESTAMP()',
         [owner, cv.id, String(review.source_name), JSON.stringify(document)],
@@ -182,6 +253,6 @@ export class PublicationService {
       [publicId, 'active'],
     );
     if (!row) throw notFound();
-    return validateDocument(parse(row.document));
+    return validatePublishedDocument(row.document);
   }
 }

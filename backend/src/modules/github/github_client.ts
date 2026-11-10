@@ -27,7 +27,7 @@ const repositorySchema = z.object({
 export class GithubClient {
   constructor(private readonly config: Config) {}
 
-  private async json(url: string, init: RequestInit = {}): Promise<unknown> {
+  private async json(url: string, init: RequestInit = {}, missingIsNull = false): Promise<unknown> {
     try {
       const response = await fetch(url, {
         ...init,
@@ -39,6 +39,7 @@ export class GithubClient {
           ...init.headers,
         },
       });
+      if (missingIsNull && response.status === 404) return null;
       if (!response.ok) throw new Error('Provider request failed.');
       // Bound responses before JSON parsing, including chunked bodies.
       const reader = response.body?.getReader();
@@ -57,7 +58,8 @@ export class GithubClient {
         await reader.cancel();
       }
       return JSON.parse(Buffer.concat(chunks).toString('utf8')) as unknown;
-    } catch {
+    } catch (error) {
+      if (error instanceof ApiError) throw error;
       throw new ApiError(
         503,
         'UNAVAILABLE',
@@ -124,18 +126,39 @@ export class GithubClient {
             String(repo.owner.id) === owner &&
             new URL(repo.html_url).origin === 'https://github.com',
         )
-        .map((repo) => ({
-          id: String(repo.id),
-          name: repo.name,
-          fullName: repo.full_name,
-          url: repo.html_url,
-          description: repo.description,
-          language: repo.language,
-          stars: repo.stargazers_count,
-          fork: repo.fork,
-          updateTime: repo.updated_at,
-        })),
+        .map((repo) => this.repositoryResource(repo)),
       nextPageToken: data.data.length === 30 ? String(page + 1) : '',
+    };
+  }
+
+  async repositoryById(id: string, expectedOwner: string) {
+    if (!/^\d{1,20}$/.test(id) || !Number.isSafeInteger(Number(id)) || Number(id) < 1)
+      throw new ApiError(400, 'INVALID_ARGUMENT', 'GITHUB_REPOSITORY_NOT_AVAILABLE');
+    const raw = await this.json(`https://api.github.com/repositories/${id}`, {}, true);
+    if (raw === null)
+      throw new ApiError(409, 'FAILED_PRECONDITION', 'GITHUB_REPOSITORY_NOT_AVAILABLE');
+    const repository = repositorySchema.safeParse(raw);
+    if (!repository.success) throw new ApiError(503, 'UNAVAILABLE', 'GITHUB_INVALID_RESPONSE');
+    if (
+      repository.data.private ||
+      String(repository.data.owner.id) !== expectedOwner ||
+      new URL(repository.data.html_url).origin !== 'https://github.com'
+    )
+      throw new ApiError(409, 'FAILED_PRECONDITION', 'GITHUB_REPOSITORY_NOT_AVAILABLE');
+    return this.repositoryResource(repository.data);
+  }
+
+  private repositoryResource(repository: z.infer<typeof repositorySchema>) {
+    return {
+      id: String(repository.id),
+      name: repository.name,
+      fullName: repository.full_name,
+      url: repository.html_url,
+      description: repository.description?.slice(0, 500) ?? null,
+      language: repository.language?.slice(0, 100) ?? null,
+      stars: repository.stargazers_count,
+      fork: repository.fork,
+      updateTime: repository.updated_at,
     };
   }
 }

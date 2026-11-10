@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 const PASSWORD = "authoring-test-password-2026";
 async function fixture(page: Page) {
-  await page.goto("/");
+  await page.goto("/workspace");
   const origin = new URL(page.url()).origin;
   const email = `authoring-${crypto.randomUUID()}@example.com`;
   const registration = await page.request.post("/api/account:register", {
@@ -266,7 +266,7 @@ test("explicit logout clears recovery in all open editor tabs", async ({
   const { owner } = await fixture(page);
   await page.getByLabel("姓名", { exact: true }).fill("退出前的私有草稿");
   const workspace = await context.newPage();
-  await workspace.goto("/");
+  await workspace.goto("/workspace");
   await workspace.getByRole("button", { name: "打开账户菜单" }).click();
   await workspace.getByRole("menuitem", { name: "退出登录" }).click();
   await workspace

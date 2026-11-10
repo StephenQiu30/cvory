@@ -14,6 +14,8 @@ BACKEND_INTERNAL_URL=http://127.0.0.1:4321 pnpm dev --port 1234
 
 同站点 `/api/` 只转发到 NestJS，默认 `http://127.0.0.1:4321`。构建/启动的后端地址及 `PUBLIC_APP_ORIGIN` 必须匹配实际入口；容器使用 `http://backend:4321`。API 客户端统一由 `backend/openapi.json` 生成到 `src/lib/api/generated/`，不保留 Python 合同或第二个生成 namespace；生成配置负责可空字段与 AIP 冒号。
 
+`/` 是站主公开首页，`/u/{publicId}` 是同一公开快照的稳定个人页，`/workspace` 进入私有简历工作区。自部署者在前端运行环境设置 `SITE_OWNER_PUBLIC_ID`，值取自站主账户的公开设置；留空时首页不推断站主并展示空状态。仓库精选候选保存在 Nest/MySQL；服务端在选择保存和发布预览时分别复核仓库归属及公开状态，贡献说明与 GitHub 元数据独立保存，只有明确发布后才进入匿名快照。
+
 ## 组件与功能边界
 
 - `components/layout/`：共享页面壳、编辑器和设置布局；默认 Server Components。
@@ -21,7 +23,7 @@ BACKEND_INTERNAL_URL=http://127.0.0.1:4321 pnpm dev --port 1234
 - `components/resume/`：共用正文、文件和导出；`lib/resume/` 管理纯内容转换、完整表单默认值及候选校验。
 - `app/cvs/[id]/_components/`：编辑、串行自动保存及条件写入、修订历史、模块和样式；Tiptap 按需加载，不另建全局编辑状态。
 - `components/account/`：共用账户状态、登录和图片选择；GitHub 授权在新标签页完成后，返回原标签继续，保护编辑中的输入。
-- `/settings/github` 仅提供安全绑定与显式读取本人公开仓库；选入简历/主页按 BACKLOG 实施。邮箱恢复和注销关闭入口，保留路由说明；存量账户可以修改密码。
+- `/settings/github` 提供安全绑定、显式读取、排序和管理本人精选公开仓库；元数据由服务端核验，人工贡献独立保存，候选不直接公开。邮箱恢复和注销关闭入口，保留路由说明；存量账户可以修改密码。
 
 ## 制作与本机恢复
 

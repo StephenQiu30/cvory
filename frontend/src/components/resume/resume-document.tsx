@@ -5,6 +5,7 @@ import {
   MapPin,
   Globe,
   GitFork,
+  Star,
   MessageCircle,
   BriefcaseBusiness,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import {
   MODULES,
   dateLabel,
   safeLink,
+  sectionAnchorId,
   textContent,
   visibleSections,
 } from "@/lib/resume/model";
@@ -106,6 +108,7 @@ export function ResumeDocument({
         >
           <div className="min-w-0 flex-1">
             <h1
+              id="resume-profile"
               className={cn(
                 "font-semibold text-[var(--resume-accent)]",
                 web ? "text-[28px] leading-9" : "text-[24px] leading-8",
@@ -174,7 +177,11 @@ export function ResumeDocument({
               MODULES.find((m) => m.type === section.type)?.icon ??
               BriefcaseBusiness;
             return (
-              <section key={section.id} data-section-id={section.id}>
+              <section
+                key={section.id}
+                id={sectionAnchorId(section.id)}
+                data-section-id={section.id}
+              >
                 <h2
                   className="mb-2 flex items-center gap-2 font-medium text-[var(--resume-accent)]"
                   style={{ fontSize: web ? 16 : "1.12em" }}
@@ -276,6 +283,58 @@ export function ResumeDocument({
               </section>
             );
           })}
+          {document.projects?.length ? (
+            <section id="resume-projects" className="space-y-4">
+              <h2
+                className="mb-2 flex items-center gap-2 font-medium text-[var(--resume-accent)]"
+                style={{ fontSize: web ? 16 : "1.12em" }}
+              >
+                <GitFork aria-hidden className="size-[1em]" />
+                精选项目
+              </h2>
+              {document.projects.map((project) => (
+                <article
+                  key={project.repositoryId}
+                  className="resume-entry min-w-0 border-t border-[#e5e5e5] pt-4 first:border-0 first:pt-0"
+                >
+                  <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                    <h3 className="min-w-0 break-all font-medium">
+                      <a
+                        href={safeLink(project.url)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      >
+                        {project.fullName}
+                      </a>
+                    </h3>
+                    <span className="inline-flex items-center gap-1 text-[.8em] text-[#666]">
+                      <Star aria-hidden className="size-[1em]" />
+                      {project.stars} stars
+                    </span>
+                  </header>
+                  {project.description ? (
+                    <p className="mt-2! break-words text-[.9em] text-[#666]">
+                      <span className="font-medium text-[#444]">
+                        仓库简介：
+                      </span>
+                      {project.description}
+                    </p>
+                  ) : null}
+                  {project.contribution.trim() ? (
+                    <p className="mt-2! break-words whitespace-pre-wrap text-[.9em]">
+                      <span className="font-medium">个人贡献：</span>
+                      {project.contribution}
+                    </p>
+                  ) : null}
+                  <p className="mt-2! flex flex-wrap gap-x-3 gap-y-1 text-[.8em] text-[#666]">
+                    {project.language ? <span>{project.language}</span> : null}
+                    {project.fork ? <span>Fork 仓库</span> : null}
+                  </p>
+                </article>
+              ))}
+            </section>
+          ) : null}
         </div>
       </div>
     </article>

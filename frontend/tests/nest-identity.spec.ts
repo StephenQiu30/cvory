@@ -5,7 +5,7 @@ test.skip(
   "Requires the isolated Nest/MySQL browser fixture.",
 );
 async function signup(page: Page) {
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "登录或注册", exact: true }).click();
   await expect(
     page.getByRole("link", { name: "使用 GitHub 登录" }),
@@ -109,7 +109,7 @@ test("mobile login explains unconfigured GitHub and respects disabled legacy reg
       },
     }),
   );
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "登录或注册", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("GitHub 登录尚未配置");
   await expect(

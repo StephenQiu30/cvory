@@ -139,6 +139,12 @@ export function visibleSections(sections: Section[]) {
         )),
   );
 }
+export function sectionAnchorId(id: string) {
+  const encoded = Array.from(new TextEncoder().encode(id), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+  return `resume-section-${encoded}`;
+}
 export function editable(data: ResumeData & { displayName: string }) {
   return {
     displayName: data.displayName,

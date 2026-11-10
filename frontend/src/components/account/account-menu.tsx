@@ -115,7 +115,7 @@ export function AccountMenu() {
                 if (account) announceLogout(account.id);
                 setAccount(null);
                 setOpen(false);
-                router.push("/");
+                router.push("/workspace");
               } catch (cause) {
                 setError(errorMessage(cause, "退出失败，请重试。"));
               } finally {

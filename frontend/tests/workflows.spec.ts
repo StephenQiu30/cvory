@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { test, expect, type Page } from "@playwright/test";
 const PASSWORD = "workflow-test-password-2026";
 async function signup(page: Page) {
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "登录或注册" }).click();
   await page.getByRole("button", { name: "还没有账户？注册" }).click();
   await page.getByLabel("显示名称").fill("流程验收");
@@ -74,7 +74,7 @@ async function verifyTestAccount(page: Page, email: string) {
     page.getByText("已连接 @cvory-fixture", { exact: true }),
   ).toBeVisible();
   await page.unroute(pattern);
-  await page.goto("/");
+  await page.goto("/workspace");
 }
 
 test("register → blank CV → four modules → save/reopen → templates → frozen public result", async ({
@@ -224,7 +224,7 @@ test("JSON export/import restores source data and PDF is an actual file", async 
   const file = await backup.path();
   expect(file).toBeTruthy();
   await page.getByRole("button", { name: "返回编辑" }).click();
-  await page.goto("/");
+  await page.goto("/workspace");
   await page.getByRole("button", { name: "导入", exact: true }).click();
   await page.getByLabel("选择简历文件").setInputFiles({
     name: "backup.json",
@@ -300,7 +300,7 @@ test("design tokens, dialogs and theme work on desktop and mobile", async ({
   await signup(page);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/workspace");
     await page.evaluate(() => {
       localStorage.setItem("cvory.theme.v1", "light");
       document.documentElement.classList.remove("dark");
@@ -380,7 +380,7 @@ test("authentication modal keeps context and preserves drafts after session expi
   context,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
+  await page.goto("/workspace");
   const trigger = page.getByRole("button", { name: "登录或注册" });
   await trigger.click();
   const dialog = page.getByRole("dialog", { name: "欢迎回来" });

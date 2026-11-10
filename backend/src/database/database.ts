@@ -52,7 +52,7 @@ export class Database implements OnModuleDestroy {
   async assertReady(): Promise<void> {
     try {
       const migration = await this.rows('SELECT version FROM cvory_migrations WHERE version=?', [
-        '005_image_storage',
+        '006_github_featured_projects',
       ]);
       if (!migration.length) throw new Error('Schema upgrade required.');
       const pending = await this.rows(

@@ -1,10 +1,15 @@
-import {Controller, Get, Post, Query, Req, Res} from '@nestjs/common';
+import {Body, Controller, Get, Post, Put, Query, Req, Res} from '@nestjs/common';
 import {ApiOkResponse, ApiOperation, ApiQuery, ApiTags} from '@nestjs/swagger';
 import {Request, Response} from 'express';
 import {Config} from '../../config/config';
 import {OwnerRequest, Public} from '../../common/session.guard';
 import {GithubService} from './github.service';
-import {GithubConnection, GithubRepositories} from './github.dto';
+import {
+  GithubConnection,
+  GithubFeaturedProjects,
+  GithubRepositories,
+  SaveGithubFeaturedProjects,
+} from './github.dto';
 
 @ApiTags('github')
 @Controller('account/github')
@@ -93,5 +98,22 @@ export class GithubController {
     @Query('pageToken') token = '',
   ): Promise<GithubRepositories> {
     return this.github.repositories(request.owner, token);
+  }
+
+  @Get('featured-projects')
+  @ApiOperation({operationId: 'getGithubFeaturedProjects'})
+  @ApiOkResponse({type: GithubFeaturedProjects})
+  featuredProjects(@Req() request: OwnerRequest): Promise<GithubFeaturedProjects> {
+    return this.github.featuredProjects(request.owner);
+  }
+
+  @Put('featured-projects')
+  @ApiOperation({operationId: 'saveGithubFeaturedProjects'})
+  @ApiOkResponse({type: GithubFeaturedProjects})
+  saveFeaturedProjects(
+    @Body() body: SaveGithubFeaturedProjects,
+    @Req() request: OwnerRequest,
+  ): Promise<GithubFeaturedProjects> {
+    return this.github.saveFeaturedProjects(request.owner, body);
   }
 }

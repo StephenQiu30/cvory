@@ -40,6 +40,7 @@ services:
       NODE_ENV: production
       PORT: "1234"
       BACKEND_INTERNAL_URL: http://backend:4321
+      SITE_OWNER_PUBLIC_ID: "${SITE_OWNER_PUBLIC_ID:-}"
     depends_on:
       backend:
         condition: service_healthy

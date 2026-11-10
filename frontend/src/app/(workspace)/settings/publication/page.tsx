@@ -186,7 +186,7 @@ export default function Publication() {
     <>
       <PageHeader
         title="公开简历"
-        description="选择一份已保存简历，核对后发布到固定网址。保存简历不会自动更新公开页。"
+        description="选择一份已保存简历，核对后发布到固定网址。精选 GitHub 项目会与简历一起预览，保存和编辑都不会自动更新公开页。"
       />
       {account && !account.emailVerified && !account.githubConnected ? (
         <StatusMessage tone="info" className="mb-5">
@@ -321,7 +321,7 @@ export default function Publication() {
           {!cvs.length ? (
             <p className="text-sm">
               还没有可选简历，请先
-              <Link className="text-link" href="/">
+              <Link className="text-link" href="/workspace">
                 创建简历
               </Link>
               。
@@ -427,7 +427,7 @@ export default function Publication() {
               setError("");
               setMessage("");
               try {
-                await withdrawPublication({etag: status?.etag || ""});
+                await withdrawPublication({ etag: status?.etag || "" });
                 setStatus((s) =>
                   s ? { ...s, published: false, sourceName: "" } : s,
                 );

@@ -1,4 +1,4 @@
-import {ApiProperty} from '@nestjs/swagger';
+import {ApiProperty, ApiPropertyOptional} from '@nestjs/swagger';
 import {ArrayMaxSize, ArrayUnique, IsArray, IsIn, IsString, Length} from 'class-validator';
 import {Document} from '../cvs/document';
 import {profileProperties, sectionProperties, styleProperties} from '../cvs/cv_resource.dto';
@@ -15,10 +15,23 @@ export const PUBLIC_FIELDS = [
   'expectedSalary',
   'avatarUrl',
 ];
+export class PublicGithubProject {
+  @ApiProperty() repositoryId!: string;
+  @ApiProperty() name!: string;
+  @ApiProperty() fullName!: string;
+  @ApiProperty() url!: string;
+  @ApiProperty({type: String, nullable: true}) description!: string | null;
+  @ApiProperty({type: String, nullable: true}) language!: string | null;
+  @ApiProperty() stars!: number;
+  @ApiProperty() fork!: boolean;
+  @ApiProperty() updateTime!: string;
+  @ApiProperty() contribution!: string;
+}
 export class ResumeDocument implements Document {
   @ApiProperty(profileProperties) profile!: Document['profile'];
   @ApiProperty(sectionProperties) sections!: Document['sections'];
   @ApiProperty(styleProperties) styleSettings!: Document['styleSettings'];
+  @ApiPropertyOptional({type: [PublicGithubProject]}) projects?: PublicGithubProject[];
 }
 export class PublicSelection {
   @ApiProperty() @IsString() @Length(1, 36) sourceId!: string;

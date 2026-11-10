@@ -8,7 +8,6 @@ import {AccountModule} from './modules/account/account.module';
 import {PublicationModule} from './modules/publication/publication.module';
 import {FilesModule} from './modules/files/files.module';
 import {CvsModule} from './modules/cvs/cvs.module';
-import {GithubModule} from './modules/github/github.module';
 import {GithubClient} from './modules/github/github_client';
 @Module({})
 export class AppModule {
@@ -23,9 +22,8 @@ export class AppModule {
         DatabaseModule.register(config),
         AccountModule,
         CvsModule,
-        PublicationModule,
+        PublicationModule.register(external),
         FilesModule,
-        GithubModule.register(external),
       ],
       providers: [{provide: APP_GUARD, useClass: SessionGuard}],
     };
