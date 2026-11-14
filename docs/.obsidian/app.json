@@ -1,9 +1,0 @@
-{
-  "useMarkdownLinks": true,
-  "newLinkFormat": "relative",
-  "alwaysUpdateLinks": false,
-  "attachmentFolderPath": "assets",
-  "showInlineTitle": false,
-  "trashOption": "local",
-  "readableLineLength": false
-}
