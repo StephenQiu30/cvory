@@ -19,7 +19,8 @@
 
 **跨端协同原则**：
 - **REST 契约单一来源**：由 `backend/` 通过 `@nestjs/swagger` 暴露 OpenAPI JSON，`frontend/` 使用 `@umijs/openapi` 自动生成请求函数与 TypeScript 类型。
-- **单一现行数据契约（NFR-CV-03）**：`frontend/` 与 `backend/` 各自维护现行契约版本号与校验逻辑，拒绝不受支持的旧格式写入，不做历史向后兼容。
+- **单一现行数据契约与零历史包袱（NFR-CV-03 / SRC-CV-10）**：不做任何向后兼容，**不保留历史数据库迁移文件**；`frontend/` 与 `backend/` 各自严格校验现行契约版本号，拒绝不受支持的格式写入。
+- **代码与设计规范**：`frontend/` 遵循 **Vercel 设计规范**（视觉、交互与 React / Next.js 工程最佳实践）；`backend/` 遵循 **Google TypeScript Style Guide**。
 
 ---
 
@@ -65,10 +66,10 @@ frontend/
 ```
 
 ### 前端工程约定
-1. **组件与视觉**：严格使用 `components/ui/` 中的 shadcn/ui Radix 组件，遵循无边框、近白画布、4px 网格与蓝色键盘焦点规范（NFR-CV-02）。
+1. **Vercel 设计与工程规范**：严格遵循 **Vercel 设计规范**（高对比克制层级、无边框、近白画布、4px 网格、蓝色键盘焦点与无障碍焦点管理）及 Vercel React / Next.js 最佳实践；基础控件统一取自 `components/ui/` 的 shadcn/ui Radix 组件（NFR-CV-02）。
 2. **接口生成目录只读**：`src/services/` 仅通过脚本从后端 OpenAPI 重新生成；鉴权头、401 单飞刷新与错误处理统一收口在 `src/lib/api/`。
 3. **重计算隔离**：Typst WASM 编译与 PDF.js 解析一律运行在 Web Worker 中，避免阻塞中文 IME 组合输入与表单交互；等待下载期间若快照序号变化立即取消旧任务。
-4. **本地存储隔离**：游客草稿与不同登录账号的 `y-indexeddb` 数据库名按身份严格隔离；退出登录时立即断开 WS、清空内存 JWT 与预览缓存。
+4. **本地存储隔离与零兼容**：游客草稿与不同登录账号的 `y-indexeddb` 数据库名按身份严格隔离；退出登录时立即断开 WS、清空内存 JWT 与预览缓存；不兼容旧草稿格式，校验失败直接拒绝写入。
 
 ---
 
@@ -79,8 +80,7 @@ frontend/
 ```text
 backend/
 ├── prisma/
-│   ├── schema.prisma          # User / Resume / ResumeClaim / ResumeYjsUpdate / ResumeYjsSnapshot
-│   └── migrations/            # Prisma 版本化迁移记录（禁止线上手工改表）
+│   └── schema.prisma          # 唯一现行数据模型（User / Resume / ResumeClaim / ResumeYjsUpdate / ResumeYjsSnapshot），不保留 migrations/ 目录
 ├── src/
 │   ├── main.ts                # 启动入口、全局校验管道、Swagger/OpenAPI 导出、原生 ws 适配器
 │   ├── app.module.ts          # 根模块组装
@@ -105,9 +105,11 @@ backend/
 ```
 
 ### 后端工程约定
-1. **OpenAPI 驱动**：所有 Controller 与 DTO 必须标注完整的 `@nestjs/swagger` 装饰器与响应类型，确保前端 `umiopenapi` 生成零 `any`。
-2. **敏感配置零入库**：JWT 密钥、数据库密码、Redis 密码及网易 163 邮箱账号与客户端授权码全部经环境变量注入；代码与日志中禁止出现真实凭证或用户隐私。
-3. **幂等与强回执**：
+1. **Google TypeScript Style Guide**：严格遵循 **Google TS 规范**——优先具名导出（禁用 `export default`）、严禁 `any` 与不安全类型断言、优先使用 `readonly` 与显式返回类型、遵循 `UpperCamelCase`（类/接口/类型）与 `lowerCamelCase`（方法/变量/参数）及 `CONSTANT_CASE`（常量）命名约定、使用 `===` 且禁止 `namespace`。
+2. **无向后兼容与无迁移文件**：不维护 `prisma/migrations/` 历史迁移目录，也不为旧契约或旧表结构保留兼容代码；唯一真相源为 `prisma/schema.prisma`，通过 `prisma db push` 直接同步当前结构。
+3. **OpenAPI 驱动**：所有 Controller 与 DTO 必须标注完整的 `@nestjs/swagger` 装饰器与响应类型，确保前端 `umiopenapi` 生成零 `any`。
+4. **敏感配置零入库**：JWT 密钥、数据库密码、Redis 密码及网易 163 邮箱账号与客户端授权码全部经环境变量注入；代码与日志中禁止出现真实凭证或用户隐私。
+5. **幂等与强回执**：
    - 游客单稿认领通过 `ResumeClaim(userId, clientDraftId)` 唯一索引保证重试仅生成一份账号稿；
    - Yjs 同步更新必须在 PostgreSQL 事务提交完成后再下发 `ACK(resumeId, clientSeq)`，绝不先广播后落库。
 
