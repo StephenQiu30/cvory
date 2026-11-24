@@ -1,0 +1,7 @@
+.next/
+out/
+build/
+node_modules/
+pnpm-lock.yaml
+src/services/
+next-env.d.ts

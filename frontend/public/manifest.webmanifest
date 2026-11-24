@@ -1,0 +1,9 @@
+{
+  "name": "简序 · CVory",
+  "short_name": "简序",
+  "description": "极简在线简历制作，免费中文纸样与离线 A4 PDF 导出",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#171717"
+}

@@ -117,16 +117,16 @@ backend/
 
 ## 4. 当前服务架构设计
 
-当前系统以 **Docker Compose 自托管容器**形态运行，全部服务位于同一内部网络，职责与端口规划如下：
+当前系统以 **Docker Compose 仅编排业务容器** 的形态运行，**基础环境依赖（PostgreSQL、Redis）直接复用宿主机已有服务**（容器内经 `host.docker.internal` 连接），不重复拉起数据库与缓存容器：
 
-| 服务名 | 镜像 / 构建源 | 内部端口 | 职责与状态属性 |
+| 服务名 | 运行方式 | 端口 | 职责与状态属性 |
 | --- | --- | --- | --- |
-| `frontend` | `./frontend/Dockerfile` | `3000` | Next.js 产品应用、PWA 应用壳、Typst WASM 静态资源与自托管思源黑体/宋体静态字库 |
-| `backend` | `./backend/Dockerfile` | `3001` | NestJS REST API（`/api/*`）、OpenAPI 文档（`/api/docs-json`）与原生 WebSocket Yjs 同步服务（`/ws/sync`） |
-| `postgres` | `postgres:16-alpine` | `5432` | 主持久化数据库（命名卷挂载），保存用户、岗位稿件元数据、认领幂等表、软删除墓碑及 Yjs 二进制更新/快照 |
-| `redis` | `redis:7-alpine` | `6379` | 内存状态层，保存 OTP 验证码哈希（TTL）、邮箱/IP 发送限频计数、JWT 登出黑名单 |
-| `mailpit` | `axllent/mailpit` | `1025` / `8025` | **仅本地开发 profile 启用**，捕获开发态验证码邮件并提供 Web 预览；联验与生产关闭该容器，直连网易 163 邮箱 SMTP |
-| `workspace` | `./workspace/Dockerfile` | `3000`（宿主机 `127.0.0.1:1230`） | 现有 Fumadocs 项目知识库服务，与产品应用相互独立 |
+| `frontend` | Docker Compose（`./frontend/Dockerfile`） | `3000` | Next.js 产品应用、PWA 应用壳、Typst WASM 静态资源与自托管思源黑体/宋体静态字库 |
+| `backend` | Docker Compose（`./backend/Dockerfile`） | `3001` | NestJS REST API（`/api/*`）、OpenAPI 文档（`/api/docs-json`）与原生 WebSocket Yjs 同步服务（`/ws/sync`） |
+| `workspace` | Docker Compose（`./workspace/Dockerfile`） | `3000`（宿主机 `127.0.0.1:1230`） | 现有 Fumadocs 项目知识库服务，与产品应用相互独立 |
+| PostgreSQL | **复用本机已有服务** | 宿主机 `5432` | 主持久化数据库，保存用户、岗位稿件元数据、认领幂等表、软删除墓碑及 Yjs 二进制更新/快照 |
+| Redis | **复用本机已有服务** | 宿主机 `6379` | 内存状态层，保存 OTP 验证码哈希（TTL）、邮箱/IP 发送限频计数、JWT 登出黑名单 |
+| 网易 163 邮箱 SMTP | 外部邮件服务 | `smtp.163.com:465` (SSL) | 发送邮箱登录验证码（授权码经环境变量注入） |
 
 ### 服务拓扑与核心链路
 
@@ -140,12 +140,15 @@ flowchart TB
     Worker["Web Worker（Typst WASM 排版 + PDF.js 渲染）"]
   end
 
-  subgraph Compose["Docker Compose 服务集群"]
+  subgraph Compose["Docker Compose 业务容器"]
     FE["frontend · Next.js :3000"]
     BE["backend · NestJS REST + ws :3001"]
-    PG[("postgres :5432")]
-    RD[("redis :6379")]
     WS["workspace · 知识库 :1230"]
+  end
+
+  subgraph HostInfra["本机已有基础服务（host.docker.internal）"]
+    PG[("PostgreSQL :5432")]
+    RD[("Redis :6379")]
   end
 
   SMTP["网易 163 邮箱 SMTP (smtp.163.com:465 SSL)"]
