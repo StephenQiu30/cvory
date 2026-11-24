@@ -7,13 +7,18 @@ import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 const docs = defineDocs({
   dir: 'content',
   docs: {
-    schema: ({ source, path }) =>
-      pageSchema.extend({
-        title: pageSchema.shape.title.default(
-          source.match(/^#\s+(.+)$/m)?.[1] ??
-            path.split('/').at(-1)!.replace(/\.md$/, ''),
-        ),
-      }),
+    schema: ({ source, path }) => {
+      const filename = path.split('/').at(-1)!;
+      const number = /^(\d{2})-/.exec(filename)?.[1];
+      const heading =
+        source.match(/^#\s+(.+)$/m)?.[1] ??
+        filename.replace(/^\d{2}-/, '').replace(/\.mdx?$/, '');
+      return pageSchema.extend({
+        title: pageSchema.shape.title
+          .default(heading)
+          .transform((title) => (number ? `${number} · ${title}` : title)),
+      });
+    },
     postprocess: {
       includeProcessedMarkdown: true,
     },

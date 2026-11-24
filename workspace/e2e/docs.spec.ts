@@ -68,3 +68,17 @@ test('renders the research screenshot and links its mobile example', async ({
   expect(response.ok()).toBe(true);
   expect(response.headers()['content-type']).toContain('image/png');
 });
+
+test('follows the product documents and shows their file numbers', async ({
+  page,
+}) => {
+  await page.goto('/docs');
+  const article = page.locator('article');
+  await article.getByRole('link', { name: '设计 01 · 在线简历制作' }).click();
+  await expect(page).toHaveTitle('01 · 在线简历制作设计');
+  await article.getByRole('link', { name: '首版 PRD', exact: true }).click();
+  await expect(page).toHaveTitle('01 · 在线简历制作 PRD');
+  await article.getByRole('link', { name: '执行计划', exact: true }).click();
+  await expect(page).toHaveTitle('01 · 在线简历制作执行计划');
+  await expect(article).toContainText('CASE-CV-06');
+});

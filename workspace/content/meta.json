@@ -3,6 +3,9 @@
   "pages": [
     "index",
     "requirement",
+    "design",
+    "prd",
+    "plan",
     "research"
   ]
 }
