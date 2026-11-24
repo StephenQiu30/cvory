@@ -1,0 +1,8 @@
+.next
+node_modules
+.source
+dist
+content/**
+content
+pnpm-lock.yaml
+test-results

@@ -1,0 +1,41 @@
+{
+  "name": "cvory-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@12.4.2",
+  "scripts": {
+    "build": "next build --webpack",
+    "dev": "next dev --webpack",
+    "start": "next start --hostname 127.0.0.1 --port 1230",
+    "lint": "eslint .",
+    "format:check": "prettier --check .",
+    "types:check": "next typegen && tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "cn": "^0.5.2",
+    "fumadocs-core": "16.19.3",
+    "fumadocs-mdx": "15.6.2",
+    "fumadocs-ui": "npm:@fumadocs/base-ui@16.19.3",
+    "lucide-react": "^1.71.0",
+    "mermaid": "^12.3.0",
+    "next": "16.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "rehype-raw": "^7.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/mdx": "^2.0.14",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.15.0",
+    "eslint-config-next": "^16.4.6",
+    "postcss": "^8.5.32",
+    "prettier": "^3.10.1",
+    "tailwindcss": "^4.3.5",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,46 @@
+name: Workspace
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: workspace-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  workspace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: workspace
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: workspace/package.json
+          cache: true
+          cache_dependency_path: workspace/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm lint
+      - run: pnpm types:check
+      - run: pnpm format:check
+      - run: pnpm build
+      - name: Official Fumadocs browser acceptance
+        run: |
+          pnpm start > "$RUNNER_TEMP/workspace-next.log" 2>&1 &
+          reader_pid=$!
+          trap 'kill "$reader_pid" 2>/dev/null || true' EXIT
+          curl --fail --silent --retry 20 --retry-connrefused --retry-delay 1 http://127.0.0.1:1230/docs > /dev/null
+          pnpm test:e2e
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: workspace-browser-evidence
+          path: workspace/test-results
