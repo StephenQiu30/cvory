@@ -1,6 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
-import { CVORY_CONTRACT_VERSION } from '../../common/contract/contract.constants.js';
+import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min, MinLength } from 'class-validator';
+import {
+  CVORY_CONTRACT_VERSION,
+  SUPPORTED_TEMPLATE_IDS,
+} from '../../common/contract/contract.constants.js';
 
 export class ResumeSummaryDto {
   @ApiProperty({ example: 'cm3res123456' })
@@ -45,10 +48,9 @@ export class CreateResumeDto {
   @MaxLength(120)
   readonly title!: string;
 
-  @ApiProperty({ example: 'classic-single' })
+  @ApiProperty({ example: 'classic-single', enum: SUPPORTED_TEMPLATE_IDS })
   @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @IsIn(SUPPORTED_TEMPLATE_IDS)
   readonly templateId!: string;
 
   @ApiProperty({ example: CVORY_CONTRACT_VERSION, description: '单一现行契约版本号' })
@@ -80,10 +82,9 @@ export class ClaimResumeDto {
   @MaxLength(120)
   readonly title!: string;
 
-  @ApiProperty({ example: 'compact-single' })
+  @ApiProperty({ example: 'compact-single', enum: SUPPORTED_TEMPLATE_IDS })
   @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @IsIn(SUPPORTED_TEMPLATE_IDS)
   readonly templateId!: string;
 
   @ApiProperty({ example: CVORY_CONTRACT_VERSION })
@@ -119,11 +120,10 @@ export class UpdateResumeDto {
   @MaxLength(120)
   readonly title?: string;
 
-  @ApiPropertyOptional({ example: 'chinese-letter' })
+  @ApiPropertyOptional({ example: 'chinese-letter', enum: SUPPORTED_TEMPLATE_IDS })
   @IsOptional()
   @IsString()
-  @MinLength(1)
-  @MaxLength(64)
+  @IsIn(SUPPORTED_TEMPLATE_IDS)
   readonly templateId?: string;
 
   @ApiProperty({ example: CVORY_CONTRACT_VERSION })

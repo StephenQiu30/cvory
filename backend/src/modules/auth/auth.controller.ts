@@ -1,4 +1,14 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import {
   ApiBearerAuth,
   ApiOkResponse,
@@ -32,8 +42,11 @@ export class AuthController {
   @ApiOperation({ summary: '发送邮箱登录验证码（网易 163 邮箱 SMTP）' })
   @ApiOkResponse({ type: SendOtpResponseDto })
   @ApiTooManyRequestsResponse({ description: '发送冷却中或达到每小时上限' })
-  sendOtp(@Body() body: SendOtpDto): Promise<SendOtpResponseDto> {
-    return this.authService.sendOtp(body.email);
+  sendOtp(@Body() body: SendOtpDto, @Req() req: Request): Promise<SendOtpResponseDto> {
+    const forwarded = req.headers['x-forwarded-for'];
+    const clientIp =
+      typeof forwarded === 'string' ? forwarded.split(',')[0]?.trim() : req.ip;
+    return this.authService.sendOtp(body.email, clientIp);
   }
 
   @Post('otp/verify')

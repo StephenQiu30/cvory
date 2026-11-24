@@ -28,6 +28,7 @@ const OTP_TTL_SECONDS = 600;
 const OTP_COOLDOWN_SECONDS = 60;
 const OTP_HOURLY_WINDOW_SECONDS = 3600;
 const OTP_HOURLY_MAX_SENDS = 10;
+const OTP_IP_HOURLY_MAX_SENDS = 20;
 const OTP_MAX_VERIFY_ATTEMPTS = 5;
 
 function parseDurationToSeconds(rawDuration: string, fallbackSeconds: number): number {
@@ -77,7 +78,7 @@ export class AuthService {
     );
   }
 
-  async sendOtp(rawEmail: string): Promise<SendOtpResponseDto> {
+  async sendOtp(rawEmail: string, clientIp?: string): Promise<SendOtpResponseDto> {
     const email = this.normalizeEmail(rawEmail);
     const cooldownKey = `cvory:otp:cooldown:${email}`;
     const hourlyKey = `cvory:otp:hourly:${email}`;
@@ -85,6 +86,20 @@ export class AuthService {
     const inCooldown = await this.redis.client.exists(cooldownKey);
     if (inCooldown === 1) {
       throw new HttpException('发送过于频繁，请稍后再试', HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    if (clientIp && clientIp.trim().length > 0) {
+      const ipKey = `cvory:otp:ip:${clientIp.trim()}`;
+      const ipCount = await this.redis.client.incr(ipKey);
+      if (ipCount === 1) {
+        await this.redis.client.expire(ipKey, OTP_HOURLY_WINDOW_SECONDS);
+      }
+      if (ipCount > OTP_IP_HOURLY_MAX_SENDS) {
+        throw new HttpException(
+          '当前网络请求次数已达上限，请一小时后再试',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
     }
 
     const hourlyCount = await this.redis.client.incr(hourlyKey);
