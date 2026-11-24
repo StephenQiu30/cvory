@@ -7,6 +7,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { HealthModule } from './modules/health/health.module.js';
 import { MailModule } from './modules/mail/mail.module.js';
 import { ResumeModule } from './modules/resume/resume.module.js';
+import { SyncRegistryModule } from './modules/sync/sync-registry.module.js';
 import { SyncModule } from './modules/sync/sync.module.js';
 
 @Module({
@@ -17,6 +18,7 @@ import { SyncModule } from './modules/sync/sync.module.js';
     }),
     PrismaModule,
     RedisModule,
+    SyncRegistryModule,
     HealthModule,
     MailModule,
     AuthModule,
