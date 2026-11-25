@@ -8,168 +8,155 @@
 
 ```text
 /
-├── frontend/            # 产品前端（Next.js + shadcn/ui Radix + Tiptap + Yjs + Typst WASM + PDF.js）
-├── backend/             # 产品后端（NestJS + Prisma + PostgreSQL + Redis + 原生 ws Yjs 同步）
+├── frontend/            # 产品前端（Next.js + shadcn/ui Radix + Tailwind CSS + Axios + @umijs/openapi + Tiptap）
+├── backend/             # 产品后端（Python FastAPI + uv + SQLAlchemy 2.0 + Pydantic v2 + Redis + S3 + Playwright）
 ├── workspace/           # 项目知识库（Fumadocs，独立构建与运行）
-├── docker-compose.yml   # 统一编排全部服务容器
+├── docker-compose.yml   # 仅编排 frontend / backend / workspace 三个业务容器
 ├── PROJECT.md           # 本文档：目录规范与服务架构设计
 ├── BACKLOG.md           # 产品工作项实施状态
 └── README.md            # 仓库入口说明
 ```
 
 **跨端协同原则**：
-- **REST 契约单一来源**：由 `backend/` 通过 `@nestjs/swagger` 暴露 OpenAPI JSON，`frontend/` 使用 `@umijs/openapi` 自动生成请求函数与 TypeScript 类型。
-- **单一现行数据契约与零历史包袱（NFR-CV-03 / SRC-CV-10）**：不做任何向后兼容，**不保留历史数据库迁移文件**；`frontend/` 与 `backend/` 各自严格校验现行契约版本号，拒绝不受支持的格式写入。
-- **代码与设计规范**：`frontend/` 遵循 **Vercel 设计规范**（视觉、交互与 React / Next.js 工程最佳实践）；`backend/` 遵循 **Google TypeScript Style Guide**。
+- **REST 契约单一来源**：由 `backend/`（FastAPI + Pydantic v2）自动暴露 OpenAPI JSON（`/api/openapi.json`），`frontend/` 使用 `@umijs/openapi` 自动生成请求函数与 TypeScript 类型。
+- **单一现行数据契约与零历史包袱（NFR-CV-03 / SRC-CV-10）**：不做任何向后兼容，**不保留历史数据库迁移文件**（无 Alembic 迁移目录）；`frontend/` 与 `backend/` 严格校验现行契约版本号（`contract_version == 1`），拒绝不受支持的格式写入。
+- **代码与设计规范**：`frontend/` 遵循 **Vercel 设计规范**（视觉、无障碍交互与 React / Next.js 工程最佳实践，配 Prettier + ESLint）；`backend/` 遵循 **Google Python Style Guide**（配 `ruff` + `pyright`）。
 
 ---
 
 ## 2. `frontend/` 目录设计规范
 
-技术栈：`Next.js (App Router)` + `shadcn/ui (Radix UI)` + `Tailwind CSS` + `Axios` + `@umijs/openapi` + `Tiptap (MIT)` + `Yjs` + `y-indexeddb` + `Typst WASM (@myriaddreamin/typst.ts)` + `PDF.js` + `Service Worker (Serwist / Workbox)`。
+技术栈：`Next.js (App Router)` + `shadcn/ui (Radix UI)` + `Tailwind CSS` + `Axios` + `@umijs/openapi` + `Tiptap (MIT)` + `Prettier / ESLint`。
 
 ```text
 frontend/
 ├── public/
-│   ├── fonts/                 # 自托管完整开源 OFL 静态中文字库（思源黑体 / 思源宋体 Regular & Bold + OFL 许可）
-│   └── manifest.webmanifest   # PWA 清单
+│   └── manifest.webmanifest   # 应用清单
 ├── src/
-│   ├── app/                   # Next.js App Router 路由层（只做页面编排，不写重业务逻辑）
-│   │   ├── layout.tsx         # 根布局、字体与全局 Provider
-│   │   ├── page.tsx           # `/` 模板页（三款纸样对比、放大预览、使用模板）
+│   ├── app/                   # Next.js App Router 路由层
+│   │   ├── layout.tsx         # 根布局与字体
+│   │   ├── page.tsx           # `/` 模板页（三款免费极简纸样对比、放大预览、使用模板）
 │   │   ├── resumes/
-│   │   │   └── page.tsx       # `/resumes` 我的简历（本机草稿与账号岗位多稿管理）
-│   │   └── resume/
+│   │   │   └── page.tsx       # `/resumes` 我的简历（本机草稿与账号岗位多稿管理、JSON 导入导出）
+│   │   ├── resume/
+│   │   │   └── [id]/
+│   │   │       └── page.tsx   # `/resume/:id` 自定义编辑器（左栏模块开关/自定义模块、中栏表单+头像+Tiptap/Markdown、右栏实时预览）
+│   │   ├── share/
+│   │   │   └── [token]/
+│   │   │       └── page.tsx   # `/share/:token` 在线只读分享页
+│   │   └── print/
 │   │       └── [id]/
-│   │           └── page.tsx   # `/resume/:id` 编辑器（桌面三栏 / 手机填写与预览双视图）
+│   │           └── page.tsx   # `/print/:id` 纯净 A4 打印路由（供后端 Playwright 100% 像素级同源导出 PDF）
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui (Radix Primitives) 基础组件，严禁混入业务逻辑
-│   │   ├── editor/            # 五章表单、Tiptap 富文本编辑器、排序/显隐控制、排版 Sheet
-│   │   ├── preview/           # PDF.js 纸面渲染层、文本选择层、点击定位锚点覆盖层
-│   │   ├── templates/         # 三款纸样展示卡片与放大 Dialog
-│   │   └── auth/              # 邮箱验证码 Dialog、单稿认领与同步状态条
+│   │   ├── editor/            # 模块管理栏、结构化表单、头像上传裁剪、Tiptap 富文本、Markdown 互转、排版工具栏
+│   │   ├── preview/           # 唯一纸面模板组件（同时服务实时预览、分享页与 Playwright 打印页）
+│   │   ├── templates/         # 模板对比卡、放大 Dialog、多稿管理列表
+│   │   └── auth/              # 邮箱验证码 Dialog 与游客单稿认领
 │   ├── services/              # @umijs/openapi 自动生成的 API 客户端（禁止手工修改）
 │   ├── lib/
 │   │   ├── api/               # Axios 实例、JWT Access/Refresh 自动续期拦截器
-│   │   ├── contract/          # 单一现行数据契约版本常量、Zod 校验与快照类型
-│   │   ├── yjs/               # Y.Doc 结构定义、y-indexeddb 命名空间隔离（游客/账号）、ws 同步客户端与 ACK 状态机
-│   │   ├── pdf/               # Typst WASM Worker 封装、Tiptap AST -> Typst 安全映射、typst query 坐标解析、pdf-lib 兜底接口
-│   │   ├── offline/           # 自托管字库按需拉取、Cache API / OPFS 持久化与离线就绪状态检测
-│   │   └── utils.ts           # 通用纯工具函数（cn、文件名清洗等）
-│   └── sw.ts                  # Service Worker 预缓存应用壳与静态运行时（保障 AC-CV-07 离线重开）
-├── e2e/                       # Playwright 端到端测试（桌面、390px 移动端、键盘、离线与双设备同步）
-├── openapi.config.ts          # @umijs/openapi 生成配置
+│   │   ├── contract/          # 单一现行简历 JSON 契约（含扩展预设模块与自定义模块）
+│   │   ├── storage/           # 游客本机草稿缓存与防抖自动保存状态机
+│   │   └── utils.ts           # 通用工具函数
+├── e2e/                       # Playwright 端到端测试
+├── openapi.config.ts          # @umijs/openapi 生成配置（指向 http://127.0.0.1:3001/api/openapi.json）
 ├── components.json            # shadcn/ui Radix 配置
-├── next.config.mjs            # Next.js 配置（standalone 输出、WASM 与 PWA 插件配置）
+├── next.config.ts             # Next.js 配置（standalone 输出）
 ├── Dockerfile
 └── package.json
 ```
 
 ### 前端工程约定
-1. **Vercel 设计与工程规范**：严格遵循 **Vercel 设计规范**（高对比克制层级、无边框、近白画布、4px 网格、蓝色键盘焦点与无障碍焦点管理）及 Vercel React / Next.js 最佳实践；基础控件统一取自 `components/ui/` 的 shadcn/ui Radix 组件（NFR-CV-02）。
-2. **接口生成目录只读**：`src/services/` 仅通过脚本从后端 OpenAPI 重新生成；鉴权头、401 单飞刷新与错误处理统一收口在 `src/lib/api/`。
-3. **重计算隔离**：Typst WASM 编译与 PDF.js 解析一律运行在 Web Worker 中，避免阻塞中文 IME 组合输入与表单交互；等待下载期间若快照序号变化立即取消旧任务。
-4. **本地存储隔离与零兼容**：游客草稿与不同登录账号的 `y-indexeddb` 数据库名按身份严格隔离；退出登录时立即断开 WS、清空内存 JWT 与预览缓存；不兼容旧草稿格式，校验失败直接拒绝写入。
+1. **一套模板驱动预览与导出**：`components/preview/` 为唯一纸面真相源，编辑实时预览、只读分享页与后端 Playwright 打印页完全复用同一套 React/Tailwind 组件，保证所见即所得 100% 一致。
+2. **Vercel 设计与工程规范**：高对比克制层级、无边框画布、4px 网格、蓝色键盘焦点，基础控件统一取自 `components/ui/`（shadcn/ui Radix）。
+3. **接口生成目录只读**：`src/services/` 仅由 `pnpm openapi:gen` 生成；JWT 续期与错误处理收口在 `src/lib/api/`。
 
 ---
 
 ## 3. `backend/` 目录设计规范
 
-技术栈：`NestJS (TypeScript)` + `@nestjs/swagger` + `Prisma` + `PostgreSQL` + `Redis` + 原生 `ws` + 无状态 `JWT` + `Nodemailer (网易 163 邮箱 SMTP)`。
+技术栈：`Python 3.12+` + `uv` + `FastAPI` + `SQLAlchemy 2.0 (asyncpg / JSONB)` + `Pydantic v2` + `redis-py` + `aiosmtplib (网易 163 邮箱 SMTP)` + `boto3 (S3 兼容对象存储)` + `Pillow` + `Playwright (Chromium 浏览器池)` + `ruff` + `pyright` + `pytest`。
 
 ```text
 backend/
-├── prisma/
-│   └── schema.prisma          # 唯一现行数据模型（User / Resume / ResumeClaim / ResumeYjsUpdate / ResumeYjsSnapshot），不保留 migrations/ 目录
-├── src/
-│   ├── main.ts                # 启动入口、全局校验管道、Swagger/OpenAPI 导出、原生 ws 适配器
-│   ├── app.module.ts          # 根模块组装
-│   ├── config/                # 环境变量 Schema 校验（DB、Redis、JWT、163 SMTP 等）
-│   ├── common/
-│   │   ├── contract/          # 单一现行数据契约版本号与二进制/结构校验器（NFR-CV-03）
-│   │   ├── guards/            # JWT Access Token 守卫（含 Redis 黑名单检查）
-│   │   ├── filters/           # 统一错误响应结构
-│   │   └── logger/            # 脱敏日志工具（严禁输出简历正文、验证码、真实邮箱）
+├── app/
+│   ├── main.py                # FastAPI 应用入口、lifespan（建表 + Redis + Playwright 浏览器池）、OpenAPI 路由
+│   ├── core/
+│   │   ├── config.py          # pydantic-settings 强类型环境变量配置
+│   │   ├── contract.py        # 单一现行契约版本常量、模板白名单与简历 JSON 结构模型
+│   │   ├── security.py        # 无状态 JWT Access/Refresh 签发与校验、OTP 哈希
+│   │   └── logging.py         # 脱敏日志（严禁打印简历正文、验证码与真实邮箱）
 │   ├── infra/
-│   │   ├── prisma/            # PrismaService 生命周期封装
-│   │   └── redis/             # Redis 客户端封装（黑名单、OTP 哈希、发送与错误限频）
-│   └── modules/
-│       ├── auth/              # 邮箱验证码发送/校验、JWT Access+Refresh 签发/轮换/登出拉黑
-│       ├── mail/              # MailProvider 抽象 + Nodemailer 实现（联验/生产：网易 163 SMTP；开发：Mailpit）
-│       ├── resume/            # 岗位多稿列表、新建、复制、改名、软删除墓碑、游客单稿幂等认领
-│       └── sync/              # 原生 ws 网关、首帧 JWT 鉴权、Yjs 二进制同步、PG 事务落库与显式 ACK/DOC_DELETED 推送
-├── test/                      # 单元、契约拒绝（CASE-CV-11）与双设备同步集成测试
-├── nest-cli.json
-├── Dockerfile
-└── package.json
+│   │   ├── database.py        # SQLAlchemy 2.0 async engine/session + 启动直接建表（无迁移文件）
+│   │   ├── redis_client.py    # redis.asyncio 客户端封装
+│   │   ├── mail.py            # aiosmtplib 网易 163 邮箱 SMTP 发信
+│   │   ├── storage.py         # boto3 S3 兼容对象存储（阿里云 OSS / MinIO / R2）+ Pillow 头像压缩校验
+│   │   └── pdf_renderer.py    # Playwright 常驻 Chromium 浏览器池 + 并发信号量限流输出 A4 PDF
+│   ├── models/                # SQLAlchemy 2.0 ORM 模型（User / Resume / ResumeClaim，无 migrations/）
+│   ├── schemas/               # Pydantic v2 请求与响应 Schema（驱动 OpenAPI 3.1）
+│   ├── api/
+│   │   ├── deps.py            # FastAPI 依赖注入（CurrentUser JWT + Redis 黑名单校验、DB Session）
+│   │   └── routes/
+│   │       ├── health.py      # /api/health 与 /api/health/ready（PostgreSQL + Redis 探活）
+│   │       ├── auth.py        # /api/auth/*（OTP 发送/校验、Refresh 轮换、登出拉黑、/me）
+│   │       ├── resumes.py     # /api/resumes/*（多稿 CRUD、版本号乐观锁自动保存、幂等认领、复制、JSON 导入导出、分享开关）
+│   │       ├── share.py       # /api/share/{token}（公开只读分享获取）
+│   │       ├── uploads.py     # /api/uploads/avatar（Pillow 压缩校验 + S3 兼容存储上传）
+│   │       └── export.py      # /api/resumes/{id}/export/pdf & /api/export/pdf（Playwright 100% 同源 A4 PDF）
+├── tests/                     # pytest + httpx 异步集成测试
+├── pyproject.toml             # uv 依赖、ruff（Google Python 规范）、pyright 与 pytest 配置
+├── Dockerfile                 # 基于 Python 3.12 + uv + Playwright Chromium
+└── .env.example
 ```
 
 ### 后端工程约定
-1. **Google TypeScript Style Guide**：严格遵循 **Google TS 规范**——优先具名导出（禁用 `export default`）、严禁 `any` 与不安全类型断言、优先使用 `readonly` 与显式返回类型、遵循 `UpperCamelCase`（类/接口/类型）与 `lowerCamelCase`（方法/变量/参数）及 `CONSTANT_CASE`（常量）命名约定、使用 `===` 且禁止 `namespace`。
-2. **无向后兼容与无迁移文件**：不维护 `prisma/migrations/` 历史迁移目录，也不为旧契约或旧表结构保留兼容代码；唯一真相源为 `prisma/schema.prisma`，通过 `prisma db push` 直接同步当前结构。
-3. **OpenAPI 驱动**：所有 Controller 与 DTO 必须标注完整的 `@nestjs/swagger` 装饰器与响应类型，确保前端 `umiopenapi` 生成零 `any`。
-4. **敏感配置零入库**：JWT 密钥、数据库密码、Redis 密码及网易 163 邮箱账号与客户端授权码全部经环境变量注入；代码与日志中禁止出现真实凭证或用户隐私。
-5. **幂等与强回执**：
-   - 游客单稿认领通过 `ResumeClaim(userId, clientDraftId)` 唯一索引保证重试仅生成一份账号稿；
-   - Yjs 同步更新必须在 PostgreSQL 事务提交完成后再下发 `ACK(resumeId, clientSeq)`，绝不先广播后落库。
+1. **Google Python Style Guide**：严格遵循 Google Python 风格，使用 `ruff check` / `ruff format` 与 `pyright` 做静态检查，所有路由、服务与依赖均须完整类型标注。
+2. **零向后兼容与无迁移文件**：不创建 `alembic/` 迁移目录；`app/models/` 为唯一真相源，启动或命令按现行模型直接建表。
+3. **强并发与安全防护**：
+   - OTP 验证码加盐哈希落 Redis，同时限制邮箱冷却（60s）、邮箱每小时上限与 IP 每小时上限，5 次验证失败即作废；
+   - 简历保存携带 `version` 乐观锁，避免多设备旧标签静默覆盖新内容；
+   - Playwright 渲染通过 `asyncio.Semaphore` 限制并发页面数，复用单一常驻浏览器实例以严格控制内存。
 
 ---
 
 ## 4. 当前服务架构设计
 
-当前系统以 **Docker Compose 仅编排业务容器** 的形态运行，**基础环境依赖（PostgreSQL、Redis）直接复用宿主机已有服务**（容器内经 `host.docker.internal` 连接），不重复拉起数据库与缓存容器：
+Docker Compose **仅编排业务容器**，**PostgreSQL、Redis 与 S3 兼容对象存储（MinIO / 阿里云 OSS / R2）直接复用宿主机或外部已有服务**：
 
-| 服务名 | 运行方式 | 端口 | 职责与状态属性 |
+| 服务名 | 运行方式 | 端口 | 职责 |
 | --- | --- | --- | --- |
-| `frontend` | Docker Compose（`./frontend/Dockerfile`） | `3000` | Next.js 产品应用、PWA 应用壳、Typst WASM 静态资源与自托管思源黑体/宋体静态字库 |
-| `backend` | Docker Compose（`./backend/Dockerfile`） | `3001` | NestJS REST API（`/api/*`）、OpenAPI 文档（`/api/docs-json`）与原生 WebSocket Yjs 同步服务（`/ws/sync`） |
-| `workspace` | Docker Compose（`./workspace/Dockerfile`） | `3000`（宿主机 `127.0.0.1:1230`） | 现有 Fumadocs 项目知识库服务，与产品应用相互独立 |
-| PostgreSQL | **复用本机已有服务** | 宿主机 `5432` | 主持久化数据库，保存用户、岗位稿件元数据、认领幂等表、软删除墓碑及 Yjs 二进制更新/快照 |
-| Redis | **复用本机已有服务** | 宿主机 `6379` | 内存状态层，保存 OTP 验证码哈希（TTL）、邮箱/IP 发送限频计数、JWT 登出黑名单 |
-| 网易 163 邮箱 SMTP | 外部邮件服务 | `smtp.163.com:465` (SSL) | 发送邮箱登录验证码（授权码经环境变量注入） |
-
-### 服务拓扑与核心链路
+| `frontend` | Docker Compose（`./frontend/Dockerfile`） | `3000` | Next.js 产品应用、实时预览、只读分享页与 `/print/:id` 纯净打印页 |
+| `backend` | Docker Compose（`./backend/Dockerfile`） | `3001` | Python FastAPI REST API（`/api/*`）、OpenAPI（`/api/openapi.json`）与 Playwright PDF 导出服务 |
+| `workspace` | Docker Compose（`./workspace/Dockerfile`） | `1230` | 独立 Fumadocs 项目知识库 |
+| PostgreSQL | **复用宿主机已有服务** | `5432` | 存储用户、简历元数据、JSONB 文档内容、乐观锁版本号、认领幂等表与分享 Token |
+| Redis | **复用宿主机已有服务** | `6379` | 存储 OTP 哈希、邮箱/IP 双维度限频与 JWT 登出黑名单 |
+| S3 兼容对象存储 | **复用宿主机 MinIO 或外部 OSS / R2** | 环境变量配置 | 存储经过 Pillow 压缩校验的用户简历头像 |
+| 网易 163 邮箱 SMTP | 外部邮件服务 | `smtp.163.com:465` (SSL) | 发送登录验证码邮件（授权码经环境变量注入） |
 
 ```mermaid
 flowchart TB
-  Client["用户浏览器（桌面 / 手机 PWA）"]
-
-  subgraph Local["浏览器本机离线层"]
-    IDB["y-indexeddb（按游客/账号隔离草稿）"]
-    Cache["Cache API / OPFS（应用壳 + Typst WASM + 思源字库）"]
-    Worker["Web Worker（Typst WASM 排版 + PDF.js 渲染）"]
-  end
+  Client["用户浏览器（桌面 / 手机）"]
 
   subgraph Compose["Docker Compose 业务容器"]
-    FE["frontend · Next.js :3000"]
-    BE["backend · NestJS REST + ws :3001"]
+    FE["frontend · Next.js :3000（编辑 / 分享 / 打印页）"]
+    BE["backend · Python FastAPI + Playwright :3001"]
     WS["workspace · 知识库 :1230"]
   end
 
-  subgraph HostInfra["本机已有基础服务（host.docker.internal）"]
-    PG[("PostgreSQL :5432")]
+  subgraph HostInfra["复用已有基础服务（host.docker.internal / 外部云）"]
+    PG[("PostgreSQL :5432 (JSONB)")]
     RD[("Redis :6379")]
+    S3[("S3 兼容存储（MinIO / 阿里云 OSS / R2）")]
   end
 
   SMTP["网易 163 邮箱 SMTP (smtp.163.com:465 SSL)"]
 
-  Client <--> Local
-  Client -->|HTTPS 页面与静态字库| FE
+  Client -->|页面与 0ms 实时预览| FE
   Client -->|Axios REST + Bearer JWT| BE
-  Client <-->|ws /ws/sync（首帧 AUTH + Yjs + ACK）| BE
+  BE -->|Playwright 打开 /print/:id 生成 A4 PDF| FE
   BE <--> PG
   BE <--> RD
-  BE -->|Nodemailer SMTP| SMTP
+  BE -->|boto3 上传头像| S3
+  BE -->|aiosmtplib 发送 OTP| SMTP
 ```
-
-### 三条核心运行链路
-
-1. **认证与发信链路**：
-   - 用户输入邮箱 → `backend` 校验 Redis 发送限频 → 生成 6 位 OTP 哈希写入 Redis（短 TTL、单次有效）→ 通过 `MailProvider`（生产/联验走网易 163 邮箱 `smtp.163.com:465` SSL + 授权码）发送验证码。
-   - 验证通过后签发无状态 JWT Access Token + Refresh Token；退出登录时将 Token `jti` 写入 Redis 黑名单并立即断开该用户活跃的 WebSocket 连接。
-2. **编辑与跨设备同步链路**：
-   - 编辑内容实时写入本机 `Y.Doc` 与 `y-indexeddb`；登录稿件通过 `/ws/sync`（连接后首帧 `AUTH` 校验 JWT，不放 URL 参数）发送带 `clientSeq` 与契约版本号的 Yjs 二进制增量。
-   - `backend` 校验契约、所有权与删除态后，在 PostgreSQL 事务中持久化更新并返回 `ACK(resumeId, clientSeq)`；前端仅在收到覆盖最新本机变更的 `ACK` 后才显示「已同步」。若稿件已在另一端删除，服务端推送 `DOC_DELETED` 阻止继续同步，前端允许用户先导出本机离线版本再清理副本。
-3. **离线重开与 PDF 导出链路**：
-   - Service Worker 缓存应用壳与 Typst WASM 运行时；进入编辑器后按当前稿件所需字重从 `frontend` 同源拉取思源黑体/宋体静态字库并写入 Cache API / OPFS。
-   - 导出与预览共享同一份由 Web Worker 离线编译的 A4 PDF 字节与 `typst query` 条目坐标，全程不依赖服务端渲染或系统打印对话框。

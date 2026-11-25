@@ -1,6 +1,6 @@
 import { generateService } from "@umijs/openapi";
 
-const schemaPath = process.env.OPENAPI_SCHEMA_URL ?? "http://127.0.0.1:3001/api/docs-json";
+const schemaPath = process.env.OPENAPI_SCHEMA_URL ?? "http://127.0.0.1:3001/api/openapi.json";
 
 await generateService({
   schemaPath,
