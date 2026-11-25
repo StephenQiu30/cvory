@@ -13,6 +13,7 @@ interface ResumePaperProps {
   readonly snapshot: ResumeSnapshot;
   readonly interactive?: boolean;
   readonly compactScale?: boolean;
+  readonly className?: string;
   readonly onLocateItem?: (section: ResumeSectionId, itemId?: string) => void;
 }
 
@@ -32,6 +33,7 @@ export function ResumePaper({
   snapshot,
   interactive = false,
   compactScale = false,
+  className,
   onLocateItem,
 }: ResumePaperProps) {
   const style = resolveEffectiveStyle(snapshot.templateId, snapshot.styleOverrides);
@@ -73,7 +75,7 @@ export function ResumePaper({
   };
 
   const clickableClass = interactive
-    ? "cursor-pointer rounded-sm transition-colors hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-blue-600"
+    ? "cursor-pointer rounded-sm transition-colors hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-ring"
     : "";
 
   const isCompactTemplate = snapshot.templateId === "compact-single";
@@ -303,7 +305,8 @@ export function ResumePaper({
       className={cn(
         "w-full bg-white text-neutral-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)]",
         paddingClass,
-        sectionGapClass
+        sectionGapClass,
+        className
       )}
     >
       {snapshot.sectionOrder.map((sectionId) => renderSection(sectionId))}

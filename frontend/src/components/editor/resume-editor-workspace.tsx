@@ -1,18 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowUp,
-  Download,
-  Eye,
-  EyeOff,
-  Plus,
-  SlidersHorizontal,
-  Trash2,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, EyeOff, Plus, Trash2 } from "lucide-react";
 import { StyleSettingsSheet } from "@/components/editor/style-settings-sheet";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
 import { ResumePaper } from "@/components/preview/resume-paper";
@@ -27,10 +16,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  EditorLayout,
+  type EditorSettings,
+  type EditorTab,
+} from "@/components/layout/editor-layout";
 import { Textarea } from "@/components/ui/textarea";
 import {
   OPTIONAL_BASICS_FIELDS,
@@ -43,7 +43,7 @@ import {
   type ResumeSectionId,
   type ResumeSnapshot,
 } from "@/lib/contract/contract";
-import { SECTION_LABELS } from "@/lib/templates/presets";
+import { getTemplatePreset, SECTION_LABELS } from "@/lib/templates/presets";
 import { cn } from "@/lib/utils";
 import {
   generateStableId,
@@ -70,15 +70,19 @@ const OPTIONAL_FIELD_LABELS: Record<OptionalBasicsField, string> = {
 };
 
 const FIELD_INPUT_CLASS =
-  "h-11 rounded-md border-0 bg-neutral-100/80 px-3 text-[16px] text-neutral-950 shadow-none placeholder:text-neutral-400 focus-visible:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9 md:text-[14px]";
+  "h-11 rounded-md border-0 bg-muted px-3 text-[16px] text-foreground shadow-none placeholder:text-muted-foreground focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-ring min-[1200px]:h-9 min-[1200px]:text-[14px]";
 
 export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
   const handleRef = useRef<ResumeYDocHandle | null>(null);
   const [snapshot, setSnapshot] = useState<ResumeSnapshot | null>(null);
   const [saveState, setSaveState] = useState<"saved" | "error">("saved");
-  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [mobileTab, setMobileTab] = useState<EditorTab>("edit");
   const [activeSection, setActiveSection] = useState<ResumeSectionId>("basics");
   const [styleSheetOpen, setStyleSheetOpen] = useState(false);
+  const [settingsMode, setSettingsMode] = useState<EditorSettings>("all");
+  const settingsTrigger = useRef<HTMLButtonElement>(null);
+  const [manageSectionsOpen, setManageSectionsOpen] = useState(false);
+  const manageSectionsTrigger = useRef<HTMLButtonElement>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
 
@@ -117,11 +121,13 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
     window.requestAnimationFrame(() => {
       const target = document.getElementById(domId);
       if (target) {
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-        const focusable = target.querySelector<HTMLElement>(
-          "input, textarea, [contenteditable='true'], button"
-        );
-        focusable?.focus();
+        const focusableSelector = "input:not([disabled]), textarea, [contenteditable='true']";
+        const focusable = target.matches(focusableSelector)
+          ? target
+          : (target.querySelector<HTMLElement>(focusableSelector) ??
+            target.querySelector<HTMLButtonElement>("button:not([disabled])"));
+        target.scrollIntoView({ block: "center" });
+        focusable?.focus({ preventScroll: true });
       }
     });
   };
@@ -176,9 +182,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
       scrollToDomId(invertedId);
       return;
     }
-    setExportNotice(
-      "已通过空稿与日期校验；离线 Typst WASM PDF 导出引擎将在 T-CV-02 / T-CV-05 接入。"
-    );
+    setExportNotice("PDF 下载暂不可用。你可以继续填写并预览。");
   };
 
   const handleRequestDeleteEducation = (item: EducationItem) => {
@@ -223,9 +227,14 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
     setPendingDelete(null);
   };
 
+  const openSectionManagement = (trigger: HTMLButtonElement) => {
+    manageSectionsTrigger.current = trigger;
+    setManageSectionsOpen(true);
+  };
+
   if (!snapshot) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] text-sm text-neutral-500">
+      <div className="bg-canvas text-muted-foreground flex min-h-screen items-center justify-center text-sm">
         正在加载简历草稿...
       </div>
     );
@@ -233,8 +242,18 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
 
   const hiddenSet = new Set(snapshot.hiddenSections);
 
-  const renderFormColumn = () => (
-    <div className="space-y-10 pb-20">
+  const form = (
+    <div className="space-y-6 pb-4">
+      <div className="flex justify-end min-[1200px]:hidden">
+        <Button
+          type="button"
+          variant="link"
+          className="h-11 px-0"
+          onClick={(event) => openSectionManagement(event.currentTarget)}
+        >
+          管理章节
+        </Button>
+      </div>
       {snapshot.sectionOrder.map((sectionId) => {
         const isHidden = hiddenSet.has(sectionId);
         return (
@@ -244,36 +263,61 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
             className={cn("scroll-mt-20 space-y-4", isHidden && "opacity-55")}
           >
             <div className="flex items-center justify-between gap-2">
-              <h2 className="text-[17px] font-semibold tracking-tight text-neutral-950">
+              <h2 className="text-foreground text-[17px] font-semibold tracking-tight">
                 {SECTION_LABELS[sectionId]}
                 {isHidden ? (
-                  <span className="ml-2 text-xs font-normal text-neutral-500">
+                  <span className="text-muted-foreground ml-2 text-xs font-normal">
                     （已在纸面隐藏）
                   </span>
                 ) : null}
               </h2>
-              <div className="flex items-center gap-2">
-                <Label
-                  htmlFor={`toggle-sec-${sectionId}`}
-                  className="text-xs font-normal text-neutral-500"
-                >
-                  {isHidden ? "隐藏" : "显示"}
-                </Label>
-                <Switch
-                  id={`toggle-sec-${sectionId}`}
-                  checked={!isHidden}
-                  onCheckedChange={(checked) =>
-                    handleRef.current?.toggleSectionHidden(sectionId, !checked)
+              {sectionId === "education" && (
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() =>
+                    handleRef.current?.upsertEducation({
+                      id: generateStableId("edu"),
+                      school: "",
+                      majorOrDegree: "",
+                      startMonth: "",
+                      endMonth: "",
+                      isCurrent: false,
+                      notes: "",
+                    })
                   }
-                />
-              </div>
+                  className="h-11 shrink-0 px-0 text-[13px] min-[1200px]:h-8"
+                >
+                  添加教育经历
+                </Button>
+              )}
+              {(sectionId === "work" || sectionId === "projects") && (
+                <Button
+                  type="button"
+                  variant="link"
+                  onClick={() =>
+                    handleRef.current?.upsertExperience(sectionId, {
+                      id: generateStableId(sectionId === "work" ? "work" : "proj"),
+                      organization: "",
+                      role: "",
+                      startMonth: "",
+                      endMonth: "",
+                      isCurrent: false,
+                      descriptionHtml: "",
+                    })
+                  }
+                  className="h-11 shrink-0 px-0 text-[13px] min-[1200px]:h-8"
+                >
+                  添加{SECTION_LABELS[sectionId]}
+                </Button>
+              )}
             </div>
 
             {sectionId === "basics" ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="basics-fullName" className="text-xs text-neutral-600">
+                    <Label htmlFor="basics-fullName" className="text-muted-foreground text-xs">
                       姓名
                     </Label>
                     <Input
@@ -287,7 +331,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="basics-targetRole" className="text-xs text-neutral-600">
+                    <Label htmlFor="basics-targetRole" className="text-muted-foreground text-xs">
                       意向岗位
                     </Label>
                     <Input
@@ -301,19 +345,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="basics-phone" className="text-xs text-neutral-600">
-                      电话
-                    </Label>
-                    <Input
-                      id="basics-phone"
-                      value={snapshot.basics.phone}
-                      onChange={(e) => handleRef.current?.updateBasics({ phone: e.target.value })}
-                      placeholder="138-0000-0000"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="basics-email" className="text-xs text-neutral-600">
+                    <Label htmlFor="basics-email" className="text-muted-foreground text-xs">
                       邮箱
                     </Label>
                     <Input
@@ -325,8 +357,8 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                       className={FIELD_INPUT_CLASS}
                     />
                   </div>
-                  <div className="space-y-1.5 sm:col-span-2">
-                    <Label htmlFor="basics-location" className="text-xs text-neutral-600">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="basics-location" className="text-muted-foreground text-xs">
                       所在地
                     </Label>
                     <Input
@@ -335,7 +367,19 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                       onChange={(e) =>
                         handleRef.current?.updateBasics({ location: e.target.value })
                       }
-                      placeholder="例如：上海 / 北京 / 远程"
+                      placeholder="例如：杭州"
+                      className={FIELD_INPUT_CLASS}
+                    />
+                  </div>
+                  <div className="space-y-1.5 min-[360px]:col-span-2">
+                    <Label htmlFor="basics-phone" className="text-muted-foreground text-xs">
+                      电话
+                    </Label>
+                    <Input
+                      id="basics-phone"
+                      value={snapshot.basics.phone}
+                      onChange={(e) => handleRef.current?.updateBasics({ phone: e.target.value })}
+                      placeholder="138-0000-0000"
                       className={FIELD_INPUT_CLASS}
                     />
                   </div>
@@ -346,7 +390,10 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                     {snapshot.basics.visibleOptionalFields.map((field) => (
                       <div key={field} className="space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <Label htmlFor={`basics-${field}`} className="text-xs text-neutral-600">
+                          <Label
+                            htmlFor={`basics-${field}`}
+                            className="text-muted-foreground text-xs"
+                          >
                             {OPTIONAL_FIELD_LABELS[field]}
                           </Label>
                           <button
@@ -354,7 +401,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                             onClick={() =>
                               handleRef.current?.toggleOptionalBasicsField(field, false)
                             }
-                            className="text-[11px] text-neutral-400 hover:text-neutral-700"
+                            className="text-muted-foreground hover:text-muted-foreground text-[11px]"
                           >
                             移出
                           </button>
@@ -374,7 +421,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                 ) : null}
 
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-xs text-neutral-400">可选字段：</span>
+                  <span className="text-muted-foreground text-xs">可选字段：</span>
                   {OPTIONAL_BASICS_FIELDS.filter(
                     (f) => !snapshot.basics.visibleOptionalFields.includes(f)
                   ).map((field) => (
@@ -384,7 +431,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleRef.current?.toggleOptionalBasicsField(field, true)}
-                      className="h-7 px-2 text-xs text-neutral-600 hover:bg-neutral-100"
+                      className="text-muted-foreground hover:bg-muted h-7 px-2 text-xs"
                     >
                       <Plus className="mr-1 h-3 w-3" />
                       {OPTIONAL_FIELD_LABELS[field]}
@@ -406,10 +453,10 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                     <div
                       key={item.id}
                       id={`item-${item.id}`}
-                      className="space-y-3 rounded-md bg-white p-4"
+                      className="bg-background space-y-3 rounded-md p-4"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-neutral-500">
+                        <span className="text-muted-foreground text-xs font-medium">
                           教育经历 #{index + 1}
                         </span>
                         <div className="flex items-center gap-1">
@@ -441,7 +488,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                             size="icon"
                             aria-label="删除教育经历"
                             onClick={() => handleRequestDeleteEducation(item)}
-                            className="h-7 w-7 text-neutral-400 hover:text-red-600"
+                            className="text-muted-foreground hover:text-destructive h-7 w-7"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -452,7 +499,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                         <div className="space-y-1">
                           <Label
                             htmlFor={`edu-school-${item.id}`}
-                            className="text-xs text-neutral-600"
+                            className="text-muted-foreground text-xs"
                           >
                             学校
                           </Label>
@@ -472,7 +519,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                         <div className="space-y-1">
                           <Label
                             htmlFor={`edu-major-${item.id}`}
-                            className="text-xs text-neutral-600"
+                            className="text-muted-foreground text-xs"
                           >
                             专业或学位
                           </Label>
@@ -492,7 +539,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                         <div className="space-y-1">
                           <Label
                             htmlFor={`date-start-${item.id}`}
-                            className="text-xs text-neutral-600"
+                            className="text-muted-foreground text-xs"
                           >
                             开始月份
                           </Label>
@@ -513,11 +560,11 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                           <div className="flex items-center justify-between">
                             <Label
                               htmlFor={`date-end-${item.id}`}
-                              className="text-xs text-neutral-600"
+                              className="text-muted-foreground text-xs"
                             >
                               结束月份
                             </Label>
-                            <label className="flex items-center gap-1.5 text-xs text-neutral-500">
+                            <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
                               <Switch
                                 checked={item.isCurrent}
                                 onCheckedChange={(checked) =>
@@ -545,11 +592,11 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                             }
                             className={cn(
                               FIELD_INPUT_CLASS,
-                              inverted && "ring-2 ring-red-500 focus-visible:ring-red-600"
+                              inverted && "ring-destructive focus-visible:ring-destructive ring-2"
                             )}
                           />
                           {inverted ? (
-                            <p role="alert" className="text-xs text-red-600">
+                            <p role="alert" className="text-destructive text-xs">
                               结束月份不能早于开始月份
                             </p>
                           ) : null}
@@ -559,7 +606,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                       <div className="space-y-1">
                         <Label
                           htmlFor={`edu-notes-${item.id}`}
-                          className="text-xs text-neutral-600"
+                          className="text-muted-foreground text-xs"
                         >
                           补充说明（可选）
                         </Label>
@@ -570,32 +617,12 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                             handleRef.current?.upsertEducation({ ...item, notes: e.target.value })
                           }
                           placeholder="主修课程、荣誉或成绩"
-                          className="min-h-[72px] rounded-md border-0 bg-neutral-100/80 text-[16px] shadow-none focus-visible:ring-2 focus-visible:ring-blue-600 md:text-[14px]"
+                          className="bg-muted focus-visible:ring-ring min-h-[72px] rounded-md border-0 text-[16px] shadow-none focus-visible:ring-2 min-[1200px]:text-[14px]"
                         />
                       </div>
                     </div>
                   );
                 })}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleRef.current?.upsertEducation({
-                      id: generateStableId("edu"),
-                      school: "",
-                      majorOrDegree: "",
-                      startMonth: "",
-                      endMonth: "",
-                      isCurrent: false,
-                      notes: "",
-                    })
-                  }
-                  className="h-9 text-[13px] text-neutral-700 hover:bg-neutral-100"
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  添加教育经历
-                </Button>
               </div>
             ) : null}
 
@@ -613,10 +640,10 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                       <div
                         key={item.id}
                         id={`item-${item.id}`}
-                        className="space-y-3 rounded-md bg-white p-4"
+                        className="bg-background space-y-3 rounded-md p-4"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-neutral-500">
+                          <span className="text-muted-foreground text-xs font-medium">
                             {isWork ? "工作经历" : "项目经历"} #{index + 1}
                           </span>
                           <div className="flex items-center gap-1">
@@ -652,7 +679,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                               size="icon"
                               aria-label="删除条目"
                               onClick={() => handleRequestDeleteExperience(sectionId, item)}
-                              className="h-7 w-7 text-neutral-400 hover:text-red-600"
+                              className="text-muted-foreground hover:text-destructive h-7 w-7"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -663,7 +690,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                           <div className="space-y-1">
                             <Label
                               htmlFor={`exp-org-${item.id}`}
-                              className="text-xs text-neutral-600"
+                              className="text-muted-foreground text-xs"
                             >
                               {isWork ? "公司名称" : "项目名称"}
                             </Label>
@@ -683,7 +710,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                           <div className="space-y-1">
                             <Label
                               htmlFor={`exp-role-${item.id}`}
-                              className="text-xs text-neutral-600"
+                              className="text-muted-foreground text-xs"
                             >
                               {isWork ? "岗位" : "担任角色"}
                             </Label>
@@ -703,7 +730,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                           <div className="space-y-1">
                             <Label
                               htmlFor={`date-start-${item.id}`}
-                              className="text-xs text-neutral-600"
+                              className="text-muted-foreground text-xs"
                             >
                               开始月份
                             </Label>
@@ -724,11 +751,11 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                             <div className="flex items-center justify-between">
                               <Label
                                 htmlFor={`date-end-${item.id}`}
-                                className="text-xs text-neutral-600"
+                                className="text-muted-foreground text-xs"
                               >
                                 结束月份
                               </Label>
-                              <label className="flex items-center gap-1.5 text-xs text-neutral-500">
+                              <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
                                 <Switch
                                   checked={item.isCurrent}
                                   onCheckedChange={(checked) =>
@@ -756,11 +783,11 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                               }
                               className={cn(
                                 FIELD_INPUT_CLASS,
-                                inverted && "ring-2 ring-red-500 focus-visible:ring-red-600"
+                                inverted && "ring-destructive focus-visible:ring-destructive ring-2"
                               )}
                             />
                             {inverted ? (
-                              <p role="alert" className="text-xs text-red-600">
+                              <p role="alert" className="text-destructive text-xs">
                                 结束月份不能早于开始月份
                               </p>
                             ) : null}
@@ -768,7 +795,7 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                         </div>
 
                         <div className="space-y-1">
-                          <span className="text-xs text-neutral-600">
+                          <span className="text-muted-foreground text-xs">
                             经历内容（支持富文本格式）
                           </span>
                           <TiptapEditor
@@ -786,31 +813,11 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                     );
                   }
                 )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    handleRef.current?.upsertExperience(sectionId, {
-                      id: generateStableId(sectionId === "work" ? "work" : "proj"),
-                      organization: "",
-                      role: "",
-                      startMonth: "",
-                      endMonth: "",
-                      isCurrent: false,
-                      descriptionHtml: "",
-                    })
-                  }
-                  className="h-9 text-[13px] text-neutral-700 hover:bg-neutral-100"
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" />
-                  添加{sectionId === "work" ? "工作经历" : "项目经历"}
-                </Button>
               </div>
             ) : null}
 
             {sectionId === "skills" ? (
-              <div className="rounded-md bg-white p-4">
+              <div className="rounded-md">
                 <TiptapEditor
                   ariaLabel="专业技能"
                   value={snapshot.skillsHtml}
@@ -825,169 +832,156 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
   );
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-neutral-950">
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 bg-[#fafafa]/95 px-4 backdrop-blur sm:px-6">
-        <div className="flex min-w-0 items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            aria-label="返回我的简历"
-            className="h-9 w-9 shrink-0"
-          >
-            <Link href="/resumes">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Input
-            aria-label="简历名称"
-            value={snapshot.title}
-            onChange={(e) => handleRef.current?.updateTitle(e.target.value)}
-            className="h-8 max-w-[200px] border-0 bg-transparent px-1.5 text-sm font-medium shadow-none hover:bg-neutral-100 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-600 sm:max-w-[280px]"
-          />
-          <span className="hidden text-xs text-neutral-500 sm:inline">
-            {saveState === "saved" ? "已保存到此设备" : "本机保存失败，请重试"}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setStyleSheetOpen(true)}
-            className="h-9 text-[13px] text-neutral-700"
-          >
-            <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />
-            模板与排版
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleDownloadClick}
-            className="h-9 bg-neutral-950 px-3.5 text-[13px] text-white hover:bg-neutral-800"
-          >
-            <Download className="mr-1.5 h-3.5 w-3.5" />
-            下载 PDF
-          </Button>
-        </div>
-      </header>
-
-      {exportNotice ? (
-        <div
-          role="status"
-          className="mx-auto flex max-w-[1440px] items-center justify-between bg-neutral-100 px-4 py-2 text-xs text-neutral-700 sm:px-6"
-        >
-          <span>{exportNotice}</span>
-          <button
-            type="button"
-            onClick={() => setExportNotice(null)}
-            className="ml-4 text-neutral-500 hover:text-neutral-950"
-          >
-            关闭
-          </button>
-        </div>
-      ) : null}
-
-      {/* Desktop three-column layout (>= 1200px / xl) */}
-      <div className="mx-auto hidden max-w-[1440px] grid-cols-[184px_minmax(420px,1fr)_minmax(420px,1fr)] gap-8 px-6 pt-6 xl:grid">
-        <aside aria-label="章节导航与排序" className="sticky top-20 space-y-1 self-start">
-          <p className="px-2 pb-2 text-xs font-medium text-neutral-400">章节导航与顺序</p>
-          {snapshot.sectionOrder.map((sec, idx) => {
-            const isHidden = hiddenSet.has(sec);
-            return (
-              <div
-                key={sec}
-                className={cn(
-                  "group flex items-center justify-between rounded-md px-2 py-1.5 text-[13px] transition-colors",
-                  activeSection === sec
-                    ? "bg-neutral-200/70 font-medium text-neutral-950"
-                    : "text-neutral-600 hover:bg-neutral-100"
-                )}
+    <>
+      <EditorLayout
+        title={snapshot.title}
+        onTitleChange={(title) => handleRef.current?.updateTitle(title)}
+        saveStatus={saveState === "saved" ? "已保存到此设备" : "本机保存失败"}
+        saveFailed={saveState === "error"}
+        onSettings={(mode, trigger) => {
+          settingsTrigger.current = trigger;
+          setSettingsMode(mode);
+          setStyleSheetOpen(true);
+        }}
+        onDownload={handleDownloadClick}
+        tab={mobileTab}
+        onTabChange={setMobileTab}
+        templateName={getTemplatePreset(snapshot.templateId).name}
+        notice={
+          exportNotice ? (
+            <div
+              role="status"
+              className="bg-muted text-muted-foreground flex shrink-0 items-center justify-between gap-2 px-4 text-xs min-[1200px]:px-6"
+            >
+              <span>{exportNotice}</span>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-11"
+                onClick={() => setExportNotice(null)}
               >
-                <button
+                关闭
+              </Button>
+            </div>
+          ) : null
+        }
+        sectionNavigation={
+          <div className="flex flex-col gap-1">
+            <h2 className="text-muted-foreground px-2 pb-2 text-xs font-medium">简历内容</h2>
+            {snapshot.sectionOrder.map((sec) => {
+              const isHidden = hiddenSet.has(sec);
+              return (
+                <Button
+                  key={sec}
                   type="button"
+                  variant="ghost"
+                  aria-current={activeSection === sec ? "location" : undefined}
                   onClick={() => {
                     setActiveSection(sec);
                     scrollToDomId(`section-${sec}`);
                   }}
                   className={cn(
-                    "flex flex-1 items-center gap-1.5 text-left focus-visible:outline-2 focus-visible:outline-blue-600",
-                    isHidden && "line-through opacity-55"
+                    "h-9 justify-start px-3 text-[13px]",
+                    activeSection === sec && "bg-accent text-foreground",
+                    isHidden && "text-muted-foreground"
                   )}
                 >
-                  {isHidden ? (
-                    <EyeOff className="h-3 w-3" />
-                  ) : (
-                    <Eye className="h-3 w-3 opacity-50" />
-                  )}
+                  {isHidden && <EyeOff data-icon="inline-start" />}
                   {SECTION_LABELS[sec]}
-                </button>
-                <div className="flex items-center gap-0.5 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
-                  <button
-                    type="button"
-                    aria-label={`上移${SECTION_LABELS[sec]}`}
-                    disabled={idx === 0}
-                    onClick={() => handleRef.current?.reorderSections(idx, idx - 1)}
-                    className="rounded p-0.5 hover:bg-neutral-200 disabled:opacity-30"
-                  >
-                    <ArrowUp className="h-3 w-3" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={`下移${SECTION_LABELS[sec]}`}
-                    disabled={idx === snapshot.sectionOrder.length - 1}
-                    onClick={() => handleRef.current?.reorderSections(idx, idx + 1)}
-                    className="rounded p-0.5 hover:bg-neutral-200 disabled:opacity-30"
-                  >
-                    <ArrowDown className="h-3 w-3" />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
-        </aside>
-
-        <main aria-label="简历填写区">{renderFormColumn()}</main>
-
-        <aside aria-label="实时纸面预览" className="sticky top-20 self-start pb-12">
-          <p className="mb-2 text-xs text-neutral-400">
-            实时纸面预览（点击纸面条目可定位回左侧表单）
-          </p>
-          <div className="max-h-[calc(100vh-7rem)] overflow-y-auto bg-neutral-100/80 p-4">
-            <ResumePaper snapshot={snapshot} interactive onLocateItem={handleLocateFromPaper} />
+                </Button>
+              );
+            })}
+            <Button
+              type="button"
+              variant="link"
+              className="mt-1 h-9 justify-start px-2"
+              onClick={(event) => openSectionManagement(event.currentTarget)}
+            >
+              管理章节
+            </Button>
           </div>
-        </aside>
-      </div>
+        }
+        form={form}
+        preview={
+          <ResumePaper
+            snapshot={snapshot}
+            interactive
+            className="min-h-[141.4286cqw]"
+            onLocateItem={handleLocateFromPaper}
+          />
+        }
+      />
 
-      {/* Narrow / Mobile two-view tabs (< 1200px) */}
-      <div className="px-4 pt-3 xl:hidden">
-        <Tabs
-          value={mobileTab}
-          onValueChange={(v) => setMobileTab(v as "edit" | "preview")}
-          className="w-full"
+      <Dialog open={manageSectionsOpen} onOpenChange={setManageSectionsOpen}>
+        <DialogContent
+          onCloseAutoFocus={(event) => {
+            if (manageSectionsTrigger.current?.getClientRects().length) {
+              event.preventDefault();
+              manageSectionsTrigger.current.focus();
+            }
+          }}
         >
-          <TabsList className="mb-4 grid w-full grid-cols-2">
-            <TabsTrigger value="edit" className="h-10 text-sm">
-              填写
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="h-10 text-sm">
-              预览
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="edit">{renderFormColumn()}</TabsContent>
-          <TabsContent value="preview" className="pb-16">
-            <p className="mb-2 text-xs text-neutral-500">点击纸面某段可直接回到对应表单条目</p>
-            <div className="bg-neutral-100/80 p-2">
-              <ResumePaper snapshot={snapshot} interactive onLocateItem={handleLocateFromPaper} />
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          <DialogHeader>
+            <DialogTitle>管理章节</DialogTitle>
+            <DialogDescription>调整章节顺序和纸面显示。</DialogDescription>
+          </DialogHeader>
+          <ul className="divide-border divide-y">
+            {snapshot.sectionOrder.map((sectionId, index) => {
+              const label = SECTION_LABELS[sectionId];
+              return (
+                <li key={sectionId} className="flex items-center justify-between gap-2 py-1">
+                  <span className="text-sm">{label}</span>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <Switch
+                      aria-label={`在纸面显示${label}`}
+                      checked={!hiddenSet.has(sectionId)}
+                      onCheckedChange={(checked) =>
+                        handleRef.current?.toggleSectionHidden(sectionId, !checked)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`上移${label}`}
+                      className="size-11"
+                      disabled={index === 0}
+                      onClick={() => handleRef.current?.reorderSections(index, index - 1)}
+                    >
+                      <ArrowUp />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      aria-label={`下移${label}`}
+                      className="size-11"
+                      disabled={index === snapshot.sectionOrder.length - 1}
+                      onClick={() => handleRef.current?.reorderSections(index, index + 1)}
+                    >
+                      <ArrowDown />
+                    </Button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </DialogContent>
+      </Dialog>
 
       <StyleSettingsSheet
         open={styleSheetOpen}
         onOpenChange={setStyleSheetOpen}
+        mode={settingsMode}
+        restoreFocus={(event) => {
+          if (
+            settingsTrigger.current?.isConnected &&
+            settingsTrigger.current.getClientRects().length > 0
+          ) {
+            event.preventDefault();
+            settingsTrigger.current.focus();
+          }
+        }}
         templateId={snapshot.templateId}
         overrides={snapshot.styleOverrides}
         onChangeTemplate={(nextTemplate) => handleRef.current?.setTemplateId(nextTemplate)}
@@ -1014,13 +1008,13 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 text-white hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               确认删除
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }

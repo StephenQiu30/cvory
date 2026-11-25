@@ -59,7 +59,7 @@ export function TiptapEditor({ value, placeholder, ariaLabel, onChange }: Tiptap
       attributes: {
         "aria-label": ariaLabel,
         class:
-          "min-h-[96px] w-full rounded-b-md bg-neutral-100/80 px-3 py-2.5 text-[16px] leading-relaxed text-neutral-900 outline-none focus:bg-neutral-100 focus:ring-2 focus:ring-blue-600 md:text-[14px] [&_a]:underline [&_li]:my-0.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-0.5 [&_ul]:list-disc [&_ul]:pl-5",
+          "min-h-[96px] w-full rounded-b-md bg-muted px-3 py-2.5 text-[16px] leading-relaxed text-foreground outline-none focus:bg-muted focus:ring-2 focus:ring-ring md:text-[14px] [&_a]:underline [&_li]:my-0.5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:my-0.5 [&_ul]:list-disc [&_ul]:pl-5",
       },
       handleDOMEvents: {
         compositionstart: () => {
@@ -99,7 +99,7 @@ export function TiptapEditor({ value, placeholder, ariaLabel, onChange }: Tiptap
 
   if (!editor) {
     return (
-      <div className="min-h-[128px] w-full rounded-md bg-neutral-100/80 px-3 py-2.5 text-sm text-neutral-400">
+      <div className="bg-muted text-muted-foreground min-h-[128px] w-full rounded-md px-3 py-2.5 text-sm">
         {placeholder ?? "正在加载富文本编辑器..."}
       </div>
     );
@@ -133,8 +133,8 @@ export function TiptapEditor({ value, placeholder, ariaLabel, onChange }: Tiptap
 
   const toolbarBtnClass = (active: boolean) =>
     cn(
-      "inline-flex h-8 w-8 items-center justify-center rounded text-neutral-600 transition-colors hover:bg-neutral-200/70 hover:text-neutral-950 focus-visible:outline-2 focus-visible:outline-blue-600",
-      active && "bg-neutral-200 text-neutral-950"
+      "inline-flex h-8 w-8 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
+      active && "bg-accent text-foreground"
     );
 
   return (
@@ -142,7 +142,7 @@ export function TiptapEditor({ value, placeholder, ariaLabel, onChange }: Tiptap
       <div
         role="toolbar"
         aria-label={`${ariaLabel}格式工具栏`}
-        className="flex flex-wrap items-center gap-0.5 rounded-t-md bg-neutral-100 px-1.5 py-1"
+        className="bg-muted flex flex-wrap items-center gap-0.5 rounded-t-md px-1.5 py-1"
       >
         <button
           type="button"
