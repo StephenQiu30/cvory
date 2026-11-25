@@ -16,7 +16,7 @@ interface EditorLayoutProps {
   readonly saveStatus: string;
   readonly saveFailed: boolean;
   readonly onSettings: (mode: EditorSettings, trigger: HTMLButtonElement) => void;
-  readonly onDownload: () => void;
+  readonly onDownload: (trigger: HTMLButtonElement) => void;
   readonly notice: ReactNode;
   readonly tab: EditorTab;
   readonly onTabChange: (tab: EditorTab) => void;
@@ -24,6 +24,7 @@ interface EditorLayoutProps {
   readonly form: ReactNode;
   readonly preview: ReactNode;
   readonly templateName: string;
+  readonly previewStatus: string;
 }
 
 export function EditorLayout({
@@ -40,6 +41,7 @@ export function EditorLayout({
   form,
   preview,
   templateName,
+  previewStatus,
 }: EditorLayoutProps) {
   const status = (
     <span
@@ -93,7 +95,11 @@ export function EditorLayout({
               排版
             </Button>
           </div>
-          <Button type="button" className="h-11 shrink-0 px-3" onClick={onDownload}>
+          <Button
+            type="button"
+            className="h-11 shrink-0 px-3"
+            onClick={(event) => onDownload(event.currentTarget)}
+          >
             下载 PDF
           </Button>
         </nav>
@@ -161,7 +167,7 @@ export function EditorLayout({
                 </div>
                 <footer className="border-border text-muted-foreground flex min-h-10 items-center justify-between gap-3 border-t text-xs">
                   <span>{templateName} · A4</span>
-                  <span>实时预览</span>
+                  <span>{previewStatus}</span>
                 </footer>
               </div>
             </TabsContent>

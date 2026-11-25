@@ -40,6 +40,8 @@ export function TiptapEditor({ value, placeholder, ariaLabel, onChange }: Tiptap
         heading: false,
         codeBlock: false,
         blockquote: false,
+        link: false,
+        underline: false,
       }),
       Underline,
       TextStyle,

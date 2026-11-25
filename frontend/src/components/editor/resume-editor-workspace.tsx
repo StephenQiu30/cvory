@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, EyeOff, Plus, Trash2 } from "lucide-react";
 import { StyleSettingsSheet } from "@/components/editor/style-settings-sheet";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
+import { ExportResumeDialog } from "@/components/preview/export-resume-dialog";
+import { PdfPaper } from "@/components/preview/pdf-paper";
+import { useResumePdf, resumePdfFilename } from "@/lib/pdf/use-resume-pdf";
 import { ResumePaper } from "@/components/preview/resume-paper";
 import {
   AlertDialog,
@@ -85,6 +88,16 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
   const manageSectionsTrigger = useRef<HTMLButtonElement>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
   const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [exportSnapshot, setExportSnapshot] = useState<ResumeSnapshot | null>(null);
+  const downloadTrigger = useRef<HTMLButtonElement>(null);
+  const printableSnapshot = snapshot && hasVisibleResumeContent(snapshot) ? snapshot : null;
+  const {
+    pdf,
+    pending: pdfPending,
+    failure: pdfFailure,
+    retry: retryPdf,
+  } = useResumePdf(printableSnapshot);
+  const exportChanged = exportSnapshot !== null && exportSnapshot !== snapshot;
 
   useEffect(() => {
     const existingEntry = listLocalDrafts().find((item) => item.id === docId);
@@ -140,32 +153,18 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
   };
 
   const findFirstInvertedDateDomId = (current: ResumeSnapshot): string | null => {
-    const hidden = new Set(current.hiddenSections);
-    if (!hidden.has("education")) {
-      for (const item of current.education) {
-        if (isDateRangeInverted(item.startMonth, item.endMonth, item.isCurrent)) {
-          return `date-end-${item.id}`;
-        }
-      }
-    }
-    if (!hidden.has("work")) {
-      for (const item of current.work) {
-        if (isDateRangeInverted(item.startMonth, item.endMonth, item.isCurrent)) {
-          return `date-end-${item.id}`;
-        }
-      }
-    }
-    if (!hidden.has("projects")) {
-      for (const item of current.projects) {
-        if (isDateRangeInverted(item.startMonth, item.endMonth, item.isCurrent)) {
-          return `date-end-${item.id}`;
-        }
-      }
+    for (const section of current.sectionOrder) {
+      if (section === "basics" || section === "skills" || current.hiddenSections.includes(section))
+        continue;
+      const inverted = current[section].find((item) =>
+        isDateRangeInverted(item.startMonth, item.endMonth, item.isCurrent)
+      );
+      if (inverted) return `date-end-${inverted.id}`;
     }
     return null;
   };
 
-  const handleDownloadClick = () => {
+  const handleDownloadClick = (trigger: HTMLButtonElement) => {
     if (!snapshot) {
       return;
     }
@@ -182,7 +181,9 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
       scrollToDomId(invertedId);
       return;
     }
-    setExportNotice("PDF 下载暂不可用。你可以继续填写并预览。");
+    downloadTrigger.current = trigger;
+    setExportNotice(null);
+    setExportSnapshot(snapshot);
   };
 
   const handleRequestDeleteEducation = (item: EducationItem) => {
@@ -847,6 +848,15 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
         tab={mobileTab}
         onTabChange={setMobileTab}
         templateName={getTemplatePreset(snapshot.templateId).name}
+        previewStatus={
+          pdf
+            ? `共 ${pdf.document.numPages} 页`
+            : pdfPending
+              ? "正在更新纸面"
+              : pdfFailure
+                ? "PDF 预览暂不可用"
+                : "实时预览"
+        }
         notice={
           exportNotice ? (
             <div
@@ -903,13 +913,46 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
         }
         form={form}
         preview={
-          <ResumePaper
-            snapshot={snapshot}
-            interactive
-            className="min-h-[141.4286cqw]"
-            onLocateItem={handleLocateFromPaper}
-          />
+          pdf ? (
+            <PdfPaper pdf={pdf} onLocate={handleLocateFromPaper} />
+          ) : (
+            <ResumePaper
+              snapshot={snapshot}
+              interactive
+              className="min-h-[141.4286cqw]"
+              onLocateItem={handleLocateFromPaper}
+            />
+          )
         }
+      />
+
+      <ExportResumeDialog
+        open={exportSnapshot !== null}
+        onOpenChange={(open) => {
+          if (!open) setExportSnapshot(null);
+        }}
+        onReturnToForm={() => {
+          setMobileTab("edit");
+          setExportSnapshot(null);
+        }}
+        onRetry={() => {
+          if (downloadTrigger.current) handleDownloadClick(downloadTrigger.current);
+          if (!printableSnapshot || findFirstInvertedDateDomId(printableSnapshot)) {
+            setExportSnapshot(null);
+          } else if (pdfFailure) {
+            retryPdf();
+          }
+        }}
+        restoreFocus={(event) => {
+          if (downloadTrigger.current?.isConnected) {
+            event.preventDefault();
+            downloadTrigger.current.focus();
+          }
+        }}
+        filename={resumePdfFilename(exportSnapshot?.title ?? snapshot.title)}
+        pdf={exportChanged ? null : pdf}
+        changed={exportChanged}
+        failure={pdfFailure}
       />
 
       <Dialog open={manageSectionsOpen} onOpenChange={setManageSectionsOpen}>
