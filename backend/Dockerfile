@@ -1,24 +1,16 @@
-FROM node:24-alpine AS base
-RUN corepack enable && corepack prepare pnpm@12.4.2 --activate
+FROM mcr.microsoft.com/playwright/python:v1.51.0-noble
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
 WORKDIR /app
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1
 
-FROM base AS deps
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+COPY pyproject.toml uv.lock* ./
+RUN uv sync --no-dev --frozen || uv sync --no-dev
 
-FROM deps AS builder
-COPY prisma ./prisma
-RUN pnpm db:generate
-COPY tsconfig.json tsconfig.build.json nest-cli.json ./
-COPY src ./src
-RUN pnpm build
+COPY app ./app
 
-FROM base AS runner
-ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/dist ./dist
-COPY package.json ./
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+CMD ["uv", "run", "--no-dev", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3001"]
