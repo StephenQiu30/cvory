@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 /**
- * Single active data & sync contract version (NFR-CV-03).
- * Unsupported formats are rejected before write; no backward compatibility is maintained.
+ * Single active modular resume contract (1:1 aligned with backend/app/core/contract.py).
+ * Unsupported contract versions are rejected; no backward compatibility is maintained.
  */
 export const CVORY_CONTRACT_VERSION = 1 as const;
 
@@ -14,89 +14,186 @@ export const SUPPORTED_TEMPLATE_IDS = [
 
 export type SupportedTemplateId = (typeof SUPPORTED_TEMPLATE_IDS)[number];
 
-export const RESUME_SECTION_IDS = ["basics", "education", "work", "projects", "skills"] as const;
+export const RESUME_SECTION_TYPES = [
+  "education",
+  "work",
+  "projects",
+  "skills",
+  "campus",
+  "awards",
+  "other",
+  "research",
+  "portfolio",
+  "summary",
+  "custom",
+] as const;
 
-export type ResumeSectionId = (typeof RESUME_SECTION_IDS)[number];
-
-export const OPTIONAL_BASICS_FIELDS = ["wechat", "github", "website", "portfolio"] as const;
-export type OptionalBasicsField = (typeof OPTIONAL_BASICS_FIELDS)[number];
-
+export type ResumeSectionType = (typeof RESUME_SECTION_TYPES)[number];
+export type AvatarAlignment = "left" | "right" | "hidden";
 export type ResumeFontFamily = "sans" | "serif";
 export type ResumeSpacingPreset = "compact" | "standard" | "relaxed";
 
-export interface ResumeStyleSettings {
-  readonly fontFamily: ResumeFontFamily;
-  readonly fontSizePt: 9 | 10 | 11 | 12;
-  readonly lineHeight: 1.25 | 1.4 | 1.5 | 1.65;
-  readonly spacing: ResumeSpacingPreset;
-  readonly accentColor: string;
+export interface CustomFieldItem {
+  readonly id: string;
+  readonly label: string;
+  readonly value: string;
+  readonly visible: boolean;
 }
 
-export type ResumeStyleOverrides = Partial<ResumeStyleSettings>;
-
-export interface BasicsData {
-  readonly fullName: string;
-  readonly targetRole: string;
+export interface BasicsSection {
+  readonly full_name: string;
   readonly phone: string;
   readonly email: string;
+  readonly avatar_url: string;
+  readonly avatar_alignment: AvatarAlignment;
+  readonly gender: string;
+  readonly age: string;
   readonly location: string;
   readonly wechat: string;
   readonly github: string;
   readonly website: string;
-  readonly portfolio: string;
-  readonly visibleOptionalFields: readonly OptionalBasicsField[];
+  readonly degree: string;
+  readonly work_years: string;
+  readonly expected_salary: string;
+  readonly job_status: string;
+  readonly target_role: string;
+  readonly expected_city: string;
+  readonly custom_fields: readonly CustomFieldItem[];
 }
 
-export interface EducationItem {
+export interface ResumeSectionItem {
   readonly id: string;
-  readonly school: string;
-  readonly majorOrDegree: string;
-  readonly startMonth: string;
-  readonly endMonth: string;
-  readonly isCurrent: boolean;
-  readonly notes: string;
-}
-
-export interface ExperienceItem {
-  readonly id: string;
-  readonly organization: string;
-  readonly role: string;
-  readonly startMonth: string;
-  readonly endMonth: string;
-  readonly isCurrent: boolean;
-  /** Rich HTML projected from Tiptap / Y.XmlFragment for preview & PDF mapping */
-  readonly descriptionHtml: string;
-}
-
-export interface ResumeSnapshot {
-  readonly id: string;
-  readonly contractVersion: 1;
   readonly title: string;
-  readonly templateId: SupportedTemplateId;
-  readonly sectionOrder: readonly ResumeSectionId[];
-  readonly hiddenSections: readonly ResumeSectionId[];
-  readonly styleOverrides: ResumeStyleOverrides;
-  readonly basics: BasicsData;
-  readonly education: readonly EducationItem[];
-  readonly work: readonly ExperienceItem[];
-  readonly projects: readonly ExperienceItem[];
-  readonly skillsHtml: string;
-  readonly updatedAt: string;
+  readonly subtitle: string;
+  readonly start_month: string;
+  readonly end_month: string;
+  readonly is_current: boolean;
+  readonly location: string;
+  readonly link: string;
+  readonly content_html: string;
 }
 
-export const localDraftIndexEntrySchema = z.object({
-  id: z.string().min(1),
-  contractVersion: z.literal(CVORY_CONTRACT_VERSION),
-  title: z.string().min(1),
-  templateId: z.enum(SUPPORTED_TEMPLATE_IDS),
-  updatedAt: z.string().min(1),
-  remoteResumeId: z.string().optional(),
+export interface ResumeSection {
+  readonly id: string;
+  readonly type: ResumeSectionType;
+  readonly title: string;
+  readonly visible: boolean;
+  readonly items: readonly ResumeSectionItem[];
+  readonly rich_text_html: string;
+}
+
+export interface StyleOverrides {
+  readonly font_family?: ResumeFontFamily | null;
+  readonly font_size_pt?: 9 | 10 | 11 | 12 | null;
+  readonly line_height?: number | null;
+  readonly spacing?: ResumeSpacingPreset | null;
+  readonly accent_color?: string | null;
+}
+
+export interface ResumeStyleSettings {
+  readonly font_family: ResumeFontFamily;
+  readonly font_size_pt: 9 | 10 | 11 | 12;
+  readonly line_height: number;
+  readonly spacing: ResumeSpacingPreset;
+  readonly accent_color: string;
+}
+
+export interface ResumeContent {
+  readonly basics: BasicsSection;
+  readonly style_overrides: StyleOverrides;
+  readonly sections: readonly ResumeSection[];
+}
+
+export interface LocalResumeDocument {
+  readonly id: string;
+  readonly contract_version: 1;
+  readonly title: string;
+  readonly template_id: SupportedTemplateId;
+  readonly version: number;
+  readonly remote_id?: string;
+  readonly share_enabled?: boolean;
+  readonly share_token?: string | null;
+  readonly content: ResumeContent;
+  readonly updated_at: string;
+}
+
+export const resumeJsonBackupSchema = z.object({
+  contract_version: z.literal(CVORY_CONTRACT_VERSION),
+  title: z.string().min(1).max(120),
+  template_id: z.enum(SUPPORTED_TEMPLATE_IDS),
+  content: z.object({
+    basics: z.object({
+      full_name: z.string().default(""),
+      phone: z.string().default(""),
+      email: z.string().default(""),
+      avatar_url: z.string().default(""),
+      avatar_alignment: z.enum(["left", "right", "hidden"]).default("right"),
+      gender: z.string().default(""),
+      age: z.string().default(""),
+      location: z.string().default(""),
+      wechat: z.string().default(""),
+      github: z.string().default(""),
+      website: z.string().default(""),
+      degree: z.string().default(""),
+      work_years: z.string().default(""),
+      expected_salary: z.string().default(""),
+      job_status: z.string().default(""),
+      target_role: z.string().default(""),
+      expected_city: z.string().default(""),
+      custom_fields: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            label: z.string().min(1),
+            value: z.string().default(""),
+            visible: z.boolean().default(true),
+          })
+        )
+        .default([]),
+    }),
+    style_overrides: z
+      .object({
+        font_family: z.enum(["sans", "serif"]).nullable().optional(),
+        font_size_pt: z
+          .union([z.literal(9), z.literal(10), z.literal(11), z.literal(12)])
+          .nullable()
+          .optional(),
+        line_height: z.number().min(1.1).max(2.0).nullable().optional(),
+        spacing: z.enum(["compact", "standard", "relaxed"]).nullable().optional(),
+        accent_color: z.string().nullable().optional(),
+      })
+      .default({}),
+    sections: z.array(
+      z.object({
+        id: z.string().min(1),
+        type: z.enum(RESUME_SECTION_TYPES),
+        title: z.string().min(1),
+        visible: z.boolean().default(true),
+        items: z
+          .array(
+            z.object({
+              id: z.string().min(1),
+              title: z.string().default(""),
+              subtitle: z.string().default(""),
+              start_month: z.string().default(""),
+              end_month: z.string().default(""),
+              is_current: z.boolean().default(false),
+              location: z.string().default(""),
+              link: z.string().default(""),
+              content_html: z.string().default(""),
+            })
+          )
+          .default([]),
+        rich_text_html: z.string().default(""),
+      })
+    ),
+  }),
 });
 
-export type LocalDraftIndexEntry = z.infer<typeof localDraftIndexEntrySchema>;
+export type ResumeJsonBackup = z.infer<typeof resumeJsonBackupSchema>;
 
-export function isSupportedContractVersion(version: unknown): version is 1 {
-  return version === CVORY_CONTRACT_VERSION;
+export function isRichTextOnlySection(type: ResumeSectionType): boolean {
+  return type === "skills" || type === "summary";
 }
 
 export function isDateRangeInverted(
@@ -123,72 +220,145 @@ export function stripHtmlToText(html: string): string {
     .trim();
 }
 
-/**
- * Checks whether the resume has at least one visible non-whitespace content field (AC-CV-05).
- */
-export function hasVisibleResumeContent(snapshot: ResumeSnapshot): boolean {
-  const hidden = new Set(snapshot.hiddenSections);
-
-  if (!hidden.has("basics")) {
-    const b = snapshot.basics;
-    if (
-      b.fullName.trim() ||
-      b.targetRole.trim() ||
-      b.phone.trim() ||
-      b.email.trim() ||
-      b.location.trim()
-    ) {
-      return true;
-    }
-    for (const field of b.visibleOptionalFields) {
-      if (b[field].trim()) {
-        return true;
-      }
-    }
-  }
-
-  if (!hidden.has("education")) {
-    for (const item of snapshot.education) {
-      if (item.school.trim() || item.majorOrDegree.trim() || item.notes.trim()) {
-        return true;
-      }
-    }
-  }
-
-  if (!hidden.has("work")) {
-    for (const item of snapshot.work) {
-      if (item.organization.trim() || item.role.trim() || stripHtmlToText(item.descriptionHtml)) {
-        return true;
-      }
-    }
-  }
-
-  if (!hidden.has("projects")) {
-    for (const item of snapshot.projects) {
-      if (item.organization.trim() || item.role.trim() || stripHtmlToText(item.descriptionHtml)) {
-        return true;
-      }
-    }
-  }
-
-  if (!hidden.has("skills") && stripHtmlToText(snapshot.skillsHtml)) {
+export function hasVisibleResumeContent(content: ResumeContent): boolean {
+  const b = content.basics;
+  if (
+    b.full_name.trim() ||
+    b.phone.trim() ||
+    b.email.trim() ||
+    b.target_role.trim() ||
+    b.custom_fields.some((f) => f.visible && f.value.trim())
+  ) {
     return true;
   }
-
+  for (const sec of content.sections) {
+    if (!sec.visible) {
+      continue;
+    }
+    if (stripHtmlToText(sec.rich_text_html)) {
+      return true;
+    }
+    for (const item of sec.items) {
+      if (item.title.trim() || item.subtitle.trim() || stripHtmlToText(item.content_html)) {
+        return true;
+      }
+    }
+  }
   return false;
 }
 
-export function createEmptyBasics(): BasicsData {
+export function createEmptyBasics(): BasicsSection {
   return {
-    fullName: "",
-    targetRole: "",
+    full_name: "",
     phone: "",
     email: "",
+    avatar_url: "",
+    avatar_alignment: "right",
+    gender: "",
+    age: "",
     location: "",
     wechat: "",
     github: "",
     website: "",
-    portfolio: "",
-    visibleOptionalFields: [],
+    degree: "",
+    work_years: "",
+    expected_salary: "",
+    job_status: "",
+    target_role: "",
+    expected_city: "",
+    custom_fields: [],
+  };
+}
+
+export function createDefaultSections(): readonly ResumeSection[] {
+  return [
+    {
+      id: "sec-education",
+      type: "education",
+      title: "教育经历",
+      visible: true,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-skills",
+      type: "skills",
+      title: "专业技能",
+      visible: true,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-work",
+      type: "work",
+      title: "工作经历",
+      visible: true,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-projects",
+      type: "projects",
+      title: "项目经历",
+      visible: true,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-campus",
+      type: "campus",
+      title: "大学信息",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-awards",
+      type: "awards",
+      title: "荣誉奖项",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-other",
+      type: "other",
+      title: "其他经历",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-research",
+      type: "research",
+      title: "研究经历",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-portfolio",
+      type: "portfolio",
+      title: "作品集",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+    {
+      id: "sec-summary",
+      type: "summary",
+      title: "个人简介",
+      visible: false,
+      items: [],
+      rich_text_html: "",
+    },
+  ];
+}
+
+export function createEmptyResumeContent(): ResumeContent {
+  return {
+    basics: createEmptyBasics(),
+    style_overrides: {},
+    sections: createDefaultSections(),
   };
 }

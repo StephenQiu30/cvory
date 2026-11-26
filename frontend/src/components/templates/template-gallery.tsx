@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BasicLayout, PageHeader } from "@/components/layout/basic-layout";
+import { ArrowRight, Expand, FileText } from "lucide-react";
 import { ResumePaper } from "@/components/preview/resume-paper";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,22 +16,22 @@ import {
 } from "@/components/ui/dialog";
 import type { SupportedTemplateId } from "@/lib/contract/contract";
 import {
-  FICTIONAL_SAMPLE_RESUME,
-  RESUME_TEMPLATE_PRESETS,
-  type ResumeTemplatePreset,
-} from "@/lib/templates/presets";
-import {
   createLocalDraft,
   getLocalDraftsServerSnapshot,
   getLocalDraftsSnapshot,
   subscribeLocalDrafts,
-} from "@/lib/yjs/local-store";
+} from "@/lib/storage/local-drafts";
+import {
+  FICTIONAL_SAMPLE_RESUME,
+  RESUME_TEMPLATE_PRESETS,
+  type ResumeTemplatePreset,
+} from "@/lib/templates/presets";
 
 export function TemplateGallery() {
   const router = useRouter();
   const recentDrafts = useSyncExternalStore(
     subscribeLocalDrafts,
-    () => getLocalDraftsSnapshot(),
+    getLocalDraftsSnapshot,
     getLocalDraftsServerSnapshot
   );
   const [zoomedTemplate, setZoomedTemplate] = useState<ResumeTemplatePreset | null>(null);
@@ -42,70 +42,91 @@ export function TemplateGallery() {
   };
 
   const latestDraft = recentDrafts[0];
-  const zoomTrigger = useRef<HTMLButtonElement>(null);
 
   return (
-    <BasicLayout currentPage="/">
-      <PageHeader
-        title="简历模板"
-        description="选一款免费模板，在线填写并预览你的简历。"
-        action={
-          latestDraft ? (
-            <Button asChild variant="secondary" className="h-11 px-4">
-              <Link href={`/resume/${latestDraft.id}`}>继续编辑</Link>
+    <div className="min-h-screen bg-[#fafafa] text-neutral-950">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 sm:px-6">
+        <div className="flex items-baseline gap-3">
+          <span className="text-base font-semibold tracking-tight text-neutral-950">简序</span>
+          <span className="hidden text-xs text-neutral-500 sm:inline">
+            免费极简自定义简历 · 所见即所得 · 无水印 A4 PDF
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {latestDraft ? (
+            <Button asChild variant="outline" size="sm" className="h-9 text-[13px]">
+              <Link href={`/resume/${latestDraft.id}`}>
+                继续编辑
+                <ArrowRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
             </Button>
-          ) : undefined
-        }
-      />
-      <section
-        aria-label="免费极简模板列表"
-        className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:max-w-[1106px] lg:grid-cols-3 lg:gap-[22px]"
-      >
-        {RESUME_TEMPLATE_PRESETS.map((preset) => (
-          <article
-            key={preset.id}
-            className="bg-background flex min-w-0 flex-col overflow-hidden rounded-md"
-          >
-            <div className="bg-muted px-5 py-4">
-              <div
-                className="mx-auto aspect-[210/297] max-w-[278px] overflow-hidden bg-white"
-                aria-hidden="true"
-              >
-                <div className="pointer-events-none w-[172%] origin-top-left scale-[0.58] select-none">
-                  <ResumePaper
-                    snapshot={{ ...FICTIONAL_SAMPLE_RESUME, templateId: preset.id }}
-                    className="shadow-none"
-                  />
+          ) : null}
+          <Button asChild variant="ghost" size="sm" className="h-9 text-[13px]">
+            <Link href="/resumes">
+              <FileText className="mr-1.5 h-3.5 w-3.5" />
+              我的简历{recentDrafts.length > 0 ? ` (${recentDrafts.length})` : ""}
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 pt-4 pb-16 sm:px-6">
+        <section className="mb-10 max-w-2xl space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-950 sm:text-3xl">
+            选一款极简纸样，自由定制你的个人简历
+          </h1>
+          <p className="text-sm leading-6 text-neutral-600">
+            三款免费中文纸样采用同一份虚构履历对照排版密度。进入编辑器后可自由增删自定义模块、上传头像、切换
+            Markdown、开启只读分享，并导出与预览像素级一致的无水印 A4 PDF。
+          </p>
+        </section>
+
+        <section
+          aria-label="免费极简模板列表"
+          className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3"
+        >
+          {RESUME_TEMPLATE_PRESETS.map((preset) => (
+            <div key={preset.id} className="group flex flex-col gap-3">
+              <div className="relative overflow-hidden bg-neutral-100/80 p-3 transition-colors group-hover:bg-neutral-100">
+                <div className="aspect-[210/297] overflow-hidden bg-white">
+                  <div className="pointer-events-none w-[172%] origin-top-left scale-[0.58] select-none">
+                    <ResumePaper templateId={preset.id} content={FICTIONAL_SAMPLE_RESUME.content} />
+                  </div>
+                </div>
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setZoomedTemplate(preset)}
+                    className="h-10 px-2.5 text-[13px] text-neutral-700 hover:bg-white hover:text-neutral-950"
+                  >
+                    <Expand className="mr-1.5 h-3.5 w-3.5" />
+                    放大查看
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => handleUseTemplate(preset.id)}
+                    className="h-10 bg-neutral-950 px-4 text-[13px] text-white hover:bg-neutral-800"
+                  >
+                    使用模板
+                  </Button>
                 </div>
               </div>
-            </div>
-            <div className="flex min-w-0 flex-1 flex-col items-start gap-2 px-4 pt-3 pb-4">
-              <h2 className="text-[17px] font-semibold">{preset.name}</h2>
-              <p className="text-muted-foreground text-[13px] leading-5">{preset.tagline}</p>
-              <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1">
-                <Button
-                  type="button"
-                  onClick={() => handleUseTemplate(preset.id)}
-                  className="h-11 min-w-[126px] px-4"
-                >
-                  使用{preset.name}
-                </Button>
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={(event) => {
-                    zoomTrigger.current = event.currentTarget;
-                    setZoomedTemplate(preset);
-                  }}
-                  className="h-11 px-2"
-                >
-                  放大 · {preset.name}
-                </Button>
+
+              <div className="space-y-0.5 px-1">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[15px] font-medium text-neutral-950">{preset.name}</h2>
+                  <span className="text-xs text-neutral-500">{preset.scenario}</span>
+                </div>
+                <p className="text-xs leading-5 text-neutral-500">{preset.tagline}</p>
               </div>
             </div>
-          </article>
-        ))}
-      </section>
+          ))}
+        </section>
+      </main>
 
       <Dialog
         open={zoomedTemplate !== null}
@@ -115,32 +136,22 @@ export function TemplateGallery() {
           }
         }}
       >
-        <DialogContent
-          className="max-h-[90dvh] overflow-y-auto p-6 sm:max-w-3xl"
-          onCloseAutoFocus={(event) => {
-            if (zoomTrigger.current?.isConnected) {
-              event.preventDefault();
-              zoomTrigger.current.focus();
-            }
-          }}
-        >
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto bg-[#fafafa] p-6">
           {zoomedTemplate ? (
             <>
               <DialogHeader>
                 <DialogTitle className="text-base font-semibold">
                   {zoomedTemplate.name} · 示例纸样
                 </DialogTitle>
-                <DialogDescription className="text-muted-foreground text-xs">
+                <DialogDescription className="text-xs text-neutral-500">
                   {zoomedTemplate.tagline}（示例文字仅供对比排版，选用后进入空稿）
                 </DialogDescription>
               </DialogHeader>
-              <div className="bg-muted my-2 overflow-hidden p-4">
-                <div className="[container-type:inline-size] mx-auto max-w-[556px]">
-                  <ResumePaper
-                    snapshot={{ ...FICTIONAL_SAMPLE_RESUME, templateId: zoomedTemplate.id }}
-                    className="min-h-[141.4286cqw]"
-                  />
-                </div>
+              <div className="my-2 overflow-hidden bg-neutral-100 p-4">
+                <ResumePaper
+                  templateId={zoomedTemplate.id}
+                  content={FICTIONAL_SAMPLE_RESUME.content}
+                />
               </div>
               <DialogFooter className="gap-2 sm:justify-between">
                 <Button
@@ -154,7 +165,7 @@ export function TemplateGallery() {
                 <Button
                   type="button"
                   onClick={() => handleUseTemplate(zoomedTemplate.id)}
-                  className="h-10 px-5 text-[13px]"
+                  className="h-10 bg-neutral-950 px-5 text-[13px] text-white hover:bg-neutral-800"
                 >
                   使用「{zoomedTemplate.name}」开始填写
                 </Button>
@@ -163,6 +174,6 @@ export function TemplateGallery() {
           ) : null}
         </DialogContent>
       </Dialog>
-    </BasicLayout>
+    </div>
   );
 }

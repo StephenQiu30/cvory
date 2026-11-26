@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, EyeOff, Plus, Trash2 } from "lucide-react";
+import { useRef, useState, useSyncExternalStore } from "react";
+import Link from "next/link";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  Cloud,
+  Code2,
+  Download,
+  FileJson,
+  ImagePlus,
+  Plus,
+  Share2,
+  SlidersHorizontal,
+  Trash2,
+} from "lucide-react";
+import { EmailAuthDialog } from "@/components/auth/email-auth-dialog";
 import { StyleSettingsSheet } from "@/components/editor/style-settings-sheet";
 import { TiptapEditor } from "@/components/editor/tiptap-editor";
-import { ExportResumeDialog } from "@/components/preview/export-resume-dialog";
-import { PdfPaper } from "@/components/preview/pdf-paper";
-import { useResumePdf, resumePdfFilename } from "@/lib/pdf/use-resume-pdf";
 import { ResumePaper } from "@/components/preview/resume-paper";
 import {
   AlertDialog,
@@ -23,629 +35,758 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  EditorLayout,
-  type EditorSettings,
-  type EditorTab,
-} from "@/components/layout/editor-layout";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  OPTIONAL_BASICS_FIELDS,
+  claimDraftToCloud,
+  downloadSnapshotPdf,
+  getStoredAuthSession,
+  saveCloudResume,
+  toggleCloudShare,
+  uploadAvatarToS3,
+  type AuthSession,
+} from "@/lib/api/http";
+import {
+  CVORY_CONTRACT_VERSION,
+  createEmptyResumeContent,
   hasVisibleResumeContent,
   isDateRangeInverted,
+  isRichTextOnlySection,
   stripHtmlToText,
-  type EducationItem,
-  type ExperienceItem,
-  type OptionalBasicsField,
-  type ResumeSectionId,
-  type ResumeSnapshot,
+  type AvatarAlignment,
+  type BasicsSection,
+  type LocalResumeDocument,
+  type ResumeSection,
+  type ResumeSectionItem,
 } from "@/lib/contract/contract";
-import { getTemplatePreset, SECTION_LABELS } from "@/lib/templates/presets";
-import { cn } from "@/lib/utils";
 import {
+  applyMarkdownToResume,
+  exportDraftToJson,
   generateStableId,
-  listLocalDrafts,
-  openResumeYDoc,
-  type ResumeYDocHandle,
-} from "@/lib/yjs/local-store";
+  getLocalDraftsServerSnapshot,
+  getLocalDraftsSnapshot,
+  resumeToMarkdown,
+  saveLocalDraft,
+  subscribeLocalDrafts,
+} from "@/lib/storage/local-drafts";
+import { cn } from "@/lib/utils";
 
 interface ResumeEditorWorkspaceProps {
   readonly docId: string;
 }
 
 interface PendingDelete {
-  readonly kind: "education" | "work" | "projects";
-  readonly id: string;
+  readonly sectionId: string;
+  readonly itemId?: string;
   readonly label: string;
 }
 
-const OPTIONAL_FIELD_LABELS: Record<OptionalBasicsField, string> = {
-  wechat: "微信号",
-  github: "GitHub",
-  website: "个人网站",
-  portfolio: "作品集链接",
-};
-
 const FIELD_INPUT_CLASS =
-  "h-11 rounded-md border-0 bg-muted px-3 text-[16px] text-foreground shadow-none placeholder:text-muted-foreground focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-ring min-[1200px]:h-9 min-[1200px]:text-[14px]";
+  "h-10 rounded-md border-0 bg-neutral-100/80 px-3 text-[15px] text-neutral-950 shadow-none placeholder:text-neutral-400 focus-visible:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600 md:h-9 md:text-[13.5px]";
+
+function formatTime(iso: string): string {
+  try {
+    return new Date(iso).toLocaleTimeString("zh-CN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return "";
+  }
+}
 
 export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
-  const handleRef = useRef<ResumeYDocHandle | null>(null);
-  const [snapshot, setSnapshot] = useState<ResumeSnapshot | null>(null);
-  const [saveState, setSaveState] = useState<"saved" | "error">("saved");
-  const [mobileTab, setMobileTab] = useState<EditorTab>("edit");
-  const [activeSection, setActiveSection] = useState<ResumeSectionId>("basics");
+  const allDrafts = useSyncExternalStore(
+    subscribeLocalDrafts,
+    getLocalDraftsSnapshot,
+    getLocalDraftsServerSnapshot
+  );
+  const storedDoc = allDrafts.find((item) => item.id === docId) ?? null;
+  const [fallbackDoc] = useState<LocalResumeDocument>(() => ({
+    id: docId,
+    contract_version: CVORY_CONTRACT_VERSION,
+    title: "未命名简历",
+    template_id: "classic-single",
+    version: 1,
+    content: createEmptyResumeContent(),
+    updated_at: "2026-11-26T00:00:00.000Z",
+  }));
+  const doc = storedDoc ?? fallbackDoc;
+
+  const [authSession, setAuthSession] = useState<AuthSession | null>(() => getStoredAuthSession());
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [styleSheetOpen, setStyleSheetOpen] = useState(false);
-  const [settingsMode, setSettingsMode] = useState<EditorSettings>("all");
-  const settingsTrigger = useRef<HTMLButtonElement>(null);
-  const [manageSectionsOpen, setManageSectionsOpen] = useState(false);
-  const manageSectionsTrigger = useRef<HTMLButtonElement>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [addModuleDialogOpen, setAddModuleDialogOpen] = useState(false);
+  const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [editorMode, setEditorMode] = useState<"form" | "markdown">("form");
+  const [markdownDraft, setMarkdownDraft] = useState("");
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  const [activeSectionId, setActiveSectionId] = useState<string>("basics");
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
-  const [exportNotice, setExportNotice] = useState<string | null>(null);
-  const [exportSnapshot, setExportSnapshot] = useState<ResumeSnapshot | null>(null);
-  const downloadTrigger = useRef<HTMLButtonElement>(null);
-  const printableSnapshot = snapshot && hasVisibleResumeContent(snapshot) ? snapshot : null;
-  const {
-    pdf,
-    pending: pdfPending,
-    failure: pdfFailure,
-    retry: retryPdf,
-  } = useResumePdf(printableSnapshot);
-  const exportChanged = exportSnapshot !== null && exportSnapshot !== snapshot;
+  const [notice, setNotice] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [cloudSyncState, setCloudSyncState] = useState<"local" | "saving" | "synced" | "conflict">(
+    () => (storedDoc?.remote_id ? "synced" : "local")
+  );
 
-  useEffect(() => {
-    const existingEntry = listLocalDrafts().find((item) => item.id === docId);
-    const handle = openResumeYDoc(
-      docId,
-      existingEntry?.templateId ?? "classic-single",
-      existingEntry?.title ?? "未命名简历"
-    );
-    handleRef.current = handle;
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const refresh = () => {
-      try {
-        setSnapshot(handle.getSnapshot());
-        setSaveState("saved");
-      } catch {
-        setSaveState("error");
+  const persistUpdate = (updater: (prev: LocalResumeDocument) => LocalResumeDocument) => {
+    const next: LocalResumeDocument = {
+      ...updater(doc),
+      updated_at: new Date().toISOString(),
+    };
+    saveLocalDraft(next);
+
+    if (next.remote_id && authSession) {
+      setCloudSyncState("saving");
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
       }
-    };
-
-    refresh();
-    handle.doc.on("update", refresh);
-    if (handle.persistence) {
-      void handle.persistence.whenSynced.then(refresh).catch(() => setSaveState("error"));
+      const remoteId = next.remote_id;
+      saveTimerRef.current = setTimeout(() => {
+        void saveCloudResume(remoteId, next)
+          .then((saved) => {
+            saveLocalDraft({
+              ...next,
+              version: saved.version,
+              updated_at: saved.updated_at,
+            });
+            setCloudSyncState("synced");
+          })
+          .catch(() => {
+            setCloudSyncState("conflict");
+            setNotice("云端保存冲突或网络异常（已保留本机最新内容），请检查后重试。");
+          });
+      }, 800);
     }
+  };
 
-    return () => {
-      handle.doc.off("update", refresh);
-      void handle.destroy();
-      handleRef.current = null;
+  const updateBasics = (patch: Partial<BasicsSection>) => {
+    persistUpdate((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        basics: { ...prev.content.basics, ...patch },
+      },
+    }));
+  };
+
+  const updateSection = (sectionId: string, updater: (sec: ResumeSection) => ResumeSection) => {
+    persistUpdate((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        sections: prev.content.sections.map((sec) => (sec.id === sectionId ? updater(sec) : sec)),
+      },
+    }));
+  };
+
+  const reorderSections = (fromIdx: number, toIdx: number) => {
+    persistUpdate((prev) => {
+      const list = [...prev.content.sections];
+      if (fromIdx < 0 || toIdx < 0 || fromIdx >= list.length || toIdx >= list.length) {
+        return prev;
+      }
+      const [moved] = list.splice(fromIdx, 1);
+      list.splice(toIdx, 0, moved);
+      return {
+        ...prev,
+        content: { ...prev.content, sections: list },
+      };
+    });
+  };
+
+  const handleAddCustomSection = () => {
+    const title = newModuleTitle.trim();
+    if (!title) {
+      return;
+    }
+    const newSec: ResumeSection = {
+      id: generateStableId("sec-custom"),
+      type: "custom",
+      title,
+      visible: true,
+      items: [],
+      rich_text_html: "",
     };
-  }, [docId]);
+    persistUpdate((prev) => ({
+      ...prev,
+      content: {
+        ...prev.content,
+        sections: [...prev.content.sections, newSec],
+      },
+    }));
+    setNewModuleTitle("");
+    setAddModuleDialogOpen(false);
+    setActiveSectionId(newSec.id);
+    scrollToDomId(`section-${newSec.id}`);
+  };
 
   const scrollToDomId = (domId: string) => {
     window.requestAnimationFrame(() => {
-      const target = document.getElementById(domId);
-      if (target) {
-        const focusableSelector = "input:not([disabled]), textarea, [contenteditable='true']";
-        const focusable = target.matches(focusableSelector)
-          ? target
-          : (target.querySelector<HTMLElement>(focusableSelector) ??
-            target.querySelector<HTMLButtonElement>("button:not([disabled])"));
-        target.scrollIntoView({ block: "center" });
-        focusable?.focus({ preventScroll: true });
+      const el = document.getElementById(domId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        const focusable = el.querySelector<HTMLElement>(
+          "input, textarea, [contenteditable='true'], button"
+        );
+        focusable?.focus();
       }
     });
   };
 
-  const handleLocateFromPaper = (section: ResumeSectionId, itemId?: string) => {
-    setActiveSection(section);
+  const handleLocateFromPaper = (sectionId: string, itemId?: string) => {
+    setEditorMode("form");
+    setActiveSectionId(sectionId);
     setMobileTab("edit");
-    const domId = itemId ? `item-${itemId}` : `section-${section}`;
-    scrollToDomId(domId);
+    scrollToDomId(itemId ? `item-${itemId}` : `section-${sectionId}`);
   };
 
-  const findFirstInvertedDateDomId = (current: ResumeSnapshot): string | null => {
-    for (const section of current.sectionOrder) {
-      if (section === "basics" || section === "skills" || current.hiddenSections.includes(section))
-        continue;
-      const inverted = current[section].find((item) =>
-        isDateRangeInverted(item.startMonth, item.endMonth, item.isCurrent)
-      );
-      if (inverted) return `date-end-${inverted.id}`;
-    }
-    return null;
-  };
-
-  const handleDownloadClick = (trigger: HTMLButtonElement) => {
-    if (!snapshot) {
+  const handleToggleMarkdownMode = () => {
+    if (!doc) {
       return;
     }
-    if (!hasVisibleResumeContent(snapshot)) {
-      setExportNotice("请至少填写一项可见简历内容后再下载 PDF。");
+    if (editorMode === "form") {
+      setMarkdownDraft(resumeToMarkdown(doc));
+      setEditorMode("markdown");
+    } else {
+      persistUpdate((prev) => applyMarkdownToResume(prev, markdownDraft));
+      setEditorMode("form");
+    }
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!authSession) {
+      setAuthDialogOpen(true);
+      setNotice("上传头像至对象存储需要先完成邮箱验证登录。");
+      return;
+    }
+    setIsUploadingAvatar(true);
+    setNotice(null);
+    try {
+      const res = await uploadAvatarToS3(file);
+      updateBasics({ avatar_url: res.url });
+      setNotice("头像已压缩并上传成功。");
+    } catch {
+      setNotice("头像上传失败：请确保文件为 5MB 以内的 PNG/JPEG/WebP 且后端 S3 已配置。");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleClaimOrSyncCloud = async (sessionOverride?: AuthSession) => {
+    const activeSession = sessionOverride ?? authSession;
+    if (!doc || !activeSession) {
+      setAuthDialogOpen(true);
+      return;
+    }
+    setCloudSyncState("saving");
+    try {
+      const claimed = await claimDraftToCloud(doc);
+      const updated: LocalResumeDocument = {
+        ...doc,
+        remote_id: claimed.resume.id,
+        version: claimed.resume.version,
+        share_enabled: claimed.resume.share_enabled,
+        share_token: claimed.resume.share_token,
+        updated_at: claimed.resume.updated_at,
+      };
+      saveLocalDraft(updated);
+      setCloudSyncState("synced");
+      setNotice("已开启云端保存，后续编辑将自动防抖同步。");
+    } catch {
+      setCloudSyncState("conflict");
+      setNotice("云端认领失败，请确认 FastAPI 服务可达后重试（本机内容已安全保留）。");
+    }
+  };
+
+  const handleToggleShare = async (enabled: boolean) => {
+    if (!doc) {
+      return;
+    }
+    if (!authSession) {
+      setShareDialogOpen(false);
+      setAuthDialogOpen(true);
+      return;
+    }
+    try {
+      let remoteId = doc.remote_id;
+      if (!remoteId) {
+        const claimed = await claimDraftToCloud(doc);
+        remoteId = claimed.resume.id;
+      }
+      const res = await toggleCloudShare(remoteId, enabled);
+      const updated: LocalResumeDocument = {
+        ...doc,
+        remote_id: remoteId,
+        share_enabled: res.share_enabled,
+        share_token: res.share_token,
+      };
+      saveLocalDraft(updated);
+    } catch {
+      setNotice("更新分享状态失败，请确认后端服务已启动。");
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!doc) {
+      return;
+    }
+    if (!hasVisibleResumeContent(doc.content)) {
+      setNotice("请至少填写一项可见内容后再导出 PDF。");
       setMobileTab("edit");
       scrollToDomId("section-basics");
       return;
     }
-    const invertedId = findFirstInvertedDateDomId(snapshot);
-    if (invertedId) {
-      setExportNotice("检测到起止月份倒序，已定位到需要修正的日期字段。");
-      setMobileTab("edit");
-      scrollToDomId(invertedId);
-      return;
+    for (const sec of doc.content.sections) {
+      if (!sec.visible) {
+        continue;
+      }
+      for (const item of sec.items) {
+        if (isDateRangeInverted(item.start_month, item.end_month, item.is_current)) {
+          setNotice("检测到起止月份倒序，已定位到对应日期字段。");
+          setEditorMode("form");
+          setMobileTab("edit");
+          scrollToDomId(`date-end-${item.id}`);
+          return;
+        }
+      }
     }
-    downloadTrigger.current = trigger;
-    setExportNotice(null);
-    setExportSnapshot(snapshot);
+
+    setIsExportingPdf(true);
+    setNotice(null);
+    try {
+      const pdfBlob = await downloadSnapshotPdf(doc);
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${doc.title || "cvory-resume"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setNotice("PDF 导出失败：请确认 FastAPI 后端（Playwright 引擎）正在运行。");
+    } finally {
+      setIsExportingPdf(false);
+    }
   };
 
-  const handleRequestDeleteEducation = (item: EducationItem) => {
-    const hasContent = Boolean(
-      item.school.trim() || item.majorOrDegree.trim() || item.notes.trim()
-    );
-    if (!hasContent) {
-      handleRef.current?.removeEducation(item.id);
+  const handleExportJson = () => {
+    if (!doc) {
       return;
     }
-    setPendingDelete({
-      kind: "education",
-      id: item.id,
-      label: item.school.trim() || "该条教育经历",
-    });
-  };
-
-  const handleRequestDeleteExperience = (kind: "work" | "projects", item: ExperienceItem) => {
-    const hasContent = Boolean(
-      item.organization.trim() || item.role.trim() || stripHtmlToText(item.descriptionHtml)
-    );
-    if (!hasContent) {
-      handleRef.current?.removeExperience(kind, item.id);
-      return;
-    }
-    setPendingDelete({
-      kind,
-      id: item.id,
-      label: item.organization.trim() || (kind === "work" ? "该条工作经历" : "该条项目经历"),
-    });
+    const blob = new Blob([exportDraftToJson(doc)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${doc.title || "cvory-resume"}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const confirmDelete = () => {
-    if (!pendingDelete || !handleRef.current) {
+    if (!pendingDelete) {
       return;
     }
-    if (pendingDelete.kind === "education") {
-      handleRef.current.removeEducation(pendingDelete.id);
+    if (pendingDelete.itemId) {
+      const targetItemId = pendingDelete.itemId;
+      updateSection(pendingDelete.sectionId, (sec) => ({
+        ...sec,
+        items: sec.items.filter((it) => it.id !== targetItemId),
+      }));
     } else {
-      handleRef.current.removeExperience(pendingDelete.kind, pendingDelete.id);
+      const targetSectionId = pendingDelete.sectionId;
+      persistUpdate((prev) => ({
+        ...prev,
+        content: {
+          ...prev.content,
+          sections: prev.content.sections.filter((sec) => sec.id !== targetSectionId),
+        },
+      }));
     }
     setPendingDelete(null);
   };
 
-  const openSectionManagement = (trigger: HTMLButtonElement) => {
-    manageSectionsTrigger.current = trigger;
-    setManageSectionsOpen(true);
-  };
-
-  if (!snapshot) {
+  if (!doc) {
     return (
-      <div className="bg-canvas text-muted-foreground flex min-h-screen items-center justify-center text-sm">
-        正在加载简历草稿...
+      <div className="flex min-h-screen items-center justify-center bg-[#fafafa] text-sm text-neutral-500">
+        正在加载简历工作台...
       </div>
     );
   }
 
-  const hiddenSet = new Set(snapshot.hiddenSections);
+  const shareUrl =
+    doc.share_enabled && doc.share_token && typeof window !== "undefined"
+      ? `${window.location.origin}/share/${doc.share_token}`
+      : null;
 
-  const form = (
-    <div className="space-y-6 pb-4">
-      <div className="flex justify-end min-[1200px]:hidden">
-        <Button
-          type="button"
-          variant="link"
-          className="h-11 px-0"
-          onClick={(event) => openSectionManagement(event.currentTarget)}
-        >
-          管理章节
-        </Button>
-      </div>
-      {snapshot.sectionOrder.map((sectionId) => {
-        const isHidden = hiddenSet.has(sectionId);
-        return (
-          <section
-            key={sectionId}
-            id={`section-${sectionId}`}
-            className={cn("scroll-mt-20 space-y-4", isHidden && "opacity-55")}
-          >
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-foreground text-[17px] font-semibold tracking-tight">
-                {SECTION_LABELS[sectionId]}
-                {isHidden ? (
-                  <span className="text-muted-foreground ml-2 text-xs font-normal">
-                    （已在纸面隐藏）
-                  </span>
-                ) : null}
-              </h2>
-              {sectionId === "education" && (
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() =>
-                    handleRef.current?.upsertEducation({
-                      id: generateStableId("edu"),
-                      school: "",
-                      majorOrDegree: "",
-                      startMonth: "",
-                      endMonth: "",
-                      isCurrent: false,
-                      notes: "",
-                    })
-                  }
-                  className="h-11 shrink-0 px-0 text-[13px] min-[1200px]:h-8"
-                >
-                  添加教育经历
-                </Button>
-              )}
-              {(sectionId === "work" || sectionId === "projects") && (
-                <Button
-                  type="button"
-                  variant="link"
-                  onClick={() =>
-                    handleRef.current?.upsertExperience(sectionId, {
-                      id: generateStableId(sectionId === "work" ? "work" : "proj"),
-                      organization: "",
-                      role: "",
-                      startMonth: "",
-                      endMonth: "",
-                      isCurrent: false,
-                      descriptionHtml: "",
-                    })
-                  }
-                  className="h-11 shrink-0 px-0 text-[13px] min-[1200px]:h-8"
-                >
-                  添加{SECTION_LABELS[sectionId]}
-                </Button>
+  const renderFormColumn = () => {
+    if (editorMode === "markdown") {
+      return (
+        <div className="space-y-3 pb-20">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-neutral-500">
+              Markdown 编辑模式（`# 姓名`、`## 模块名`、`### 标题 | 副标题 | 起止时间`）
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleToggleMarkdownMode}
+              className="h-8 text-xs"
+            >
+              返回表单模式
+            </Button>
+          </div>
+          <Textarea
+            aria-label="Markdown 简历内容"
+            value={markdownDraft}
+            onChange={(e) => {
+              const nextMd = e.target.value;
+              setMarkdownDraft(nextMd);
+              persistUpdate((prev) => applyMarkdownToResume(prev, nextMd));
+            }}
+            className="min-h-[640px] rounded-md border-0 bg-white p-4 font-mono text-[13px] leading-6 shadow-none focus-visible:ring-2 focus-visible:ring-blue-600"
+          />
+        </div>
+      );
+    }
+
+    const b = doc.content.basics;
+
+    return (
+      <div className="space-y-8 pb-20">
+        {/* 基本信息（对标老鱼简历：头像+对齐、核心信息、求职意向、动态自定义字段） */}
+        <section id="section-basics" className="scroll-mt-20 space-y-4 rounded-md bg-white p-5">
+          <h2 className="text-[16px] font-semibold tracking-tight text-neutral-950">基本信息</h2>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex h-20 w-16 items-center justify-center overflow-hidden rounded bg-neutral-100 text-xs text-neutral-400">
+              {b.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={b.avatar_url} alt="头像预览" className="h-full w-full object-cover" />
+              ) : (
+                "头像"
               )}
             </div>
+            <div className="space-y-2">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    void handleAvatarUpload(file);
+                    e.target.value = "";
+                  }
+                }}
+              />
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isUploadingAvatar}
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="h-8 text-xs"
+                >
+                  <ImagePlus className="mr-1.5 h-3.5 w-3.5" />
+                  {isUploadingAvatar ? "上传中..." : "上传头像"}
+                </Button>
+                {(["left", "right", "hidden"] as const).map((align: AvatarAlignment) => (
+                  <Button
+                    key={align}
+                    type="button"
+                    variant={b.avatar_alignment === align ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => updateBasics({ avatar_alignment: align })}
+                    className="h-8 px-2.5 text-xs"
+                  >
+                    {align === "left" ? "左对齐" : align === "right" ? "右对齐" : "隐藏"}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
 
-            {sectionId === "basics" ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="basics-fullName" className="text-muted-foreground text-xs">
-                      姓名
-                    </Label>
-                    <Input
-                      id="basics-fullName"
-                      value={snapshot.basics.fullName}
-                      onChange={(e) =>
-                        handleRef.current?.updateBasics({ fullName: e.target.value })
-                      }
-                      placeholder="输入你的姓名"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="basics-targetRole" className="text-muted-foreground text-xs">
-                      意向岗位
-                    </Label>
-                    <Input
-                      id="basics-targetRole"
-                      value={snapshot.basics.targetRole}
-                      onChange={(e) =>
-                        handleRef.current?.updateBasics({ targetRole: e.target.value })
-                      }
-                      placeholder="例如：前端工程师"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="basics-email" className="text-muted-foreground text-xs">
-                      邮箱
-                    </Label>
-                    <Input
-                      id="basics-email"
-                      type="email"
-                      value={snapshot.basics.email}
-                      onChange={(e) => handleRef.current?.updateBasics({ email: e.target.value })}
-                      placeholder="name@example.com"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="basics-location" className="text-muted-foreground text-xs">
-                      所在地
-                    </Label>
-                    <Input
-                      id="basics-location"
-                      value={snapshot.basics.location}
-                      onChange={(e) =>
-                        handleRef.current?.updateBasics({ location: e.target.value })
-                      }
-                      placeholder="例如：杭州"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                  <div className="space-y-1.5 min-[360px]:col-span-2">
-                    <Label htmlFor="basics-phone" className="text-muted-foreground text-xs">
-                      电话
-                    </Label>
-                    <Input
-                      id="basics-phone"
-                      value={snapshot.basics.phone}
-                      onChange={(e) => handleRef.current?.updateBasics({ phone: e.target.value })}
-                      placeholder="138-0000-0000"
-                      className={FIELD_INPUT_CLASS}
-                    />
-                  </div>
-                </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="space-y-1">
+              <Label htmlFor="basics-name" className="text-xs text-neutral-600">
+                姓名
+              </Label>
+              <Input
+                id="basics-name"
+                value={b.full_name}
+                onChange={(e) => updateBasics({ full_name: e.target.value })}
+                placeholder="你的姓名"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-phone" className="text-xs text-neutral-600">
+                电话
+              </Label>
+              <Input
+                id="basics-phone"
+                value={b.phone}
+                onChange={(e) => updateBasics({ phone: e.target.value })}
+                placeholder="手机号码"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-email" className="text-xs text-neutral-600">
+                邮箱
+              </Label>
+              <Input
+                id="basics-email"
+                type="email"
+                value={b.email}
+                onChange={(e) => updateBasics({ email: e.target.value })}
+                placeholder="name@example.com"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-gender" className="text-xs text-neutral-600">
+                性别
+              </Label>
+              <Input
+                id="basics-gender"
+                value={b.gender}
+                onChange={(e) => updateBasics({ gender: e.target.value })}
+                placeholder="男 / 女"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-age" className="text-xs text-neutral-600">
+                年龄
+              </Label>
+              <Input
+                id="basics-age"
+                value={b.age}
+                onChange={(e) => updateBasics({ age: e.target.value })}
+                placeholder="例如：24"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-wechat" className="text-xs text-neutral-600">
+                微信号
+              </Label>
+              <Input
+                id="basics-wechat"
+                value={b.wechat}
+                onChange={(e) => updateBasics({ wechat: e.target.value })}
+                placeholder="微信号"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <Label htmlFor="basics-github" className="text-xs text-neutral-600">
+                GitHub / 个人主页
+              </Label>
+              <Input
+                id="basics-github"
+                value={b.github}
+                onChange={(e) => updateBasics({ github: e.target.value })}
+                placeholder="https://github.com/..."
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="basics-degree" className="text-xs text-neutral-600">
+                学历
+              </Label>
+              <Input
+                id="basics-degree"
+                value={b.degree}
+                onChange={(e) => updateBasics({ degree: e.target.value })}
+                placeholder="本科 / 硕士"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+          </div>
 
-                {snapshot.basics.visibleOptionalFields.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {snapshot.basics.visibleOptionalFields.map((field) => (
-                      <div key={field} className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <Label
-                            htmlFor={`basics-${field}`}
-                            className="text-muted-foreground text-xs"
-                          >
-                            {OPTIONAL_FIELD_LABELS[field]}
-                          </Label>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleRef.current?.toggleOptionalBasicsField(field, false)
-                            }
-                            className="text-muted-foreground hover:text-muted-foreground text-[11px]"
-                          >
-                            移出
-                          </button>
-                        </div>
-                        <Input
-                          id={`basics-${field}`}
-                          value={snapshot.basics[field]}
-                          onChange={(e) =>
-                            handleRef.current?.updateBasics({ [field]: e.target.value })
-                          }
-                          placeholder={`输入${OPTIONAL_FIELD_LABELS[field]}`}
-                          className={FIELD_INPUT_CLASS}
-                        />
-                      </div>
-                    ))}
-                  </div>
+          <div className="space-y-2 pt-2">
+            <p className="text-xs font-medium text-neutral-700">求职意向</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Input
+                aria-label="当前状态"
+                value={b.job_status}
+                onChange={(e) => updateBasics({ job_status: e.target.value })}
+                placeholder="当前状态（如：在职-月内到岗）"
+                className={FIELD_INPUT_CLASS}
+              />
+              <Input
+                aria-label="职位名称"
+                value={b.target_role}
+                onChange={(e) => updateBasics({ target_role: e.target.value })}
+                placeholder="意向岗位（如：AI 应用开发）"
+                className={FIELD_INPUT_CLASS}
+              />
+              <Input
+                aria-label="期望工作地"
+                value={b.expected_city}
+                onChange={(e) => updateBasics({ expected_city: e.target.value })}
+                placeholder="期望工作地（如：上海）"
+                className={FIELD_INPUT_CLASS}
+              />
+            </div>
+          </div>
+
+          {/* 动态自定义字段 */}
+          <div className="space-y-2 pt-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-medium text-neutral-700">自定义扩展字段</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  updateBasics({
+                    custom_fields: [
+                      ...b.custom_fields,
+                      {
+                        id: generateStableId("cf"),
+                        label: "自定义项",
+                        value: "",
+                        visible: true,
+                      },
+                    ],
+                  })
+                }
+                className="h-7 px-2 text-xs text-neutral-600"
+              >
+                <Plus className="mr-1 h-3 w-3" />
+                添加字段
+              </Button>
+            </div>
+            {b.custom_fields.map((field) => (
+              <div key={field.id} className="grid grid-cols-[120px_1fr_auto] items-center gap-2">
+                <Input
+                  aria-label="字段名"
+                  value={field.label}
+                  onChange={(e) =>
+                    updateBasics({
+                      custom_fields: b.custom_fields.map((f) =>
+                        f.id === field.id ? { ...f, label: e.target.value } : f
+                      ),
+                    })
+                  }
+                  className={FIELD_INPUT_CLASS}
+                />
+                <Input
+                  aria-label="字段值"
+                  value={field.value}
+                  onChange={(e) =>
+                    updateBasics({
+                      custom_fields: b.custom_fields.map((f) =>
+                        f.id === field.id ? { ...f, value: e.target.value } : f
+                      ),
+                    })
+                  }
+                  placeholder="输入内容"
+                  className={FIELD_INPUT_CLASS}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="删除自定义字段"
+                  onClick={() =>
+                    updateBasics({
+                      custom_fields: b.custom_fields.filter((f) => f.id !== field.id),
+                    })
+                  }
+                  className="h-8 w-8 text-neutral-400 hover:text-red-600"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 全部启用中的预设与自定义模块 */}
+        {doc.content.sections
+          .filter((sec) => sec.visible)
+          .map((section) => (
+            <section
+              key={section.id}
+              id={`section-${section.id}`}
+              className="scroll-mt-20 space-y-4 rounded-md bg-white p-5"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <Input
+                  aria-label="模块标题"
+                  value={section.title}
+                  onChange={(e) =>
+                    updateSection(section.id, (s) => ({ ...s, title: e.target.value }))
+                  }
+                  className="h-8 max-w-[220px] border-0 bg-transparent px-1 text-[16px] font-semibold shadow-none hover:bg-neutral-100 focus-visible:bg-neutral-100 focus-visible:ring-2 focus-visible:ring-blue-600"
+                />
+                {section.type === "custom" ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setPendingDelete({ sectionId: section.id, label: `模块「${section.title}」` })
+                    }
+                    className="h-8 text-xs text-neutral-400 hover:text-red-600"
+                  >
+                    <Trash2 className="mr-1 h-3.5 w-3.5" />
+                    删除模块
+                  </Button>
                 ) : null}
-
-                <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-muted-foreground text-xs">可选字段：</span>
-                  {OPTIONAL_BASICS_FIELDS.filter(
-                    (f) => !snapshot.basics.visibleOptionalFields.includes(f)
-                  ).map((field) => (
-                    <Button
-                      key={field}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRef.current?.toggleOptionalBasicsField(field, true)}
-                      className="text-muted-foreground hover:bg-muted h-7 px-2 text-xs"
-                    >
-                      <Plus className="mr-1 h-3 w-3" />
-                      {OPTIONAL_FIELD_LABELS[field]}
-                    </Button>
-                  ))}
-                </div>
               </div>
-            ) : null}
 
-            {sectionId === "education" ? (
-              <div className="space-y-5">
-                {snapshot.education.map((item, index) => {
-                  const inverted = isDateRangeInverted(
-                    item.startMonth,
-                    item.endMonth,
-                    item.isCurrent
-                  );
-                  return (
-                    <div
-                      key={item.id}
-                      id={`item-${item.id}`}
-                      className="bg-background space-y-3 rounded-md p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground text-xs font-medium">
-                          教育经历 #{index + 1}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label="上移教育经历"
-                            disabled={index === 0}
-                            onClick={() => handleRef.current?.reorderEducation(index, index - 1)}
-                            className="h-7 w-7"
-                          >
-                            <ArrowUp className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label="下移教育经历"
-                            disabled={index === snapshot.education.length - 1}
-                            onClick={() => handleRef.current?.reorderEducation(index, index + 1)}
-                            className="h-7 w-7"
-                          >
-                            <ArrowDown className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label="删除教育经历"
-                            onClick={() => handleRequestDeleteEducation(item)}
-                            className="text-muted-foreground hover:text-destructive h-7 w-7"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        <div className="space-y-1">
-                          <Label
-                            htmlFor={`edu-school-${item.id}`}
-                            className="text-muted-foreground text-xs"
-                          >
-                            学校
-                          </Label>
-                          <Input
-                            id={`edu-school-${item.id}`}
-                            value={item.school}
-                            onChange={(e) =>
-                              handleRef.current?.upsertEducation({
-                                ...item,
-                                school: e.target.value,
-                              })
-                            }
-                            placeholder="学校名称"
-                            className={FIELD_INPUT_CLASS}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label
-                            htmlFor={`edu-major-${item.id}`}
-                            className="text-muted-foreground text-xs"
-                          >
-                            专业或学位
-                          </Label>
-                          <Input
-                            id={`edu-major-${item.id}`}
-                            value={item.majorOrDegree}
-                            onChange={(e) =>
-                              handleRef.current?.upsertEducation({
-                                ...item,
-                                majorOrDegree: e.target.value,
-                              })
-                            }
-                            placeholder="例如：软件工程 · 本科"
-                            className={FIELD_INPUT_CLASS}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label
-                            htmlFor={`date-start-${item.id}`}
-                            className="text-muted-foreground text-xs"
-                          >
-                            开始月份
-                          </Label>
-                          <Input
-                            id={`date-start-${item.id}`}
-                            type="month"
-                            value={item.startMonth}
-                            onChange={(e) =>
-                              handleRef.current?.upsertEducation({
-                                ...item,
-                                startMonth: e.target.value,
-                              })
-                            }
-                            className={FIELD_INPUT_CLASS}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <div className="flex items-center justify-between">
-                            <Label
-                              htmlFor={`date-end-${item.id}`}
-                              className="text-muted-foreground text-xs"
-                            >
-                              结束月份
-                            </Label>
-                            <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
-                              <Switch
-                                checked={item.isCurrent}
-                                onCheckedChange={(checked) =>
-                                  handleRef.current?.upsertEducation({
-                                    ...item,
-                                    isCurrent: checked,
-                                    endMonth: checked ? "" : item.endMonth,
-                                  })
-                                }
-                              />
-                              至今
-                            </label>
-                          </div>
-                          <Input
-                            id={`date-end-${item.id}`}
-                            type="month"
-                            disabled={item.isCurrent}
-                            aria-invalid={inverted}
-                            value={item.endMonth}
-                            onChange={(e) =>
-                              handleRef.current?.upsertEducation({
-                                ...item,
-                                endMonth: e.target.value,
-                              })
-                            }
-                            className={cn(
-                              FIELD_INPUT_CLASS,
-                              inverted && "ring-destructive focus-visible:ring-destructive ring-2"
-                            )}
-                          />
-                          {inverted ? (
-                            <p role="alert" className="text-destructive text-xs">
-                              结束月份不能早于开始月份
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label
-                          htmlFor={`edu-notes-${item.id}`}
-                          className="text-muted-foreground text-xs"
-                        >
-                          补充说明（可选）
-                        </Label>
-                        <Textarea
-                          id={`edu-notes-${item.id}`}
-                          value={item.notes}
-                          onChange={(e) =>
-                            handleRef.current?.upsertEducation({ ...item, notes: e.target.value })
-                          }
-                          placeholder="主修课程、荣誉或成绩"
-                          className="bg-muted focus-visible:ring-ring min-h-[72px] rounded-md border-0 text-[16px] shadow-none focus-visible:ring-2 min-[1200px]:text-[14px]"
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            {sectionId === "work" || sectionId === "projects" ? (
-              <div className="space-y-5">
-                {(sectionId === "work" ? snapshot.work : snapshot.projects).map(
-                  (item, index, arr) => {
+              {isRichTextOnlySection(section.type) ? (
+                <TiptapEditor
+                  ariaLabel={section.title}
+                  value={section.rich_text_html}
+                  onChange={(html) =>
+                    updateSection(section.id, (s) => ({ ...s, rich_text_html: html }))
+                  }
+                />
+              ) : (
+                <div className="space-y-4">
+                  {section.items.map((item, idx) => {
                     const inverted = isDateRangeInverted(
-                      item.startMonth,
-                      item.endMonth,
-                      item.isCurrent
+                      item.start_month,
+                      item.end_month,
+                      item.is_current
                     );
-                    const isWork = sectionId === "work";
+                    const patchItem = (patch: Partial<ResumeSectionItem>) =>
+                      updateSection(section.id, (s) => ({
+                        ...s,
+                        items: s.items.map((it) => (it.id === item.id ? { ...it, ...patch } : it)),
+                      }));
+
                     return (
                       <div
                         key={item.id}
                         id={`item-${item.id}`}
-                        className="bg-background space-y-3 rounded-md p-4"
+                        className="space-y-3 rounded-md bg-neutral-50/70 p-4"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground text-xs font-medium">
-                            {isWork ? "工作经历" : "项目经历"} #{index + 1}
+                          <span className="text-xs font-medium text-neutral-500">
+                            {section.title} #{idx + 1}
                           </span>
                           <div className="flex items-center gap-1">
                             <Button
@@ -653,9 +794,14 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                               variant="ghost"
                               size="icon"
                               aria-label="上移条目"
-                              disabled={index === 0}
+                              disabled={idx === 0}
                               onClick={() =>
-                                handleRef.current?.reorderExperience(sectionId, index, index - 1)
+                                updateSection(section.id, (s) => {
+                                  const next = [...s.items];
+                                  const [m] = next.splice(idx, 1);
+                                  next.splice(idx - 1, 0, m);
+                                  return { ...s, items: next };
+                                })
                               }
                               className="h-7 w-7"
                             >
@@ -666,9 +812,14 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                               variant="ghost"
                               size="icon"
                               aria-label="下移条目"
-                              disabled={index === arr.length - 1}
+                              disabled={idx === section.items.length - 1}
                               onClick={() =>
-                                handleRef.current?.reorderExperience(sectionId, index, index + 1)
+                                updateSection(section.id, (s) => {
+                                  const next = [...s.items];
+                                  const [m] = next.splice(idx, 1);
+                                  next.splice(idx + 1, 0, m);
+                                  return { ...s, items: next };
+                                })
                               }
                               className="h-7 w-7"
                             >
@@ -679,8 +830,26 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                               variant="ghost"
                               size="icon"
                               aria-label="删除条目"
-                              onClick={() => handleRequestDeleteExperience(sectionId, item)}
-                              className="text-muted-foreground hover:text-destructive h-7 w-7"
+                              onClick={() => {
+                                const hasData = Boolean(
+                                  item.title.trim() ||
+                                  item.subtitle.trim() ||
+                                  stripHtmlToText(item.content_html)
+                                );
+                                if (!hasData) {
+                                  updateSection(section.id, (s) => ({
+                                    ...s,
+                                    items: s.items.filter((it) => it.id !== item.id),
+                                  }));
+                                } else {
+                                  setPendingDelete({
+                                    sectionId: section.id,
+                                    itemId: item.id,
+                                    label: item.title.trim() || `${section.title}条目`,
+                                  });
+                                }
+                              }}
+                              className="h-7 w-7 text-neutral-400 hover:text-red-600"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
@@ -688,349 +857,452 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
                         </div>
 
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <Input
+                            aria-label="主标题"
+                            value={item.title}
+                            onChange={(e) => patchItem({ title: e.target.value })}
+                            placeholder={
+                              section.type === "education"
+                                ? "学校名称"
+                                : section.type === "work"
+                                  ? "公司名称"
+                                  : "标题 / 名称"
+                            }
+                            className={FIELD_INPUT_CLASS}
+                          />
+                          <Input
+                            aria-label="副标题"
+                            value={item.subtitle}
+                            onChange={(e) => patchItem({ subtitle: e.target.value })}
+                            placeholder={
+                              section.type === "education"
+                                ? "专业与学历"
+                                : section.type === "work"
+                                  ? "岗位名称"
+                                  : "角色 / 补充说明"
+                            }
+                            className={FIELD_INPUT_CLASS}
+                          />
+                          <Input
+                            id={`date-start-${item.id}`}
+                            aria-label="开始月份"
+                            type="month"
+                            value={item.start_month}
+                            onChange={(e) => patchItem({ start_month: e.target.value })}
+                            className={FIELD_INPUT_CLASS}
+                          />
                           <div className="space-y-1">
-                            <Label
-                              htmlFor={`exp-org-${item.id}`}
-                              className="text-muted-foreground text-xs"
-                            >
-                              {isWork ? "公司名称" : "项目名称"}
-                            </Label>
-                            <Input
-                              id={`exp-org-${item.id}`}
-                              value={item.organization}
-                              onChange={(e) =>
-                                handleRef.current?.upsertExperience(sectionId, {
-                                  ...item,
-                                  organization: e.target.value,
-                                })
-                              }
-                              placeholder={isWork ? "公司名称" : "项目名称"}
-                              className={FIELD_INPUT_CLASS}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`exp-role-${item.id}`}
-                              className="text-muted-foreground text-xs"
-                            >
-                              {isWork ? "岗位" : "担任角色"}
-                            </Label>
-                            <Input
-                              id={`exp-role-${item.id}`}
-                              value={item.role}
-                              onChange={(e) =>
-                                handleRef.current?.upsertExperience(sectionId, {
-                                  ...item,
-                                  role: e.target.value,
-                                })
-                              }
-                              placeholder={isWork ? "例如：高级前端工程师" : "例如：核心负责人"}
-                              className={FIELD_INPUT_CLASS}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <Label
-                              htmlFor={`date-start-${item.id}`}
-                              className="text-muted-foreground text-xs"
-                            >
-                              开始月份
-                            </Label>
-                            <Input
-                              id={`date-start-${item.id}`}
-                              type="month"
-                              value={item.startMonth}
-                              onChange={(e) =>
-                                handleRef.current?.upsertExperience(sectionId, {
-                                  ...item,
-                                  startMonth: e.target.value,
-                                })
-                              }
-                              className={FIELD_INPUT_CLASS}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <div className="flex items-center justify-between">
-                              <Label
-                                htmlFor={`date-end-${item.id}`}
-                                className="text-muted-foreground text-xs"
-                              >
-                                结束月份
-                              </Label>
-                              <label className="text-muted-foreground flex items-center gap-1.5 text-xs">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                id={`date-end-${item.id}`}
+                                aria-label="结束月份"
+                                type="month"
+                                disabled={item.is_current}
+                                aria-invalid={inverted}
+                                value={item.end_month}
+                                onChange={(e) => patchItem({ end_month: e.target.value })}
+                                className={cn(FIELD_INPUT_CLASS, inverted && "ring-2 ring-red-500")}
+                              />
+                              <label className="flex shrink-0 items-center gap-1 text-xs text-neutral-500">
                                 <Switch
-                                  checked={item.isCurrent}
+                                  checked={item.is_current}
                                   onCheckedChange={(checked) =>
-                                    handleRef.current?.upsertExperience(sectionId, {
-                                      ...item,
-                                      isCurrent: checked,
-                                      endMonth: checked ? "" : item.endMonth,
+                                    patchItem({
+                                      is_current: checked,
+                                      end_month: checked ? "" : item.end_month,
                                     })
                                   }
                                 />
                                 至今
                               </label>
                             </div>
-                            <Input
-                              id={`date-end-${item.id}`}
-                              type="month"
-                              disabled={item.isCurrent}
-                              aria-invalid={inverted}
-                              value={item.endMonth}
-                              onChange={(e) =>
-                                handleRef.current?.upsertExperience(sectionId, {
-                                  ...item,
-                                  endMonth: e.target.value,
-                                })
-                              }
-                              className={cn(
-                                FIELD_INPUT_CLASS,
-                                inverted && "ring-destructive focus-visible:ring-destructive ring-2"
-                              )}
-                            />
                             {inverted ? (
-                              <p role="alert" className="text-destructive text-xs">
+                              <p role="alert" className="text-xs text-red-600">
                                 结束月份不能早于开始月份
                               </p>
                             ) : null}
                           </div>
                         </div>
 
-                        <div className="space-y-1">
-                          <span className="text-muted-foreground text-xs">
-                            经历内容（支持富文本格式）
-                          </span>
-                          <TiptapEditor
-                            ariaLabel={`${isWork ? "工作" : "项目"}经历内容`}
-                            value={item.descriptionHtml}
-                            onChange={(html) =>
-                              handleRef.current?.upsertExperience(sectionId, {
-                                ...item,
-                                descriptionHtml: html,
-                              })
-                            }
-                          />
-                        </div>
+                        <TiptapEditor
+                          ariaLabel={`${section.title}详情`}
+                          value={item.content_html}
+                          onChange={(html) => patchItem({ content_html: html })}
+                        />
                       </div>
                     );
-                  }
-                )}
-              </div>
-            ) : null}
+                  })}
 
-            {sectionId === "skills" ? (
-              <div className="rounded-md">
-                <TiptapEditor
-                  ariaLabel="专业技能"
-                  value={snapshot.skillsHtml}
-                  onChange={(html) => handleRef.current?.updateSkillsHtml(html)}
-                />
-              </div>
-            ) : null}
-          </section>
-        );
-      })}
-    </div>
-  );
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      updateSection(section.id, (s) => ({
+                        ...s,
+                        items: [
+                          ...s.items,
+                          {
+                            id: generateStableId("item"),
+                            title: "",
+                            subtitle: "",
+                            start_month: "",
+                            end_month: "",
+                            is_current: false,
+                            location: "",
+                            link: "",
+                            content_html: "",
+                          },
+                        ],
+                      }))
+                    }
+                    className="h-9 text-[13px] text-neutral-700 hover:bg-neutral-100"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" />
+                    添加{section.title}
+                  </Button>
+                </div>
+              )}
+            </section>
+          ))}
+      </div>
+    );
+  };
 
   return (
-    <>
-      <EditorLayout
-        title={snapshot.title}
-        onTitleChange={(title) => handleRef.current?.updateTitle(title)}
-        saveStatus={saveState === "saved" ? "已保存到此设备" : "本机保存失败"}
-        saveFailed={saveState === "error"}
-        onSettings={(mode, trigger) => {
-          settingsTrigger.current = trigger;
-          setSettingsMode(mode);
-          setStyleSheetOpen(true);
-        }}
-        onDownload={handleDownloadClick}
-        tab={mobileTab}
-        onTabChange={setMobileTab}
-        templateName={getTemplatePreset(snapshot.templateId).name}
-        previewStatus={
-          pdf
-            ? `共 ${pdf.document.numPages} 页`
-            : pdfPending
-              ? "正在更新纸面"
-              : pdfFailure
-                ? "PDF 预览暂不可用"
-                : "实时预览"
-        }
-        notice={
-          exportNotice ? (
-            <div
-              role="status"
-              className="bg-muted text-muted-foreground flex shrink-0 items-center justify-between gap-2 px-4 text-xs min-[1200px]:px-6"
-            >
-              <span>{exportNotice}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-11"
-                onClick={() => setExportNotice(null)}
-              >
-                关闭
-              </Button>
-            </div>
-          ) : null
-        }
-        sectionNavigation={
-          <div className="flex flex-col gap-1">
-            <h2 className="text-muted-foreground px-2 pb-2 text-xs font-medium">简历内容</h2>
-            {snapshot.sectionOrder.map((sec) => {
-              const isHidden = hiddenSet.has(sec);
-              return (
-                <Button
-                  key={sec}
-                  type="button"
-                  variant="ghost"
-                  aria-current={activeSection === sec ? "location" : undefined}
-                  onClick={() => {
-                    setActiveSection(sec);
-                    scrollToDomId(`section-${sec}`);
-                  }}
-                  className={cn(
-                    "h-9 justify-start px-3 text-[13px]",
-                    activeSection === sec && "bg-accent text-foreground",
-                    isHidden && "text-muted-foreground"
-                  )}
-                >
-                  {isHidden && <EyeOff data-icon="inline-start" />}
-                  {SECTION_LABELS[sec]}
-                </Button>
-              );
-            })}
-            <Button
-              type="button"
-              variant="link"
-              className="mt-1 h-9 justify-start px-2"
-              onClick={(event) => openSectionManagement(event.currentTarget)}
-            >
-              管理章节
-            </Button>
-          </div>
-        }
-        form={form}
-        preview={
-          pdf ? (
-            <PdfPaper pdf={pdf} onLocate={handleLocateFromPaper} />
-          ) : (
-            <ResumePaper
-              snapshot={snapshot}
-              interactive
-              className="min-h-[141.4286cqw]"
-              onLocateItem={handleLocateFromPaper}
-            />
-          )
-        }
-      />
+    <div className="min-h-screen bg-[#fafafa] text-neutral-950">
+      <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 bg-[#fafafa]/95 px-4 backdrop-blur sm:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <Button asChild variant="ghost" size="icon" aria-label="返回我的简历" className="h-9 w-9">
+            <Link href="/resumes">
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Input
+            aria-label="简历名称"
+            value={doc.title}
+            onChange={(e) => persistUpdate((prev) => ({ ...prev, title: e.target.value }))}
+            className="h-8 max-w-[160px] border-0 bg-transparent px-1.5 text-sm font-medium shadow-none hover:bg-neutral-100 focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-blue-600 sm:max-w-[240px]"
+          />
+          <span className="hidden text-xs text-neutral-500 md:inline">
+            {cloudSyncState === "saving"
+              ? "云端保存中..."
+              : cloudSyncState === "synced"
+                ? `已同步 v${doc.version} · ${formatTime(doc.updated_at)}`
+                : `已保存 ${formatTime(doc.updated_at)}`}
+          </span>
+        </div>
 
-      <ExportResumeDialog
-        open={exportSnapshot !== null}
-        onOpenChange={(open) => {
-          if (!open) setExportSnapshot(null);
-        }}
-        onReturnToForm={() => {
-          setMobileTab("edit");
-          setExportSnapshot(null);
-        }}
-        onRetry={() => {
-          if (downloadTrigger.current) handleDownloadClick(downloadTrigger.current);
-          if (!printableSnapshot || findFirstInvertedDateDomId(printableSnapshot)) {
-            setExportSnapshot(null);
-          } else if (pdfFailure) {
-            retryPdf();
-          }
-        }}
-        restoreFocus={(event) => {
-          if (downloadTrigger.current?.isConnected) {
-            event.preventDefault();
-            downloadTrigger.current.focus();
-          }
-        }}
-        filename={resumePdfFilename(exportSnapshot?.title ?? snapshot.title)}
-        pdf={exportChanged ? null : pdf}
-        changed={exportChanged}
-        failure={pdfFailure}
-      />
+        <div className="flex items-center gap-1.5">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleClaimOrSyncCloud()}
+            className="hidden h-9 text-xs text-neutral-600 sm:inline-flex"
+          >
+            <Cloud className="mr-1.5 h-3.5 w-3.5" />
+            {authSession ? (doc.remote_id ? "已连云端" : "同步云端") : "登录同步"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleToggleMarkdownMode}
+            className="hidden h-9 text-xs text-neutral-600 lg:inline-flex"
+          >
+            <Code2 className="mr-1.5 h-3.5 w-3.5" />
+            {editorMode === "form" ? "切 Markdown" : "切表单"}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleExportJson}
+            className="hidden h-9 text-xs text-neutral-600 lg:inline-flex"
+          >
+            <FileJson className="mr-1.5 h-3.5 w-3.5" />
+            备份 JSON
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShareDialogOpen(true)}
+            className="h-9 text-xs text-neutral-700"
+          >
+            <Share2 className="mr-1 h-3.5 w-3.5" />
+            分享
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setStyleSheetOpen(true)}
+            className="h-9 text-xs text-neutral-700"
+          >
+            <SlidersHorizontal className="mr-1 h-3.5 w-3.5" />
+            排版
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            disabled={isExportingPdf}
+            onClick={() => void handleExportPdf()}
+            className="h-9 bg-neutral-950 px-3.5 text-xs text-white hover:bg-neutral-800"
+          >
+            <Download className="mr-1.5 h-3.5 w-3.5" />
+            {isExportingPdf ? "导出中..." : "导出 PDF"}
+          </Button>
+        </div>
+      </header>
 
-      <Dialog open={manageSectionsOpen} onOpenChange={setManageSectionsOpen}>
-        <DialogContent
-          onCloseAutoFocus={(event) => {
-            if (manageSectionsTrigger.current?.getClientRects().length) {
-              event.preventDefault();
-              manageSectionsTrigger.current.focus();
-            }
-          }}
+      {notice ? (
+        <div
+          role="status"
+          className="mx-auto flex max-w-[1480px] items-center justify-between bg-neutral-100 px-4 py-2 text-xs text-neutral-700 sm:px-6"
         >
-          <DialogHeader>
-            <DialogTitle>管理章节</DialogTitle>
-            <DialogDescription>调整章节顺序和纸面显示。</DialogDescription>
-          </DialogHeader>
-          <ul className="divide-border divide-y">
-            {snapshot.sectionOrder.map((sectionId, index) => {
-              const label = SECTION_LABELS[sectionId];
-              return (
-                <li key={sectionId} className="flex items-center justify-between gap-2 py-1">
-                  <span className="text-sm">{label}</span>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <Switch
-                      aria-label={`在纸面显示${label}`}
-                      checked={!hiddenSet.has(sectionId)}
-                      onCheckedChange={(checked) =>
-                        handleRef.current?.toggleSectionHidden(sectionId, !checked)
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`上移${label}`}
-                      className="size-11"
-                      disabled={index === 0}
-                      onClick={() => handleRef.current?.reorderSections(index, index - 1)}
-                    >
-                      <ArrowUp />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`下移${label}`}
-                      className="size-11"
-                      disabled={index === snapshot.sectionOrder.length - 1}
-                      onClick={() => handleRef.current?.reorderSections(index, index + 1)}
-                    >
-                      <ArrowDown />
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </DialogContent>
-      </Dialog>
+          <span>{notice}</span>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            className="ml-4 text-neutral-500 hover:text-neutral-950"
+          >
+            关闭
+          </button>
+        </div>
+      ) : null}
+
+      {/* Desktop three-column layout (老鱼式左栏模块选择 + 中栏表单 + 右栏实时预览) */}
+      <div className="mx-auto hidden max-w-[1480px] grid-cols-[204px_minmax(440px,1fr)_minmax(440px,1fr)] gap-6 px-6 pt-5 xl:grid">
+        <aside aria-label="模块选择" className="sticky top-20 space-y-1.5 self-start">
+          <p className="px-2 pb-1 text-xs font-medium text-neutral-400">模块选择</p>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveSectionId("basics");
+              scrollToDomId("section-basics");
+            }}
+            className={cn(
+              "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-[13px] transition-colors",
+              activeSectionId === "basics"
+                ? "bg-neutral-200/70 font-medium text-neutral-950"
+                : "text-neutral-600 hover:bg-neutral-100"
+            )}
+          >
+            <span>基本信息</span>
+          </button>
+
+          {doc.content.sections.map((sec, idx) => (
+            <div
+              key={sec.id}
+              className={cn(
+                "group flex items-center justify-between gap-1 rounded-md px-2.5 py-1.5 text-[13px] transition-colors",
+                activeSectionId === sec.id
+                  ? "bg-neutral-200/70 font-medium text-neutral-950"
+                  : "text-neutral-600 hover:bg-neutral-100"
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveSectionId(sec.id);
+                  if (sec.visible) {
+                    scrollToDomId(`section-${sec.id}`);
+                  }
+                }}
+                className={cn("min-w-0 flex-1 truncate text-left", !sec.visible && "opacity-55")}
+              >
+                {sec.title}
+              </button>
+              <div className="flex items-center gap-0.5 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100">
+                <button
+                  type="button"
+                  aria-label={`上移${sec.title}`}
+                  disabled={idx === 0}
+                  onClick={() => reorderSections(idx, idx - 1)}
+                  className="rounded p-0.5 hover:bg-neutral-200 disabled:opacity-30"
+                >
+                  <ArrowUp className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`下移${sec.title}`}
+                  disabled={idx === doc.content.sections.length - 1}
+                  onClick={() => reorderSections(idx, idx + 1)}
+                  className="rounded p-0.5 hover:bg-neutral-200 disabled:opacity-30"
+                >
+                  <ArrowDown className="h-3 w-3" />
+                </button>
+              </div>
+              <Switch
+                aria-label={`开关${sec.title}`}
+                checked={sec.visible}
+                onCheckedChange={(checked) =>
+                  updateSection(sec.id, (s) => ({ ...s, visible: checked }))
+                }
+              />
+            </div>
+          ))}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setAddModuleDialogOpen(true)}
+            className="mt-3 h-9 w-full text-xs"
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            添加自定义模块
+          </Button>
+        </aside>
+
+        <main aria-label="简历填写区">{renderFormColumn()}</main>
+
+        <aside aria-label="实时纸面预览" className="sticky top-20 self-start pb-12">
+          <p className="mb-2 text-xs text-neutral-400">
+            实时纸面预览（与 Playwright 导出 A4 PDF 100% 同源，点击条目可定位表单）
+          </p>
+          <div className="max-h-[calc(100vh-7rem)] overflow-y-auto bg-neutral-100/80 p-4">
+            <ResumePaper
+              templateId={doc.template_id}
+              content={doc.content}
+              interactive
+              onLocateSection={handleLocateFromPaper}
+            />
+          </div>
+        </aside>
+      </div>
+
+      {/* Mobile / Narrow viewport (< 1200px) */}
+      <div className="px-4 pt-3 xl:hidden">
+        <Tabs
+          value={mobileTab}
+          onValueChange={(v) => setMobileTab(v as "edit" | "preview")}
+          className="w-full"
+        >
+          <TabsList className="mb-4 grid w-full grid-cols-2">
+            <TabsTrigger value="edit" className="h-10 text-sm">
+              填写
+            </TabsTrigger>
+            <TabsTrigger value="preview" className="h-10 text-sm">
+              预览
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="edit">{renderFormColumn()}</TabsContent>
+          <TabsContent value="preview" className="pb-16">
+            <div className="bg-neutral-100/80 p-2">
+              <ResumePaper
+                templateId={doc.template_id}
+                content={doc.content}
+                interactive
+                onLocateSection={handleLocateFromPaper}
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <StyleSettingsSheet
         open={styleSheetOpen}
         onOpenChange={setStyleSheetOpen}
-        mode={settingsMode}
-        restoreFocus={(event) => {
-          if (
-            settingsTrigger.current?.isConnected &&
-            settingsTrigger.current.getClientRects().length > 0
-          ) {
-            event.preventDefault();
-            settingsTrigger.current.focus();
-          }
-        }}
-        templateId={snapshot.templateId}
-        overrides={snapshot.styleOverrides}
-        onChangeTemplate={(nextTemplate) => handleRef.current?.setTemplateId(nextTemplate)}
-        onUpdateOverride={(key, value) => handleRef.current?.updateStyleOverride(key, value)}
-        onResetDefaults={() => handleRef.current?.resetStyleOverrides()}
+        templateId={doc.template_id}
+        overrides={doc.content.style_overrides}
+        onChangeTemplate={(templateId) =>
+          persistUpdate((prev) => ({ ...prev, template_id: templateId }))
+        }
+        onUpdateOverride={(key, value) =>
+          persistUpdate((prev) => ({
+            ...prev,
+            content: {
+              ...prev.content,
+              style_overrides: { ...prev.content.style_overrides, [key]: value },
+            },
+          }))
+        }
+        onResetDefaults={() =>
+          persistUpdate((prev) => ({
+            ...prev,
+            content: { ...prev.content, style_overrides: {} },
+          }))
+        }
       />
+
+      <EmailAuthDialog
+        open={authDialogOpen}
+        onOpenChange={setAuthDialogOpen}
+        onAuthenticated={(session) => {
+          setAuthSession(session);
+          void handleClaimOrSyncCloud(session);
+        }}
+      />
+
+      {/* 添加自定义模块 Dialog */}
+      <Dialog open={addModuleDialogOpen} onOpenChange={setAddModuleDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">添加自定义模块</DialogTitle>
+            <DialogDescription className="text-xs text-neutral-500">
+              可新增如「开源贡献」「发表论文」「专利软著」「志愿者经历」等任意模块。
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={newModuleTitle}
+            onChange={(e) => setNewModuleTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleAddCustomSection();
+              }
+            }}
+            placeholder="输入模块名称"
+          />
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={() => setAddModuleDialogOpen(false)}>
+              取消
+            </Button>
+            <Button type="button" onClick={handleAddCustomSection}>
+              确认添加
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 在线只读分享 Dialog */}
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base">在线只读分享</DialogTitle>
+            <DialogDescription className="text-xs text-neutral-500">
+              开启后任何拥有链接的人均可只读查看本简历，可随时关闭链接使其立即失效。
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">启用只读分享链接</span>
+              <Switch
+                checked={Boolean(doc.share_enabled)}
+                onCheckedChange={(checked) => void handleToggleShare(checked)}
+              />
+            </div>
+            {shareUrl ? (
+              <div className="flex items-center gap-2">
+                <Input readOnly value={shareUrl} className="text-xs" />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    void navigator.clipboard.writeText(shareUrl);
+                    setNotice("分享链接已复制到剪贴板。");
+                  }}
+                >
+                  复制
+                </Button>
+              </div>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog
         open={pendingDelete !== null}
@@ -1043,21 +1315,19 @@ export function ResumeEditorWorkspace({ docId }: ResumeEditorWorkspaceProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除「{pendingDelete?.label}」？</AlertDialogTitle>
-            <AlertDialogDescription>
-              该条目包含已填写内容，删除后将从当前简历中移除。
-            </AlertDialogDescription>
+            <AlertDialogDescription>删除后该内容将从当前简历移除。</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>取消</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-red-600 text-white hover:bg-red-700"
             >
               确认删除
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
